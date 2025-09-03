@@ -16,11 +16,22 @@ const exportTextBtn = document.getElementById('exportTextBtn');
 // Global variables
 let originalImage = null;
 let pixelatedData = null;
+let isProcessing = false;
 
 // Event Listeners
-uploadArea.addEventListener('click', () => imageInput.click());
-uploadBtn.addEventListener('click', () => imageInput.click());
-imageInput.addEventListener('change', handleImageUpload);
+uploadArea.addEventListener('click', (e) => {
+    // Trigger file input click for any click inside the upload area
+    // unless we're currently processing
+    if (!isProcessing) {
+        imageInput.click();
+    }
+});
+imageInput.addEventListener('change', (e) => {
+    // Only process if files were actually selected
+    if (e.target.files && e.target.files.length > 0) {
+        handleImageUpload();
+    }
+});
 
 // Drag and drop functionality
 uploadArea.addEventListener('dragover', (e) => {
@@ -38,8 +49,8 @@ uploadArea.addEventListener('drop', (e) => {
     
     const files = e.dataTransfer.files;
     if (files.length > 0) {
-        imageInput.files = files;
-        handleImageUpload();
+        // Process the dropped file directly without triggering the change event
+        handleImageUpload(files[0]);
     }
 });
 
@@ -55,15 +66,35 @@ exportExcelBtn.addEventListener('click', exportToExcel);
 exportTextBtn.addEventListener('click', exportAsText);
 
 // Handle image upload
-function handleImageUpload() {
-    const file = imageInput.files[0];
-    if (!file) return;
+function handleImageUpload(droppedFile = null) {
+    // Prevent double processing
+    if (isProcessing) return;
+    
+    const file = droppedFile || imageInput.files[0];
+    if (!file) {
+        console.log('No file selected');
+        return;
+    }
+    
+    console.log('Processing file:', file.name, 'Type:', file.type);
 
-    if (!file.type.startsWith('image/')) {
-        showMessage('Please select a valid image file.', 'error');
+    // More robust file type validation
+    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'];
+    const isValidImage = validImageTypes.includes(file.type.toLowerCase()) || file.type.startsWith('image/');
+    
+    if (!isValidImage) {
+        showMessage(`Please select a valid image file. Selected file type: ${file.type}`, 'error');
+        isProcessing = false;
         return;
     }
 
+    isProcessing = true;
+    
+    // Update upload area to show processing
+    const uploadContent = uploadArea.querySelector('.upload-content');
+    const originalContent = uploadContent.innerHTML;
+    uploadContent.innerHTML = '<div class="upload-icon">⏳</div><p>Processing image...</p>';
+    
     const reader = new FileReader();
     reader.onload = (e) => {
         originalImage = new Image();
@@ -71,10 +102,33 @@ function handleImageUpload() {
             displayOriginalImage();
             processImage();
             showMessage('Image uploaded successfully!', 'success');
+            restoreUploadArea();
+            isProcessing = false;
+        };
+        originalImage.onerror = () => {
+            showMessage('Error loading image. Please try again.', 'error');
+            uploadContent.innerHTML = originalContent;
+            isProcessing = false;
         };
         originalImage.src = e.target.result;
     };
+    reader.onerror = () => {
+        showMessage('Error reading file. Please try again.', 'error');
+        uploadContent.innerHTML = originalContent;
+        isProcessing = false;
+    };
     reader.readAsDataURL(file);
+}
+
+// Restore upload area to original state
+function restoreUploadArea() {
+    const uploadContent = uploadArea.querySelector('.upload-content');
+    uploadContent.innerHTML = `
+        <div class="upload-icon">📷</div>
+        <p>Click to upload an image or drag and drop</p>
+        <button id="uploadBtn" class="btn btn-primary">Choose Image</button>
+    `;
+    // No need to re-attach event listener - it's handled by event delegation on uploadArea
 }
 
 // Display original image
