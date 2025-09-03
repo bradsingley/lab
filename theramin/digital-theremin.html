@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Theremin</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      background-image: url('theraminphoto.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      cursor: none;
+      font-family: 'Arial', sans-serif;
+    }
+    
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+    
+    .title {
+      text-align: center;
+      color: #fff;
+      font-size: 3em;
+      font-weight: bold;
+      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+      margin-top: 30px;
+      letter-spacing: 3px;
+    }
+    
+    .instructions {
+      text-align: center;
+      color: #fff;
+      font-size: 1.2em;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+    
+    .controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+      color: #fff;
+      pointer-events: auto;
+    }
+    
+    .control-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 0.9em;
+    }
+    
+    input[type="range"] {
+      width: 100%;
+    }
+    
+    select {
+      width: 100%;
+      padding: 5px;
+      background: #333;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 3px;
+    }
+    
+    button {
+      background: #ff6b6b;
+      border: none;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      margin: 5px;
+    }
+    
+    button:hover {
+      background: #ff5252;
+    }
+    
+    .frequency-display {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: #00ff00;
+      padding: 20px 40px;
+      border-radius: 15px;
+      font-size: 2em;
+      font-weight: bold;
+      text-shadow: 0 0 10px #00ff00;
+      border: 2px solid #00ff00;
+      pointer-events: none;
+    }
+    
+    .cursor {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle, #ff6b6b, #ff0000);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1000;
+      box-shadow: 0 0 20px #ff6b6b;
+      animation: pulse 1s infinite alternate;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.2); }
+    }
+    
+    .volume-indicator {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 30px;
+      height: 300px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid #fff;
+      border-radius: 15px;
+      pointer-events: none;
+    }
+    
+    .volume-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(to top, #00ff00, #ffff00, #ff0000);
+      border-radius: 0 0 13px 13px;
+      transition: height 0.1s ease;
+    }
+    
+    .pitch-indicator {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 30px;
+      height: 300px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid #fff;
+      border-radius: 15px;
+      pointer-events: none;
+    }
+    
+    .pitch-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(to top, #0066ff, #00ccff, #ffffff);
+      border-radius: 0 0 13px 13px;
+      transition: height 0.1s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <div class="title">DIGITAL THEREMIN</div>
+    <div class="instructions">
+      Move your cursor:<br>
+      ↕ Up/Down to change PITCH<br>
+      ↔ Left/Right to control VOLUME<br>
+      Click to start/stop
+    </div>
+  </div>
+  
+  <div class="controls">
+    <div class="control-group">
+      <label>Waveform</label>
+      <select id="waveform">
+        <option value="sine">Sine Wave</option>
+        <option value="sawtooth" selected>Sawtooth</option>
+        <option value="square">Square Wave</option>
+        <option value="triangle">Triangle</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Reverb: <span id="reverbAmount">30</span>%</label>
+      <input type="range" id="reverb" min="0" max="100" value="30">
+    </div>
+    <div class="control-group">
+      <label>Frequency Range</label>
+      <select id="range">
+        <option value="1">Low (100-800 Hz)</option>
+        <option value="2" selected>Mid (200-1600 Hz)</option>
+        <option value="3">High (400-3200 Hz)</option>
+      </select>
+    </div>
+    <button onclick="toggleMute()">Mute/Unmute</button>
+  </div>
+  
+  <div class="frequency-display" id="freqDisplay">440 Hz</div>
+  
+  <div class="cursor" id="cursor"></div>
+  
+  <div class="volume-indicator">
+    <div class="volume-bar" id="volumeBar"></div>
+  </div>
+  
+  <div class="pitch-indicator">
+    <div class="pitch-bar" id="pitchBar"></div>
+  </div>
+  
+  <script>
+    // Audio context and nodes
+    let audioContext;
+    let oscillator;
+    let gainNode;
+    let convolver;
+    let isPlaying = false;
+    let isMuted = false;
+    
+    // Theremin parameters
+    let frequency = 440;
+    let volume = 0.5;
+    let mouseX = 0;
+    let mouseY = 0;
+    
+    // Initialize audio
+    function initAudio() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Create reverb impulse response
+        createReverb();
+      }
+    }
+    
+    // Create reverb effect
+    function createReverb() {
+      convolver = audioContext.createConvolver();
+      const impulseLength = audioContext.sampleRate * 2;
+      const impulse = audioContext.createBuffer(2, impulseLength, audioContext.sampleRate);
+      
+      for (let channel = 0; channel < 2; channel++) {
+        const channelData = impulse.getChannelData(channel);
+        for (let i = 0; i < impulseLength; i++) {
+          const decay = Math.pow(1 - i / impulseLength, 2);
+          channelData[i] = (Math.random() * 2 - 1) * decay;
+        }
+      }
+      
+      convolver.buffer = impulse;
+    }
+    
+    // Start theremin
+    function startTheremin() {
+      if (isPlaying) return;
+      
+      initAudio();
+      
+      oscillator = audioContext.createOscillator();
+      gainNode = audioContext.createGain();
+      const dryGain = audioContext.createGain();
+      const wetGain = audioContext.createGain();
+      
+      // Set waveform
+      oscillator.type = document.getElementById('waveform').value;
+      oscillator.frequency.value = frequency;
+      
+      // Audio routing
+      oscillator.connect(gainNode);
+      gainNode.connect(dryGain);
+      gainNode.connect(convolver);
+      convolver.connect(wetGain);
+      
+      dryGain.connect(audioContext.destination);
+      wetGain.connect(audioContext.destination);
+      
+      // Set initial values
+      gainNode.gain.value = volume;
+      updateReverb();
+      
+      oscillator.start();
+      isPlaying = true;
+    }
+    
+    // Stop theremin
+    function stopTheremin() {
+      if (!isPlaying) return;
+      
+      if (oscillator) {
+        oscillator.stop();
+        oscillator = null;
+      }
+      isPlaying = false;
+    }
+    
+    // Update reverb mix
+    function updateReverb() {
+      if (!audioContext) return;
+      
+      const reverbAmount = document.getElementById('reverb').value / 100;
+      const dryGain = audioContext.createGain();
+      const wetGain = audioContext.createGain();
+      
+      dryGain.gain.value = 1 - reverbAmount;
+      wetGain.gain.value = reverbAmount;
+    }
+    
+    // Calculate frequency from mouse position
+    function calculateFrequency(y) {
+      const range = document.getElementById('range').value;
+      const height = window.innerHeight;
+      const normalizedY = 1 - (y / height); // Invert Y axis
+      
+      let minFreq, maxFreq;
+      switch (range) {
+        case '1': minFreq = 100; maxFreq = 800; break;
+        case '2': minFreq = 200; maxFreq = 1600; break;
+        case '3': minFreq = 400; maxFreq = 3200; break;
+      }
+      
+      // Exponential scaling for more natural pitch control
+      return minFreq * Math.pow(maxFreq / minFreq, normalizedY);
+    }
+    
+    // Calculate volume from mouse position
+    function calculateVolume(x) {
+      const width = window.innerWidth;
+      const normalizedX = x / width;
+      return Math.max(0, Math.min(1, normalizedX));
+    }
+    
+    // Update theremin parameters
+    function updateTheremin(x, y) {
+      mouseX = x;
+      mouseY = y;
+      
+      frequency = calculateFrequency(y);
+      volume = calculateVolume(x);
+      
+      if (isMuted) volume = 0;
+      
+      if (oscillator && gainNode) {
+        oscillator.frequency.exponentialRampToValueAtTime(
+          frequency, audioContext.currentTime + 0.1
+        );
+        gainNode.gain.linearRampToValueAtTime(
+          volume, audioContext.currentTime + 0.1
+        );
+      }
+      
+      // Update displays
+      document.getElementById('freqDisplay').textContent = Math.round(frequency) + ' Hz';
+      document.getElementById('volumeBar').style.height = (volume * 100) + '%';
+      document.getElementById('pitchBar').style.height = ((frequency - 100) / 3100 * 100) + '%';
+      
+      // Update cursor position
+      const cursor = document.getElementById('cursor');
+      cursor.style.left = (x - 10) + 'px';
+      cursor.style.top = (y - 10) + 'px';
+    }
+    
+    // Toggle mute
+    function toggleMute() {
+      isMuted = !isMuted;
+      if (gainNode) {
+        const targetVolume = isMuted ? 0 : volume;
+        gainNode.gain.linearRampToValueAtTime(
+          targetVolume, audioContext.currentTime + 0.1
+        );
+      }
+    }
+    
+    // Event listeners
+    document.addEventListener('mousemove', (e) => {
+      updateTheremin(e.clientX, e.clientY);
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+        if (isPlaying) {
+          stopTheremin();
+        } else {
+          startTheremin();
+        }
+      }
+    });
+    
+    // Waveform change
+    document.getElementById('waveform').addEventListener('change', () => {
+      if (oscillator) {
+        stopTheremin();
+        setTimeout(startTheremin, 50);
+      }
+    });
+    
+    // Reverb control
+    document.getElementById('reverb').addEventListener('input', (e) => {
+      document.getElementById('reverbAmount').textContent = e.target.value;
+      updateReverb();
+    });
+    
+    // Range change
+    document.getElementById('range').addEventListener('change', () => {
+      updateTheremin(mouseX, mouseY);
+    });
+    
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      switch (e.code) {
+        case 'Space':
+          e.preventDefault();
+          if (isPlaying) {
+            stopTheremin();
+          } else {
+            startTheremin();
+          }
+          break;
+        case 'KeyM':
+          toggleMute();
+          break;
+      }
+    });
+    
+    // Initialize display
+    updateTheremin(window.innerWidth / 2, window.innerHeight / 2);
+    
+    // Handle audio context resume (required by some browsers)
+    document.addEventListener('click', () => {
+      if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+    }, { once: true });
+  </script>
+</body>
+</html>
