@@ -3,8 +3,21 @@ const uploadArea = document.getElementById('uploadArea');
 const imageInput = document.getElementById('imageInput');
 const uploadBtn = document.getElementById('uploadBtn');
 const maxWidthInput = document.getElementById('maxWidth');
+const pixelModeSelect = document.getElementById('pixelMode');
 const thresholdInput = document.getElementById('threshold');
 const thresholdValue = document.getElementById('thresholdValue');
+const thresholdSetting = document.getElementById('thresholdSetting');
+const thresholdLabel = document.getElementById('thresholdLabel');
+const contrastInput = document.getElementById('contrast');
+const contrastValue = document.getElementById('contrastValue');
+const contrastSetting = document.getElementById('contrastSetting');
+const cameraArea = document.getElementById('cameraArea');
+const cameraBtn = document.getElementById('cameraBtn');
+const cameraPreview = document.getElementById('cameraPreview');
+const cameraVideo = document.getElementById('cameraVideo');
+const captureBtn = document.getElementById('captureBtn');
+const closeCameraBtn = document.getElementById('closeCameraBtn');
+const captureCanvas = document.getElementById('captureCanvas');
 const previewSection = document.getElementById('previewSection');
 const exportSection = document.getElementById('exportSection');
 const originalCanvas = document.getElementById('originalCanvas');
@@ -17,6 +30,7 @@ const exportTextBtn = document.getElementById('exportTextBtn');
 let originalImage = null;
 let pixelatedData = null;
 let isProcessing = false;
+let cameraStream = null;
 
 // Event Listeners
 uploadArea.addEventListener('click', (e) => {
@@ -56,10 +70,37 @@ uploadArea.addEventListener('drop', (e) => {
 
 // Settings change listeners
 maxWidthInput.addEventListener('input', processImage);
+pixelModeSelect.addEventListener('change', () => {
+    updateThresholdDisplay();
+    processImage();
+});
 thresholdInput.addEventListener('input', () => {
     thresholdValue.textContent = thresholdInput.value;
     processImage();
 });
+contrastInput.addEventListener('input', () => {
+    contrastValue.textContent = parseFloat(contrastInput.value).toFixed(1);
+    processImage();
+});
+
+// Camera event listeners
+cameraArea.addEventListener('click', openCamera);
+cameraBtn.addEventListener('click', openCamera);
+captureBtn.addEventListener('click', capturePhoto);
+closeCameraBtn.addEventListener('click', closeCamera);
+
+// Update control visibility based on mode
+function updateThresholdDisplay() {
+    const pixelMode = pixelModeSelect.value;
+    if (pixelMode === 'binary') {
+        thresholdSetting.style.display = 'flex';
+        contrastSetting.style.display = 'none';
+        thresholdLabel.textContent = 'Black/White Threshold:';
+    } else {
+        thresholdSetting.style.display = 'none';
+        contrastSetting.style.display = 'flex';
+    }
+}
 
 // Export listeners
 exportExcelBtn.addEventListener('click', exportToExcel);
@@ -131,6 +172,88 @@ function restoreUploadArea() {
     // No need to re-attach event listener - it's handled by event delegation on uploadArea
 }
 
+// Camera functionality
+async function openCamera() {
+    if (isProcessing) return;
+    
+    try {
+        const constraints = {
+            video: {
+                facingMode: 'user', // Front-facing camera for selfies
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            }
+        };
+        
+        cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+        cameraVideo.srcObject = cameraStream;
+        cameraPreview.style.display = 'block';
+        
+        showMessage('Camera opened! Position yourself and click Capture.', 'success');
+    } catch (error) {
+        console.error('Camera error:', error);
+        let errorMessage = 'Camera access denied or not available.';
+        
+        if (error.name === 'NotFoundError') {
+            errorMessage = 'No camera found on this device.';
+        } else if (error.name === 'NotAllowedError') {
+            errorMessage = 'Camera permission denied. Please allow camera access.';
+        } else if (error.name === 'NotSupportedError') {
+            errorMessage = 'Camera not supported on this device.';
+        }
+        
+        showMessage(errorMessage, 'error');
+    }
+}
+
+function closeCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+    cameraVideo.srcObject = null;
+    cameraPreview.style.display = 'none';
+    showMessage('Camera closed.', 'success');
+}
+
+function capturePhoto() {
+    if (!cameraStream || isProcessing) return;
+    
+    const canvas = captureCanvas;
+    const video = cameraVideo;
+    
+    // Set canvas size to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw video frame to canvas
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Convert canvas to image
+    canvas.toBlob(blob => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            originalImage = new Image();
+            originalImage.onload = () => {
+                displayOriginalImage();
+                processImage();
+                showMessage('Photo captured successfully!', 'success');
+                closeCamera();
+                isProcessing = false;
+            };
+            originalImage.onerror = () => {
+                showMessage('Error processing captured photo.', 'error');
+                isProcessing = false;
+            };
+            originalImage.src = e.target.result;
+        };
+        reader.readAsDataURL(blob);
+    }, 'image/jpeg', 0.8);
+    
+    isProcessing = true;
+}
+
 // Display original image
 function displayOriginalImage() {
     const ctx = originalCanvas.getContext('2d');
@@ -153,6 +276,7 @@ function processImage() {
     
     const maxWidth = parseInt(maxWidthInput.value);
     const threshold = parseInt(thresholdInput.value);
+    const pixelMode = pixelModeSelect.value;
     
     // Calculate dimensions
     const ratio = originalImage.height / originalImage.width;
@@ -185,9 +309,29 @@ function processImage() {
             // Convert to grayscale
             const gray = 0.299 * r + 0.587 * g + 0.114 * b;
             
-            // Apply threshold
-            const isBlack = gray < threshold;
-            row.push(isBlack ? 1 : 0);
+            if (pixelMode === 'binary') {
+                // Binary mode: 0 or 1 based on threshold
+                const isBlack = gray < threshold;
+                row.push(isBlack ? 1 : 0);
+            } else {
+                // Grayscale mode: 0-9 with contrast adjustment
+                const contrast = parseFloat(contrastInput.value);
+                
+                // Normalize gray to 0-1 range
+                let normalizedGray = gray / 255;
+                
+                // Apply contrast adjustment (S-curve around midpoint)
+                const midpoint = 0.5;
+                if (normalizedGray < midpoint) {
+                    normalizedGray = Math.pow(normalizedGray / midpoint, contrast) * midpoint;
+                } else {
+                    normalizedGray = 1 - Math.pow((1 - normalizedGray) / midpoint, contrast) * midpoint;
+                }
+                
+                // Convert to 0-9 scale (inverted so 0=black, 9=white)
+                const grayValue = Math.floor((1 - normalizedGray) * 10);
+                row.push(Math.min(9, Math.max(0, grayValue)));
+            }
         }
         pixelatedData.push(row);
     }
@@ -205,6 +349,7 @@ function displayPixelatedImage() {
     const ctx = pixelatedCanvas.getContext('2d');
     const width = pixelatedData[0].length;
     const height = pixelatedData.length;
+    const pixelMode = pixelModeSelect.value;
     
     pixelatedCanvas.width = width;
     pixelatedCanvas.height = height;
@@ -215,12 +360,20 @@ function displayPixelatedImage() {
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const index = (y * width + x) * 4;
-            const isBlack = pixelatedData[y][x];
+            const pixelValue = pixelatedData[y][x];
             
-            data[index] = isBlack ? 0 : 255;     // R
-            data[index + 1] = isBlack ? 0 : 255; // G
-            data[index + 2] = isBlack ? 0 : 255; // B
-            data[index + 3] = 255;                // A
+            let grayValue;
+            if (pixelMode === 'binary') {
+                grayValue = pixelValue === 1 ? 0 : 255;
+            } else {
+                // Convert 0-9 grayscale to 0-255 range
+                grayValue = 255 - (pixelValue * 25.5);
+            }
+            
+            data[index] = grayValue;     // R
+            data[index + 1] = grayValue; // G
+            data[index + 2] = grayValue; // B
+            data[index + 3] = 255;       // A
         }
     }
     
@@ -230,6 +383,7 @@ function displayPixelatedImage() {
 // Create pixel grid display
 function createPixelGrid() {
     pixelGrid.innerHTML = '';
+    const pixelMode = pixelModeSelect.value;
     
     const table = document.createElement('table');
     
@@ -238,7 +392,19 @@ function createPixelGrid() {
         
         for (let x = 0; x < pixelatedData[y].length; x++) {
             const cell = document.createElement('td');
-            cell.className = pixelatedData[y][x] ? 'black' : 'white';
+            const pixelValue = pixelatedData[y][x];
+            
+            if (pixelMode === 'binary') {
+                cell.className = pixelValue === 1 ? 'black' : 'white';
+                cell.textContent = '';
+            } else {
+                // Grayscale mode: show background color only, no text
+                cell.className = 'grayscale';
+                cell.textContent = '';
+                const grayLevel = 255 - (pixelValue * 25.5);
+                cell.style.backgroundColor = `rgb(${grayLevel}, ${grayLevel}, ${grayLevel})`;
+            }
+            
             row.appendChild(cell);
         }
         
@@ -252,30 +418,46 @@ function createPixelGrid() {
 function exportToExcel() {
     if (!pixelatedData) return;
     
+    const pixelMode = pixelModeSelect.value;
     let csv = '';
     
     for (let y = 0; y < pixelatedData.length; y++) {
-        const row = pixelatedData[y].map(pixel => pixel ? '1' : '0').join(',');
+        const row = pixelatedData[y].map(pixel => {
+            if (pixelMode === 'binary') {
+                return pixel ? '1' : '0';
+            } else {
+                return pixel.toString();
+            }
+        }).join(',');
         csv += row + '\n';
     }
     
-    downloadFile(csv, 'pixelated_image.csv', 'text/csv');
-    showMessage('CSV file exported successfully!', 'success');
+    const filename = pixelMode === 'binary' ? 'pixelated_image_binary.csv' : 'pixelated_image_grayscale.csv';
+    downloadFile(csv, filename, 'text/csv');
+    showMessage(`${pixelMode === 'binary' ? 'Binary' : 'Grayscale'} CSV file exported successfully!`, 'success');
 }
 
 // Export as text
 function exportAsText() {
     if (!pixelatedData) return;
     
+    const pixelMode = pixelModeSelect.value;
     let text = '';
     
     for (let y = 0; y < pixelatedData.length; y++) {
-        const row = pixelatedData[y].map(pixel => pixel ? '█' : ' ').join('');
+        const row = pixelatedData[y].map(pixel => {
+            if (pixelMode === 'binary') {
+                return pixel ? '█' : ' ';
+            } else {
+                return pixel.toString();
+            }
+        }).join(pixelMode === 'binary' ? '' : ' ');
         text += row + '\n';
     }
     
-    downloadFile(text, 'pixelated_image.txt', 'text/plain');
-    showMessage('Text file exported successfully!', 'success');
+    const filename = pixelMode === 'binary' ? 'pixelated_image_binary.txt' : 'pixelated_image_grayscale.txt';
+    downloadFile(text, filename, 'text/plain');
+    showMessage(`${pixelMode === 'binary' ? 'Binary' : 'Grayscale'} text file exported successfully!`, 'success');
 }
 
 // Download file helper
@@ -321,6 +503,12 @@ function showMessage(message, type = 'success') {
 document.addEventListener('DOMContentLoaded', () => {
     // Set initial threshold value
     thresholdValue.textContent = thresholdInput.value;
+    
+    // Set initial contrast value
+    contrastValue.textContent = parseFloat(contrastInput.value).toFixed(1);
+    
+    // Set initial control display
+    updateThresholdDisplay();
     
     // Add some helpful instructions
     showMessage('Upload an image to get started!', 'success');
