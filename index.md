@@ -1,4 +1,4 @@
 ---
-title: Welcome to my AI Experiments Portfolio
+bradsingley.com: Welcome to my AI Experiments Portfolio
 ---
 
