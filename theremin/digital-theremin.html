@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Digital Theremin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -15,7 +18,8 @@
       background-position: center;
       background-repeat: no-repeat;
       cursor: none;
-      font-family: 'Arial', sans-serif;
+      font-family: 'Playfair Display', 'Times New Roman', 'Georgia', serif;
+      font-stretch: condensed;
     }
     
     .overlay {
@@ -25,95 +29,129 @@
       width: 100%;
       height: 100%;
       background: rgba(0, 0, 0, 0.3);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
       pointer-events: none;
     }
     
     .title {
-      text-align: center;
-      color: #fff;
+      position: absolute;
+      left: 10%;
+      top: 30px;
+      color: #ffffff;
       font-size: 3em;
-      font-weight: bold;
-      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
-      margin-top: 30px;
-      letter-spacing: 3px;
+      font-weight: normal;
+      letter-spacing: 2px;
+      font-family: 'Playfair Display', 'Times New Roman', 'Georgia', serif;
+      font-stretch: condensed;
     }
     
-    .instructions {
-      text-align: center;
-      color: #fff;
-      font-size: 1.2em;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-      margin-bottom: 30px;
-      line-height: 1.6;
-    }
+
     
     .controls {
       position: absolute;
       top: 20px;
       right: 20px;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 20px;
-      border-radius: 10px;
-      color: #fff;
+      background: linear-gradient(145deg, #8b4513, #a0522d);
+      border: 4px solid #daa520;
+      padding: 25px;
+      border-radius: 20px;
+      color: #ffffff;
       pointer-events: auto;
+      box-shadow: 
+        inset 3px 3px 10px rgba(255, 255, 255, 0.2),
+        inset -3px -3px 10px rgba(0, 0, 0, 0.3),
+        5px 5px 20px rgba(0, 0, 0, 0.5);
+      font-family: 'Playfair Display', 'Times New Roman', 'Georgia', serif;
+      font-stretch: condensed;
+      font-weight: normal;
+
     }
     
     .control-group {
-      margin-bottom: 15px;
+      margin-bottom: 18px;
+      background: rgba(139, 69, 19, 0.3);
+      padding: 12px;
+      border-radius: 12px;
+      border: 2px solid #cd853f;
     }
     
     label {
       display: block;
-      margin-bottom: 5px;
-      font-size: 0.9em;
+      margin-bottom: 8px;
+      font-size: 0.95em;
+      color: #ffffff;
+      font-weight: normal;
+      letter-spacing: 1px;
+      font-family: 'Playfair Display', 'Times New Roman', 'Georgia', serif;
+      font-stretch: condensed;
     }
     
     input[type="range"] {
       width: 100%;
+      height: 8px;
+      background: linear-gradient(to right, #8b4513, #daa520);
+      border-radius: 5px;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle, #ffd700, #b8860b);
+      border: 3px solid #8b4513;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
     }
     
     select {
       width: 100%;
-      padding: 5px;
-      background: #333;
-      color: #fff;
-      border: 1px solid #555;
-      border-radius: 3px;
+      padding: 8px;
+      background: linear-gradient(145deg, #654321, #8b4513);
+      color: #ffd700;
+      border: 3px solid #daa520;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.9em;
+
     }
     
     button {
-      background: #ff6b6b;
-      border: none;
-      color: white;
-      padding: 10px 15px;
-      border-radius: 5px;
+      background: linear-gradient(145deg, #b8860b, #daa520);
+      border: 3px solid #8b4513;
+      color: #8b4513;
+      padding: 12px 18px;
+      border-radius: 12px;
       cursor: pointer;
       font-size: 1em;
-      margin: 5px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin: 8px 5px;
+      box-shadow: 
+        3px 3px 8px rgba(0, 0, 0, 0.4),
+        inset 1px 1px 3px rgba(255, 255, 255, 0.3);
+
+      transition: all 0.2s ease;
     }
     
     button:hover {
-      background: #ff5252;
+      background: linear-gradient(145deg, #daa520, #ffd700);
+      transform: translateY(-2px);
+      box-shadow: 
+        4px 4px 12px rgba(0, 0, 0, 0.5),
+        inset 1px 1px 3px rgba(255, 255, 255, 0.4);
     }
     
-    .frequency-display {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.8);
-      color: #00ff00;
-      padding: 20px 40px;
-      border-radius: 15px;
-      font-size: 2em;
-      font-weight: bold;
-      text-shadow: 0 0 10px #00ff00;
-      border: 2px solid #00ff00;
-      pointer-events: none;
+    button:active {
+      transform: translateY(0);
+      box-shadow: 
+        2px 2px 6px rgba(0, 0, 0, 0.4),
+        inset 2px 2px 5px rgba(0, 0, 0, 0.2);
     }
+    
+
     
     .cursor {
       position: absolute;
@@ -132,62 +170,18 @@
       100% { transform: scale(1.2); }
     }
     
-    .volume-indicator {
-      position: absolute;
-      left: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 30px;
-      height: 300px;
-      background: rgba(0, 0, 0, 0.7);
-      border: 2px solid #fff;
-      border-radius: 15px;
-      pointer-events: none;
-    }
+
     
-    .volume-bar {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: linear-gradient(to top, #00ff00, #ffff00, #ff0000);
-      border-radius: 0 0 13px 13px;
-      transition: height 0.1s ease;
-    }
+
     
-    .pitch-indicator {
-      position: absolute;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 30px;
-      height: 300px;
-      background: rgba(0, 0, 0, 0.7);
-      border: 2px solid #fff;
-      border-radius: 15px;
-      pointer-events: none;
-    }
+
     
-    .pitch-bar {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: linear-gradient(to top, #0066ff, #00ccff, #ffffff);
-      border-radius: 0 0 13px 13px;
-      transition: height 0.1s ease;
-    }
+
   </style>
 </head>
 <body>
   <div class="overlay">
-    <div class="title">DIGITAL THEREMIN</div>
-    <div class="instructions">
-      Move your cursor:<br>
-      ↕ Up/Down to change PITCH<br>
-      ↔ Left/Right to control VOLUME<br>
-      Click to start/stop
-    </div>
+    <div class="title">Digital theremin</div>
   </div>
   
   <div class="controls">
@@ -205,28 +199,18 @@
       <input type="range" id="reverb" min="0" max="100" value="30">
     </div>
     <div class="control-group">
-      <label>Frequency Range</label>
+      <label>Frequency range</label>
       <select id="range">
         <option value="1">Low (100-800 Hz)</option>
         <option value="2" selected>Mid (200-1600 Hz)</option>
         <option value="3">High (400-3200 Hz)</option>
       </select>
     </div>
-    <button onclick="toggleMute()">Mute/Unmute</button>
+    <button onclick="toggleMute()">Mute/unmute</button>
   </div>
-  
-  <div class="frequency-display" id="freqDisplay">440 Hz</div>
-  
+
   <div class="cursor" id="cursor"></div>
-  
-  <div class="volume-indicator">
-    <div class="volume-bar" id="volumeBar"></div>
-  </div>
-  
-  <div class="pitch-indicator">
-    <div class="pitch-bar" id="pitchBar"></div>
-  </div>
-  
+
   <script>
     // Audio context and nodes
     let audioContext;
@@ -366,11 +350,6 @@
           volume, audioContext.currentTime + 0.1
         );
       }
-      
-      // Update displays
-      document.getElementById('freqDisplay').textContent = Math.round(frequency) + ' Hz';
-      document.getElementById('volumeBar').style.height = (volume * 100) + '%';
-      document.getElementById('pitchBar').style.height = ((frequency - 100) / 3100 * 100) + '%';
       
       // Update cursor position
       const cursor = document.getElementById('cursor');
