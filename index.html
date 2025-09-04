@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Labs | bradsingley.com</title>
+  <!-- Removed external font CSS; using local TTF via @font-face -->
+  <style>
+    @font-face {
+      font-family: 'EngineersHand';
+      src: url("003 Engineer_'s Hand.ttf") format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    body {
+      margin: 0;
+      font-family: 'EngineersHand', sans-serif;
+      background: #fff;
+      color: #222;
+      min-height: 100vh;
+      position: relative;
+    }
+    .bg-image {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1200px;
+      height: 100vh;
+      background: url('bg.jpg') no-repeat top center;
+      background-size: 1200px auto;
+      z-index: -1;
+      opacity: 1;
+      pointer-events: none;
+    }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #2a4d69;
+      margin-top: 60px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    p {
+      font-size: 1.2rem;
+      text-align: center;
+      margin-bottom: 2em;
+    }
+    .links {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      margin-top: 40px;
+    }
+    .links a {
+      font-family: 'MainFont', sans-serif;
+      font-size: 1.25rem;
+      color: #2a4d69;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .links a:hover {
+      color: #205375;
+    }
+    @media (max-width: 1200px) {
+      .bg-image {
+        width: 100vw;
+        left: 0;
+        transform: none;
+        background-size: 100% auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-image"></div>
+  <h1>Labs @ bradsingley.com</h1>
+  <p>Welcome to the Labs! Explore experimental projects, prototypes, and creative tools by Brad Singley. Click below to try them out:</p>
+  <div class="links">
+    <a href="excelfie/">Excelfie</a>
+    <a href="theremin/virtual-theremin.html">Virtual Theremin</a>
+  </div>
+  <p style="margin-top:2em;font-size:0.95em;color:#888;text-align:center;">&copy; 2025 Brad Singley. All rights reserved.</p>
+</body>
+</html>
