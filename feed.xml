@@ -3,14 +3,14 @@
     <title>Lab</title>
     <link href="https://lab.bradsingley.com/feed.xml" rel="self" />
     <link href="https://lab.bradsingley.com" />
-    <updated>2025-09-03T23:44:05-07:00</updated>
+    <updated>2025-09-04T00:08:09-07:00</updated>
     <author>
         <name>Brad Singley</name>
     </author>
     <id>https://lab.bradsingley.com</id>
 
     <entry>
-        <title>Post 2</title>
+        <title>Theremin</title>
         <author>
             <name>Brad Singley</name>
         </author>
@@ -20,12 +20,12 @@
         <updated>2025-09-03T23:44:05-07:00</updated>
             <summary>
                 <![CDATA[
-                    asdfadsf
+                    Thereminasdfadsf
                 ]]>
             </summary>
         <content type="html">
             <![CDATA[
-                <p>asdfadsf</p>
+                <p><a href="lab.bradsingley.com/theremin">Theremin</a>asdfadsf</p>
             ]]>
         </content>
     </entry>
