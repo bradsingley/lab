@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
+    <title>Lab</title>
+    <link href="https://lab.bradsingley.com/feed.xml" rel="self" />
+    <link href="https://lab.bradsingley.com" />
+    <updated>2025-09-03T23:44:05-07:00</updated>
+    <author>
+        <name>Brad Singley</name>
+    </author>
+    <id>https://lab.bradsingley.com</id>
+
+    <entry>
+        <title>Post 2</title>
+        <author>
+            <name>Brad Singley</name>
+        </author>
+        <link href="https://lab.bradsingley.com/post-2.html"/>
+        <id>https://lab.bradsingley.com/post-2.html</id>
+
+        <updated>2025-09-03T23:44:05-07:00</updated>
+            <summary>
+                <![CDATA[
+                    asdfadsf
+                ]]>
+            </summary>
+        <content type="html">
+            <![CDATA[
+                <p>asdfadsf</p>
+            ]]>
+        </content>
+    </entry>
+    <entry>
+        <title>Post 1</title>
+        <author>
+            <name>Brad Singley</name>
+        </author>
+        <link href="https://lab.bradsingley.com/post-1.html"/>
+        <id>https://lab.bradsingley.com/post-1.html</id>
+
+        <updated>2025-09-03T23:43:57-07:00</updated>
+            <summary>
+                <![CDATA[
+                    asdfadf
+                ]]>
+            </summary>
+        <content type="html">
+            <![CDATA[
+                <p>asdfadf</p>
+            ]]>
+        </content>
+    </entry>
+</feed>
