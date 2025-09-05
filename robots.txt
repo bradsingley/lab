@@ -1,3 +1,0 @@
-User-agent: *
-Disallow:
-Sitemap: https://lab.bradsingley.com/sitemap.xml
