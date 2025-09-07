@@ -1,93 +1,19 @@
-// DOM Elements
-const uploadArea = document.getElementById('uploadArea');
-const imageInput = document.getElementById('imageInput');
-const uploadBtn = document.getElementById('uploadBtn');
-const maxWidthInput = document.getElementById('maxWidth');
-const pixelModeSelect = document.getElementById('pixelMode');
-const thresholdInput = document.getElementById('threshold');
-const thresholdValue = document.getElementById('thresholdValue');
-const thresholdSetting = document.getElementById('thresholdSetting');
-const thresholdLabel = document.getElementById('thresholdLabel');
-const contrastInput = document.getElementById('contrast');
-const contrastValue = document.getElementById('contrastValue');
-const contrastSetting = document.getElementById('contrastSetting');
-const cameraArea = document.getElementById('cameraArea');
-const cameraBtn = document.getElementById('cameraBtn');
-const cameraPreview = document.getElementById('cameraPreview');
-const cameraVideo = document.getElementById('cameraVideo');
-const captureBtn = document.getElementById('captureBtn');
-const closeCameraBtn = document.getElementById('closeCameraBtn');
-const captureCanvas = document.getElementById('captureCanvas');
-const previewSection = document.getElementById('previewSection');
-const exportSection = document.getElementById('exportSection');
-const originalCanvas = document.getElementById('originalCanvas');
-const pixelatedCanvas = document.getElementById('pixelatedCanvas');
-const pixelGrid = document.getElementById('pixelGrid');
-const exportExcelBtn = document.getElementById('exportExcelBtn');
-const exportTextBtn = document.getElementById('exportTextBtn');
+// DOM Elements - will be initialized when DOM is loaded
+let uploadArea, imageInput, uploadBtn, maxWidthInput, pixelModeSelect;
+let thresholdInput, thresholdValue, thresholdSetting, thresholdLabel;
+let contrastInput, contrastValue, contrastSetting;
+let grayscaleThresholdInput, grayscaleThresholdValue, grayscaleThresholdSetting;
+let cameraArea, cameraBtn, cameraPreview, cameraVideo;
+let captureBtn, closeCameraBtn, captureCanvas;
+let previewSection, exportSection, originalCanvas, pixelatedCanvas, pixelGrid;
+let exportExcelBtn, exportTextBtn;
 
 // Global variables
 let originalImage = null;
 let pixelatedData = null;
 let isProcessing = false;
 let cameraStream = null;
-
-// Event Listeners
-uploadArea.addEventListener('click', (e) => {
-    // Trigger file input click for any click inside the upload area
-    // unless we're currently processing
-    if (!isProcessing) {
-        imageInput.click();
-    }
-});
-imageInput.addEventListener('change', (e) => {
-    // Only process if files were actually selected
-    if (e.target.files && e.target.files.length > 0) {
-        handleImageUpload();
-    }
-});
-
-// Drag and drop functionality
-uploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadArea.classList.add('dragover');
-});
-
-uploadArea.addEventListener('dragleave', () => {
-    uploadArea.classList.remove('dragover');
-});
-
-uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.classList.remove('dragover');
-    
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-        // Process the dropped file directly without triggering the change event
-        handleImageUpload(files[0]);
-    }
-});
-
-// Settings change listeners
-maxWidthInput.addEventListener('input', processImage);
-pixelModeSelect.addEventListener('change', () => {
-    updateThresholdDisplay();
-    processImage();
-});
-thresholdInput.addEventListener('input', () => {
-    thresholdValue.textContent = thresholdInput.value;
-    processImage();
-});
-contrastInput.addEventListener('input', () => {
-    contrastValue.textContent = parseFloat(contrastInput.value).toFixed(1);
-    processImage();
-});
-
-// Camera event listeners
-cameraArea.addEventListener('click', openCamera);
-cameraBtn.addEventListener('click', openCamera);
-captureBtn.addEventListener('click', capturePhoto);
-closeCameraBtn.addEventListener('click', closeCamera);
+let isOpeningCamera = false;
 
 // Update control visibility based on mode
 function updateThresholdDisplay() {
@@ -95,16 +21,14 @@ function updateThresholdDisplay() {
     if (pixelMode === 'binary') {
         thresholdSetting.style.display = 'flex';
         contrastSetting.style.display = 'none';
+        grayscaleThresholdSetting.style.display = 'none';
         thresholdLabel.textContent = 'Black/White Threshold:';
     } else {
         thresholdSetting.style.display = 'none';
         contrastSetting.style.display = 'flex';
+        grayscaleThresholdSetting.style.display = 'flex';
     }
 }
-
-// Export listeners
-exportExcelBtn.addEventListener('click', exportToExcel);
-exportTextBtn.addEventListener('click', exportAsText);
 
 // Handle image upload
 function handleImageUpload(droppedFile = null) {
@@ -174,8 +98,10 @@ function restoreUploadArea() {
 
 // Camera functionality
 async function openCamera() {
-    if (isProcessing) return;
-    
+    // Guard against double-invocation (e.g., bubbling from button to container)
+    if (isProcessing || cameraStream || isOpeningCamera) return;
+    isOpeningCamera = true;
+
     try {
         const constraints = {
             video: {
@@ -203,6 +129,8 @@ async function openCamera() {
         }
         
         showMessage(errorMessage, 'error');
+    } finally {
+        isOpeningCamera = false;
     }
 }
 
@@ -314,8 +242,9 @@ function processImage() {
                 const isBlack = gray < threshold;
                 row.push(isBlack ? 1 : 0);
             } else {
-                // Grayscale mode: 0-9 with contrast adjustment
+                // Grayscale mode: 0-9 with threshold-based adjustment
                 const contrast = parseFloat(contrastInput.value);
+                const grayscaleThreshold = parseInt(grayscaleThresholdInput.value);
                 
                 // Normalize gray to 0-1 range
                 let normalizedGray = gray / 255;
@@ -328,8 +257,20 @@ function processImage() {
                     normalizedGray = 1 - Math.pow((1 - normalizedGray) / midpoint, contrast) * midpoint;
                 }
                 
-                // Convert to 0-9 scale (inverted so 0=black, 9=white)
-                const grayValue = Math.floor((1 - normalizedGray) * 10);
+                // Apply threshold-based mapping similar to binary but keeping 10 values
+                const thresholdNormalized = grayscaleThreshold / 255;
+                let mappedValue;
+                
+                if (normalizedGray < thresholdNormalized) {
+                    // Below threshold: map to 0-4 range
+                    mappedValue = Math.floor((normalizedGray / thresholdNormalized) * 5);
+                } else {
+                    // Above threshold: map to 5-9 range  
+                    mappedValue = 5 + Math.floor(((normalizedGray - thresholdNormalized) / (1 - thresholdNormalized)) * 5);
+                }
+                
+                // Convert to inverted 0-9 scale (0=black, 9=white)
+                const grayValue = 9 - mappedValue;
                 row.push(Math.min(9, Math.max(0, grayValue)));
             }
         }
@@ -385,33 +326,44 @@ function createPixelGrid() {
     pixelGrid.innerHTML = '';
     const pixelMode = pixelModeSelect.value;
     
-    const table = document.createElement('table');
+    // Create CSS Grid container
+    const gridContainer = document.createElement('div');
+    gridContainer.className = 'pixel-grid-container';
     
+    // Calculate grid dimensions
+    const rows = pixelatedData.length;
+    const cols = pixelatedData[0] ? pixelatedData[0].length : 0;
+    
+    // Set CSS Grid template
+    gridContainer.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+    gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    // Set aspect ratio so the overall grid matches the image aspect
+    // while each cell remains square (1fr x 1fr ensures square cells when aspect matches cols/rows)
+    if (rows > 0 && cols > 0) {
+        gridContainer.style.aspectRatio = `${cols} / ${rows}`;
+    }
+    
+    // Create cells
     for (let y = 0; y < pixelatedData.length; y++) {
-        const row = document.createElement('tr');
-        
         for (let x = 0; x < pixelatedData[y].length; x++) {
-            const cell = document.createElement('td');
+            const cell = document.createElement('div');
+            cell.className = 'pixel-cell';
             const pixelValue = pixelatedData[y][x];
             
             if (pixelMode === 'binary') {
-                cell.className = pixelValue === 1 ? 'black' : 'white';
-                cell.textContent = '';
+                cell.classList.add(pixelValue === 1 ? 'black' : 'white');
             } else {
-                // Grayscale mode: show background color only, no text
-                cell.className = 'grayscale';
-                cell.textContent = '';
+                // Grayscale mode: show background color
+                cell.classList.add('grayscale');
                 const grayLevel = 255 - (pixelValue * 25.5);
                 cell.style.backgroundColor = `rgb(${grayLevel}, ${grayLevel}, ${grayLevel})`;
             }
             
-            row.appendChild(cell);
+            gridContainer.appendChild(cell);
         }
-        
-        table.appendChild(row);
     }
     
-    pixelGrid.appendChild(table);
+    pixelGrid.appendChild(gridContainer);
 }
 
 // Export to Excel (CSV)
@@ -501,6 +453,123 @@ function showMessage(message, type = 'success') {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize DOM elements
+    uploadArea = document.getElementById('uploadArea');
+    imageInput = document.getElementById('imageInput');
+    uploadBtn = document.getElementById('uploadBtn');
+    maxWidthInput = document.getElementById('maxWidth');
+    pixelModeSelect = document.getElementById('pixelMode');
+    thresholdInput = document.getElementById('threshold');
+    thresholdValue = document.getElementById('thresholdValue');
+    thresholdSetting = document.getElementById('thresholdSetting');
+    thresholdLabel = document.getElementById('thresholdLabel');
+    contrastInput = document.getElementById('contrast');
+    contrastValue = document.getElementById('contrastValue');
+    contrastSetting = document.getElementById('contrastSetting');
+    grayscaleThresholdInput = document.getElementById('grayscaleThreshold');
+    grayscaleThresholdValue = document.getElementById('grayscaleThresholdValue');
+    grayscaleThresholdSetting = document.getElementById('grayscaleThresholdSetting');
+    cameraArea = document.getElementById('cameraArea');
+    cameraBtn = document.getElementById('cameraBtn');
+    cameraPreview = document.getElementById('cameraPreview');
+    cameraVideo = document.getElementById('cameraVideo');
+    captureBtn = document.getElementById('captureBtn');
+    closeCameraBtn = document.getElementById('closeCameraBtn');
+    captureCanvas = document.getElementById('captureCanvas');
+    previewSection = document.getElementById('previewSection');
+    exportSection = document.getElementById('exportSection');
+    originalCanvas = document.getElementById('originalCanvas');
+    pixelatedCanvas = document.getElementById('pixelatedCanvas');
+    pixelGrid = document.getElementById('pixelGrid');
+    exportExcelBtn = document.getElementById('exportExcelBtn');
+    exportTextBtn = document.getElementById('exportTextBtn');
+
+    // Set up event listeners
+    uploadArea.addEventListener('click', (e) => {
+        // Trigger file input click for any click inside the upload area
+        // unless we're currently processing
+        if (!isProcessing) {
+            imageInput.click();
+        }
+    });
+
+    imageInput.addEventListener('change', (e) => {
+        // Only process if files were actually selected
+        if (e.target.files && e.target.files.length > 0) {
+            handleImageUpload();
+        }
+    });
+
+    // Drag and drop functionality
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            // Process the dropped file directly without triggering the change event
+            handleImageUpload(files[0]);
+        }
+    });
+
+    // Settings change listeners
+    maxWidthInput.addEventListener('input', processImage);
+    pixelModeSelect.addEventListener('change', () => {
+        updateThresholdDisplay();
+        processImage();
+    });
+    thresholdInput.addEventListener('input', () => {
+        thresholdValue.textContent = thresholdInput.value;
+        processImage();
+    });
+    contrastInput.addEventListener('input', () => {
+        contrastValue.textContent = parseFloat(contrastInput.value).toFixed(1);
+        processImage();
+    });
+
+    grayscaleThresholdInput.addEventListener('input', () => {
+        grayscaleThresholdValue.textContent = grayscaleThresholdInput.value;
+        if (originalImage) {
+            processImage();
+        }
+    });
+
+    // Keep compatibility with blackPointInput if it exists
+    const blackPointInput = document.getElementById('blackPoint');
+    const blackPointValue = document.getElementById('blackPointValue');
+    if (blackPointInput && blackPointValue) {
+        blackPointInput.addEventListener('input', () => {
+            blackPointValue.textContent = blackPointInput.value;
+            if (originalImage) {
+                processImage();
+            }
+        });
+    }
+
+    // Camera event listeners
+    cameraArea.addEventListener('click', openCamera);
+    // Prevent bubbling from the button to the area causing double-open
+    cameraBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openCamera();
+    });
+    captureBtn.addEventListener('click', capturePhoto);
+    closeCameraBtn.addEventListener('click', closeCamera);
+
+    // Export listeners
+    exportExcelBtn.addEventListener('click', exportToExcel);
+    exportTextBtn.addEventListener('click', exportAsText);
+
     // Set initial threshold value
     thresholdValue.textContent = thresholdInput.value;
     
