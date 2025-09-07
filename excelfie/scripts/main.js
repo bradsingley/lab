@@ -579,6 +579,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set initial control display
     updateThresholdDisplay();
     
-    // Add some helpful instructions
-    showMessage('Upload an image to get started!', 'success');
+    // Removed auto instruction message on load
 }); 
