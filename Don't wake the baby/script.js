@@ -12,8 +12,8 @@ class BabyGame {
         this.stateStartTime = 0;
         this.currentVolume = 0;
         this.volumeThreshold = {
-            warning: 25,   // 25% of volume meter
-            danger: 40     // 40% of volume meter
+            warning: 20,   // 20% of volume meter
+            danger: 30     // 30% of volume meter
         };
         
         this.elements = {

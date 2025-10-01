@@ -122,11 +122,11 @@ body {
 }
 
 .volume-threshold.halfway {
-    left: 25%;
+    left: 20%;
 }
 
 .volume-threshold.danger {
-    left: 40%;
+    left: 30%;
 }
 
 .volume-label {
