@@ -89,6 +89,7 @@ body {
     transform: translateX(-50%);
     z-index: 10;
     text-align: center;
+    display: none;
 }
 
 .volume-meter {
@@ -135,7 +136,7 @@ body {
 
 .start-button {
     position: fixed;
-    bottom: 20px;
+    bottom: 80px;
     left: 50%;
     transform: translateX(-50%);
     background: linear-gradient(135deg, #8b0000, #dc143c, #b22222);
@@ -207,32 +208,9 @@ body {
     .volume-meter-container {
         bottom: 60px;
     }
-}
-
-/* Sound pulse and distortion effects */
-.sound-pulse {
-    position: absolute;
-    pointer-events: none;
-    z-index: 15;
-    opacity: 1;
-}
-
-@keyframes soundDistort {
-    0%, 100% {
-        filter: blur(0px) hue-rotate(0deg) saturate(1);
-        transform: scale(1);
-    }
-    25% {
-        filter: blur(3px) hue-rotate(15deg) saturate(1.8);
-        transform: scale(1.02);
-    }
-    50% {
-        filter: blur(1px) hue-rotate(-10deg) saturate(0.8);
-        transform: scale(0.98);
-    }
-    75% {
-        filter: blur(4px) hue-rotate(25deg) saturate(2);
-        transform: scale(1.01);
+    
+    .start-button {
+        bottom: 60px;
     }
 }
 
@@ -358,6 +336,7 @@ body {
     .start-button {
         padding: 12px 24px;
         font-size: 16px;
+        bottom: 60px;
     }
     
     .text-container {
@@ -365,6 +344,6 @@ body {
     }
     
     .volume-meter-container {
-        bottom: 50px;
+        bottom: 60px;
     }
 }

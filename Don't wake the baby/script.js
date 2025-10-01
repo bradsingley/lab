@@ -176,7 +176,9 @@ class BabyGame {
             // Start playing lullaby
             this.playLullaby();
             
+            // Hide start button and show volume meter
             this.elements.startButton.style.display = 'none';
+            document.querySelector('.volume-meter-container').style.display = 'block';
         } catch (error) {
             this.showError('Could not access microphone. Please allow microphone access and try again.');
             this.elements.startButton.disabled = false;
