@@ -16,6 +16,9 @@ class BabyGame {
             danger: 30     // 30% of volume meter
         };
         
+        this.isDragging = false;
+        this.dragElement = null;
+        
         this.elements = {
             babyImage: document.getElementById('baby-image'),
             gameText: document.getElementById('game-text'),
@@ -46,6 +49,7 @@ class BabyGame {
         this.elements.startButton.addEventListener('click', () => this.startGame());
         this.preloadImages();
         this.initAudioElements();
+        this.initDraggableThresholds();
     }
     
     initAudioElements() {
@@ -108,6 +112,90 @@ class BabyGame {
         this.elements.lullabyAudio.pause();
         this.elements.screamAudio.pause();
         this.elements.shhAudio.pause();
+    }
+    
+    initDraggableThresholds() {
+        const warningThreshold = document.querySelector('.volume-threshold.halfway');
+        const dangerThreshold = document.querySelector('.volume-threshold.danger');
+        
+        // Set initial data attributes
+        this.updateThresholdDisplay();
+        
+        // Add mouse event listeners
+        [warningThreshold, dangerThreshold].forEach(threshold => {
+            threshold.addEventListener('mousedown', (e) => this.startDrag(e, threshold));
+        });
+        
+        document.addEventListener('mousemove', (e) => this.onDrag(e));
+        document.addEventListener('mouseup', () => this.stopDrag());
+        
+        // Add touch event listeners for mobile
+        [warningThreshold, dangerThreshold].forEach(threshold => {
+            threshold.addEventListener('touchstart', (e) => this.startDrag(e, threshold));
+        });
+        
+        document.addEventListener('touchmove', (e) => this.onDrag(e));
+        document.addEventListener('touchend', () => this.stopDrag());
+    }
+    
+    startDrag(e, element) {
+        e.preventDefault();
+        this.isDragging = true;
+        this.dragElement = element;
+        element.style.zIndex = '25';
+    }
+    
+    onDrag(e) {
+        if (!this.isDragging || !this.dragElement) return;
+        
+        e.preventDefault();
+        const volumeMeter = document.querySelector('.volume-meter');
+        const rect = volumeMeter.getBoundingClientRect();
+        
+        // Get mouse/touch position
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        
+        // Calculate percentage within the volume meter
+        let percentage = ((clientX - rect.left) / rect.width) * 100;
+        percentage = Math.max(0, Math.min(100, percentage)); // Clamp to 0-100%
+        
+        // Update threshold based on which element is being dragged
+        const isWarning = this.dragElement.classList.contains('halfway');
+        const isDanger = this.dragElement.classList.contains('danger');
+        
+        if (isWarning) {
+            // Ensure warning threshold doesn't exceed danger threshold
+            percentage = Math.min(percentage, this.volumeThreshold.danger - 1);
+            this.volumeThreshold.warning = Math.max(1, percentage);
+            this.dragElement.style.left = `calc(${this.volumeThreshold.warning}% - 6px)`;
+        } else if (isDanger) {
+            // Ensure danger threshold doesn't go below warning threshold
+            percentage = Math.max(percentage, this.volumeThreshold.warning + 1);
+            this.volumeThreshold.danger = Math.min(99, percentage);
+            this.dragElement.style.left = `calc(${this.volumeThreshold.danger}% - 6px)`;
+        }
+        
+        this.updateThresholdDisplay();
+    }
+    
+    stopDrag() {
+        if (this.dragElement) {
+            this.dragElement.style.zIndex = '20';
+        }
+        this.isDragging = false;
+        this.dragElement = null;
+    }
+    
+    updateThresholdDisplay() {
+        const warningThreshold = document.querySelector('.volume-threshold.halfway');
+        const dangerThreshold = document.querySelector('.volume-threshold.danger');
+        
+        if (warningThreshold) {
+            warningThreshold.setAttribute('data-percent', Math.round(this.volumeThreshold.warning));
+        }
+        if (dangerThreshold) {
+            dangerThreshold.setAttribute('data-percent', Math.round(this.volumeThreshold.danger));
+        }
     }
     
     preloadImages() {
@@ -386,14 +474,14 @@ class BabyGame {
     }
 }
 
-// Initialize the game when the page loads
+// Initialize the game when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     new BabyGame();
 });
 
 // Handle page visibility changes (pause when tab is not visible)
 document.addEventListener('visibilitychange', () => {
-    if (document.hidden && window.babyGame) {
+    if (document.hidden && babyGame) {
         // Could pause the game here if needed
     }
 });

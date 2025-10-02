@@ -8,15 +8,9 @@
 </head>
 <body>
     <div class="game-container">
-        <audio id="lullaby-audio" loop preload="auto">
-            <source src="lullaby.mp3" type="audio/mpeg">
-        </audio>
-        <audio id="scream-audio" preload="auto">
-            <source src="scream.m4a" type="audio/mpeg">
-        </audio>
-        <audio id="shh-audio" preload="auto">
-            <source src="shh.mp3" type="audio/mpeg">
-        </audio>
+        <div class="volume-reminder">
+            <p>🔊 Turn up your volume for the best experience!</p>
+        </div>
         
         <div class="image-container">
             <img id="baby-image" src="images/closedeyes.jpg" alt="Baby">
@@ -37,6 +31,17 @@
         
         <button id="start-button" class="start-button">Start Game</button>
         <div id="error-message" class="error-message" style="display: none;"></div>
+        
+        <!-- Audio elements with no preload -->
+        <audio id="lullaby-audio" loop preload="auto">
+            <source src="lullaby.m4a" type="audio/mp4">
+        </audio>
+        <audio id="scream-audio" preload="auto">
+            <source src="scream.m4a" type="audio/mp4">
+        </audio>
+        <audio id="shh-audio" preload="auto">
+            <source src="shh.mp3" type="audio/mpeg">
+        </audio>
     </div>
     
     <script src="script.js"></script>
