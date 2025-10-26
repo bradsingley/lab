@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Icons</title>
+</head>
+<body>
+    <canvas id="canvas16" width="16" height="16"></canvas>
+    <canvas id="canvas48" width="48" height="48"></canvas>
+    <canvas id="canvas128" width="128" height="128"></canvas>
+    <script>
+        function drawAce(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+            
+            ctx.fillStyle = '#000000';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = size / 32;
+            
+            // Draw spade symbol
+            ctx.beginPath();
+            const cx = size / 2;
+            const cy = size / 2;
+            const scale = size / 128;
+            
+            // Heart of spade (upside down heart)
+            ctx.moveTo(cx, cy - 20 * scale);
+            ctx.bezierCurveTo(cx - 25 * scale, cy - 40 * scale, cx - 45 * scale, cy - 30 * scale, cx - 35 * scale, cy);
+            ctx.bezierCurveTo(cx - 25 * scale, cy + 10 * scale, cx - 15 * scale, cy + 5 * scale, cx, cy + 30 * scale);
+            ctx.bezierCurveTo(cx + 15 * scale, cy + 5 * scale, cx + 25 * scale, cy + 10 * scale, cx + 35 * scale, cy);
+            ctx.bezierCurveTo(cx + 45 * scale, cy - 30 * scale, cx + 25 * scale, cy - 40 * scale, cx, cy - 20 * scale);
+            ctx.fill();
+            
+            // Stem
+            ctx.fillRect(cx - 5 * scale, cy + 20 * scale, 10 * scale, 15 * scale);
+            
+            // Draw "A" at the top
+            ctx.font = `bold ${size / 3}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText('A', cx, 2 * scale);
+        }
+        
+        drawAce(document.getElementById('canvas16'), 16);
+        drawAce(document.getElementById('canvas48'), 48);
+        drawAce(document.getElementById('canvas128'), 128);
+        
+        // Download links
+        ['16', '48', '128'].forEach(size => {
+            const canvas = document.getElementById('canvas' + size);
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'icon' + size + '.png';
+                a.textContent = 'Download ' + size + 'x' + size;
+                a.style.display = 'block';
+                a.style.margin = '10px';
+                document.body.appendChild(a);
+            });
+        });
+    </script>
+</body>
+</html>

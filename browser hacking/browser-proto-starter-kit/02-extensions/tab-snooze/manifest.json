@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Snooze",
+  "version": "1.0",
+  "description": "Snooze tabs and reopen them later with alarms",
+
+  "permissions": ["tabs", "alarms", "storage", "contextMenus", "action"],
+
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Tab Snooze"
+  }
+}

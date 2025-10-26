@@ -1,0 +1,204 @@
+/* Yearbook Page Styles */
+
+/* CSS Custom Properties for Theme Support */
+:root {
+    --color-bg: #ffffff;
+    --color-text: #3b393c;
+    --color-border: #3b393c;
+    --color-photo-frame: #3b393c;
+    --shadow-color: rgba(0, 0, 0, 0.14);
+    --shadow-ambient: rgba(0, 0, 0, 0.12);
+    --font-primary: 'Futura', 'Trebuchet MS', Arial, sans-serif;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-bg: #1a1a1a;
+        --color-text: #e0e0e0;
+        --color-border: #e0e0e0;
+        --color-photo-frame: #e0e0e0;
+        --shadow-color: rgba(255, 255, 255, 0.1);
+        --shadow-ambient: rgba(255, 255, 255, 0.05);
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    :root {
+        --color-bg: #ffffff;
+        --color-text: #000000;
+        --color-border: #000000;
+        --color-photo-frame: #000000;
+    }
+}
+
+@media (prefers-contrast: high) and (prefers-color-scheme: dark) {
+    :root {
+        --color-bg: #000000;
+        --color-text: #ffffff;
+        --color-border: #ffffff;
+        --color-photo-frame: #ffffff;
+    }
+}
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-primary);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.4;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Container */
+.container {
+    min-height: 100vh;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    box-shadow: 
+        0px 6.545px 13.091px 0px var(--shadow-color),
+        0px 0px 3.273px 0px var(--shadow-ambient);
+}
+
+/* Main Header */
+.main-title {
+    font-size: clamp(3rem, 16vw, 14.375rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    text-align: center;
+    margin-bottom: 1rem;
+    line-height: 0.9;
+}
+
+/* Info Section */
+.info-section {
+    border-top: 2px solid var(--color-border);
+    border-bottom: 2px solid var(--color-border);
+    padding: 1.5rem 0;
+    margin-bottom: 3rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    font-size: clamp(1rem, 2.5vw, 2rem);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.info-label {
+    font-weight: 700;
+}
+
+/* Photo Section */
+.photo-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
+}
+
+.photo-frame {
+    background-color: var(--color-photo-frame);
+    padding: clamp(1rem, 3vw, 3rem);
+    max-width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.photo {
+    width: 100%;
+    height: auto;
+    max-width: 576px;
+    display: block;
+    filter: grayscale(1) contrast(1.1);
+}
+
+/* Bottom Section Placeholder */
+.bottom-section {
+    border-top: 1px solid var(--color-border);
+    padding-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.placeholder-box {
+    aspect-ratio: 4/3;
+    background-color: var(--color-border);
+    opacity: 0.3;
+}
+
+/* Responsive Design */
+@media (min-width: 48rem) {
+    .container {
+        padding: 3rem 4rem;
+    }
+
+    .info-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+    }
+
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .main-title {
+        text-align: left;
+        margin-bottom: 1.5rem;
+    }
+}
+
+@media (min-width: 64rem) {
+    .container {
+        padding: 4rem;
+    }
+
+    .photo-frame {
+        padding: 3rem;
+    }
+}
+
+/* Focus Styles for Accessibility */
+*:focus {
+    outline: 2px solid var(--color-text);
+    outline-offset: 2px;
+}
+
+/* High Motion Preference Respect */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .container {
+        box-shadow: none;
+        max-width: none;
+    }
+    
+    .photo {
+        filter: none;
+    }
+}

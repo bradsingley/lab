@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bradford - Product Designer</title>
+    <style>
+        /* CSS Custom Properties for Theme Support */
+        :root {
+            --color-bg: #ffffff;
+            --color-text: #3b393c;
+            --color-border: #3b393c;
+            --color-photo-frame: #3b393c;
+            --shadow-color: rgba(0, 0, 0, 0.14);
+            --shadow-ambient: rgba(0, 0, 0, 0.12);
+        }
+
+        /* Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-bg: #1a1a1a;
+                --color-text: #e0e0e0;
+                --color-border: #e0e0e0;
+                --color-photo-frame: #e0e0e0;
+                --shadow-color: rgba(255, 255, 255, 0.1);
+                --shadow-ambient: rgba(255, 255, 255, 0.05);
+            }
+        }
+
+        /* High Contrast Mode */
+        @media (prefers-contrast: high) {
+            :root {
+                --color-bg: #ffffff;
+                --color-text: #000000;
+                --color-border: #000000;
+                --color-photo-frame: #000000;
+            }
+        }
+
+        @media (prefers-contrast: high) and (prefers-color-scheme: dark) {
+            :root {
+                --color-bg: #000000;
+                --color-text: #ffffff;
+                --color-border: #ffffff;
+                --color-photo-frame: #ffffff;
+            }
+        }
+
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Futura', 'Trebuchet MS', Arial, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.4;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Container */
+        .container {
+            min-height: 100vh;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            box-shadow: 
+                0px 6.545px 13.091px 0px var(--shadow-color),
+                0px 0px 3.273px 0px var(--shadow-ambient);
+        }
+
+        /* Main Header */
+        .main-title {
+            font-size: clamp(3rem, 16vw, 14.375rem);
+            font-weight: 800;
+            letter-spacing: -0.06em;
+            text-align: center;
+            margin-bottom: 1rem;
+            line-height: 0.9;
+        }
+
+        /* Info Section */
+        .info-section {
+            border-top: 2px solid var(--color-border);
+            border-bottom: 2px solid var(--color-border);
+            padding: 1.5rem 0;
+            margin-bottom: 3rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            font-size: clamp(1rem, 2.5vw, 2rem);
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .info-label {
+            font-weight: 700;
+        }
+
+        /* Photo Section */
+        .photo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .photo-frame {
+            background-color: var(--color-photo-frame);
+            padding: clamp(1rem, 3vw, 3rem);
+            max-width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        .photo {
+            width: 100%;
+            height: auto;
+            max-width: 576px;
+            display: block;
+            filter: grayscale(1) contrast(1.1);
+        }
+
+        /* Bottom Section Placeholder */
+        .bottom-section {
+            border-top: 1px solid var(--color-border);
+            padding-top: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .placeholder-box {
+            aspect-ratio: 4/3;
+            background-color: var(--color-border);
+            opacity: 0.3;
+        }
+
+        /* Responsive Design */
+        @media (min-width: 48rem) {
+            .container {
+                padding: 3rem 4rem;
+            }
+
+            .info-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 2rem;
+            }
+
+            .info-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+
+            .main-title {
+                text-align: left;
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        @media (min-width: 64rem) {
+            .container {
+                padding: 4rem;
+            }
+
+            .photo-frame {
+                padding: 3rem;
+            }
+        }
+
+        /* Focus Styles for Accessibility */
+        *:focus {
+            outline: 2px solid var(--color-text);
+            outline-offset: 2px;
+        }
+
+        /* High Motion Preference Respect */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .container {
+                box-shadow: none;
+                max-width: none;
+            }
+            
+            .photo {
+                filter: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1 class="main-title">BRADFORD</h1>
+        </header>
+
+        <section class="info-section" aria-label="Personal Information">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">SEATTLE, WA</span>
+                </div>
+                <div class="info-item">
+                    <span>PRODUCT DESIGNER</span>
+                    <span>CREATIVE STRATEGIST</span>
+                </div>
+                <div class="info-item">
+                    <span>SEARCH</span>
+                    <span>CONTENT FEEDS</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="photo-container" aria-label="Profile Photo">
+            <div class="photo-frame">
+                <img 
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='576' height='576' viewBox='0 0 576 576'%3E%3Crect width='576' height='576' fill='%23cccccc'/%3E%3Ctext x='288' y='300' font-family='Arial, sans-serif' font-size='18' fill='%23666' text-anchor='middle'%3EProfile Photo%3C/text%3E%3C/svg%3E"
+                    alt="Bradford's profile photo - outdoor mountain setting"
+                    class="photo"
+                    loading="lazy"
+                />
+            </div>
+        </section>
+
+        <section class="bottom-section" aria-label="Additional Content">
+            <div class="placeholder-box" aria-hidden="true"></div>
+            <div class="placeholder-box" aria-hidden="true"></div>
+            <div class="placeholder-box" aria-hidden="true"></div>
+        </section>
+    </main>
+
+    <script>
+        // Minimal JavaScript for enhanced accessibility
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add keyboard navigation enhancement for focus management
+            const focusableElements = document.querySelectorAll('a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])');
+            
+            // Ensure proper focus order and visibility
+            focusableElements.forEach(element => {
+                element.addEventListener('focus', function() {
+                    this.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                });
+            });
+
+            // Add high contrast detection and manual override if needed
+            if (window.matchMedia) {
+                const prefersHighContrast = window.matchMedia('(prefers-contrast: high)');
+                const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+                
+                // Log theme preferences for debugging (remove in production)
+                console.log('High contrast preferred:', prefersHighContrast.matches);
+                console.log('Dark mode preferred:', prefersDarkMode.matches);
+            }
+        });
+    </script>
+</body>
+</html>
