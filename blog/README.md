@@ -1,6 +1,6 @@
-# Blog CMS with Supabase
+# Experiments with Supabase
 
-A secure, cloud-based Content Management System for managing blog posts with authentication and image uploads.
+A secure, cloud-based Content Management System for managing experiments with authentication and image uploads.
 
 ## Features
 
@@ -16,9 +16,9 @@ A secure, cloud-based Content Management System for managing blog posts with aut
 ## Files
 
 - `index.html` - Admin panel (requires authentication)
-- `blog.html` - Public blog view (no authentication required)
+- `blog.html` - Public experiments view (no authentication required)
 - `admin.js` - Admin functionality
-- `blog.js` - Public blog functionality
+- `blog.js` - Public experiments functionality
 - `styles.css` - Admin styling
 - `blog-styles.css` - Public blog styling
 - `supabase-config.js` - Supabase configuration
@@ -43,7 +43,7 @@ A secure, cloud-based Content Management System for managing blog posts with aut
 4. Choose between external links or written content
 5. Manage all posts (edit/delete)
 
-### Public Blog (blog.html)
+### Public Experiments (blog.html)
 - No authentication required
 - Shows all published posts
 - Visitors can click external links

@@ -1,6 +1,6 @@
 # Supabase Setup Instructions
 
-Follow these steps to set up your blog CMS with Supabase:
+Follow these steps to set up your experiments site with Supabase:
 
 ## 1. Create a Supabase Account
 
@@ -116,17 +116,17 @@ CREATE POLICY "Allow authenticated users to delete images"
 4. Enter your email and create a password
 5. Click **Create user**
 
-## 6. Test Your CMS
+## 6. Test Your Site
 
 1. Open `index.html` in a web browser
 2. Sign in with the email and password you created
 3. Add a test post
-4. Open `blog.html` to see the public blog view
+4. Open `blog.html` to see the public experiments view
 
 ## Notes
 
 - The admin page (`index.html`) requires authentication
-- The blog page (`blog.html`) is public and shows all posts
+- The experiments page (`blog.html`) is public and shows all posts
 - URLs don't require `http://` - they'll be automatically added
 - Images can be uploaded or linked via URL
 - All data is stored in Supabase
