@@ -99,6 +99,15 @@ body {
     line-height: 1.4;
 }
 
+.hidden-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 1px;
+    height: 1px;
+    left: -9999px;
+}
+
 .instructions {
     position: fixed;
     bottom: 30px;
@@ -110,6 +119,7 @@ body {
     padding: 10px 20px;
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: 20px;
+    cursor: pointer;
 }
 
 /* Animations */

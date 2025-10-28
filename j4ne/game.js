@@ -86,12 +86,41 @@ function startGame() {
 
 // Setup keyboard listeners
 function setupKeyboardListeners() {
+    const hiddenInput = document.getElementById('hiddenInput');
+    const instructions = document.querySelector('.instructions');
+    
+    // Focus hidden input to trigger keyboard on mobile
+    function focusInput() {
+        hiddenInput.focus();
+    }
+    
+    // Auto-focus on page load (may not work on all mobile browsers)
+    setTimeout(focusInput, 100);
+    
+    // Focus when user taps anywhere
+    document.addEventListener('click', focusInput);
+    document.addEventListener('touchstart', focusInput);
+    
+    // Listen to keyboard events
     document.addEventListener('keydown', (e) => {
         const key = e.key.toLowerCase();
         
         // Check if it's a letter
         if (letters.includes(key) && !isPlaying) {
             playVideo(key);
+        }
+    });
+    
+    // Also listen to input changes for mobile
+    hiddenInput.addEventListener('input', (e) => {
+        const value = e.target.value;
+        if (value.length > 0) {
+            const key = value.charAt(value.length - 1).toLowerCase();
+            if (letters.includes(key) && !isPlaying) {
+                playVideo(key);
+            }
+            // Clear input for next letter
+            hiddenInput.value = '';
         }
     });
 }
