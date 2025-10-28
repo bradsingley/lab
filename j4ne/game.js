@@ -134,7 +134,7 @@ function playVideo(letter) {
 // Show caption for the letter
 function showCaption(letter) {
     const text = captions[letter] || `Letter ${letter.toUpperCase()}`;
-    caption.textContent = text;
+    caption.innerHTML = text;
     
     // Trigger animation by removing and re-adding
     caption.style.animation = 'none';
@@ -143,9 +143,6 @@ function showCaption(letter) {
     }, 10);
 }
 
-// Initialize
-console.log('Starting alphabet game...');
-// Skip preloading, start game immediately
 // Initialize
 console.log('Starting alphabet game...');
 setupKeyboardListeners();
