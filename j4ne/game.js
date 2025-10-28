@@ -127,6 +127,8 @@ function setupKeyboardListeners() {
 
 // Play video for the pressed key
 function playVideo(letter) {
+    const hiddenInput = document.getElementById('hiddenInput');
+    
     // Check if this letter has a video file
     if (!availableVideos.includes(letter)) {
         console.warn(`No video for ${letter}`);
@@ -147,11 +149,17 @@ function playVideo(letter) {
     videoPlayer.play().catch(err => {
         console.error('Error playing video:', err);
         isPlaying = false;
+        hiddenInput.focus(); // Refocus on error
     });
     
     // Reset when video ends
     videoPlayer.onended = () => {
         isPlaying = false;
+        // Clear video and refocus input to bring keyboard back
+        videoPlayer.src = '';
+        videoPlayer.load();
+        caption.innerHTML = '';
+        hiddenInput.focus();
     };
     
     // Also allow interrupting
