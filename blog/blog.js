@@ -31,21 +31,27 @@ async function renderPosts() {
             day: 'numeric'
         });
         
-        const isClickable = post.type === 'external' ? 'clickable' : '';
-        const linkIndicator = post.type === 'external' ? '<div class="post-link-indicator">🔗 Read more →</div>' : '';
-        const contentDisplay = post.type === 'content' ? `<div class="post-content">${post.content}</div>` : '';
-        
-        return `
-            <div class="post-item ${isClickable}" ${post.type === 'external' ? `onclick="window.open('${post.external_link}', '_blank')"` : ''}>
-                <img src="${post.thumbnail}" alt="${post.title}" class="post-thumbnail">
-                <div class="post-info">
-                    <div class="post-title">${post.title}</div>
-                    <div class="post-date">${formattedDate}</div>
-                    ${contentDisplay}
-                    ${linkIndicator}
+        // If it's an external link, make it clickable
+        if (post.type === 'external') {
+            return `
+                <a href="${post.external_link}" target="_blank" class="post-item">
+                    <div class="post-content-wrapper">
+                        <h2 class="post-title">${post.title}</h2>
+                        <div class="post-date">${formattedDate}</div>
+                    </div>
+                </a>
+            `;
+        } else {
+            // For content posts, link to a detail page or show inline
+            return `
+                <div class="post-item" onclick="alert('${post.content.replace(/'/g, "\\'")}')">
+                    <div class="post-content-wrapper">
+                        <h2 class="post-title">${post.title}</h2>
+                        <div class="post-date">${formattedDate}</div>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
     }).join('');
 }
 

@@ -1,0 +1,30 @@
+// Captions for each letter video
+// Replace these placeholder texts with your actual captions
+export const captions = {
+    a: "A is for Adventure - exploring new horizons",
+    b: "B is for Believe - in yourself and your dreams",
+    c: "C is for Create - something beautiful today",
+    d: "D is for Dream - big and dare to achieve",
+    e: "E is for Explore - the world around you",
+    f: "F is for Freedom - to be yourself",
+    g: "G is for Grow - stronger every day",
+    h: "H is for Hope - that guides us forward",
+    i: "I is for Inspire - others with your actions",
+    j: "J is for Journey - enjoy every moment",
+    k: "K is for Kindness - spread it everywhere",
+    l: "L is for Learn - something new always",
+    m: "M is for Magic - in everyday moments",
+    n: "N is for Nature - beauty all around",
+    o: "O is for Opportunity - seize the day",
+    p: "P is for Passion - pursue what you love",
+    q: "Q is for Question - seek understanding",
+    r: "R is for Resilience - bounce back stronger",
+    s: "S is for Smile - brighten someone's day",
+    t: "T is for Transform - become your best self",
+    u: "U is for Unity - together we're stronger",
+    v: "V is for Vision - see the possibilities",
+    w: "W is for Wonder - marvel at the world",
+    x: "X is for eXcellence - strive for greatness",
+    y: "Y is for Yes - say yes to new experiences",
+    z: "Z is for Zest - live life with enthusiasm"
+};

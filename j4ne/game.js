@@ -1,0 +1,152 @@
+import { captions } from './captions.js';
+
+// Configuration
+const VIDEO_PATH = 'videos/';
+// Only include letters that have video files
+const availableVideos = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'p'];
+const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+// DOM elements
+const gameScreen = document.getElementById('gameScreen');
+const videoPlayer = document.getElementById('videoPlayer');
+const caption = document.getElementById('caption');
+
+// Video cache
+const videoCache = {};
+let isPlaying = false;
+
+// Preload all videos
+async function preloadVideos() {
+    let loaded = 0;
+    const total = availableVideos.length;
+
+    console.log(`Starting to load ${total} videos...`);
+
+    for (const letter of availableVideos) {
+        console.log(`Loading ${letter}.mp4...`);
+        try {
+            const video = document.createElement('video');
+            video.preload = 'auto';
+            video.src = `${VIDEO_PATH}${letter}.mp4`;
+            
+            // Wait for video to be loadable
+            await new Promise((resolve) => {
+                video.addEventListener('canplaythrough', () => {
+                    videoCache[letter] = video;
+                    loaded++;
+                    console.log(`Loaded ${letter}.mp4 (${loaded}/${total})`);
+                    updateProgress(loaded, total);
+                    resolve();
+                }, { once: true });
+                
+                video.addEventListener('error', (e) => {
+                    console.error(`Failed to load ${letter}.mp4:`, e);
+                    loaded++;
+                    updateProgress(loaded, total);
+                    resolve(); // Continue even if video fails
+                }, { once: true });
+                
+                // Timeout after 3 seconds
+                setTimeout(() => {
+                    if (!videoCache[letter]) {
+                        console.warn(`Timeout loading ${letter}.mp4`);
+                        loaded++;
+                        updateProgress(loaded, total);
+                        resolve();
+                    }
+                }, 3000);
+            });
+        } catch (error) {
+            console.error(`Error preloading ${letter}.mp4:`, error);
+            loaded++;
+            updateProgress(loaded, total);
+        }
+    }
+
+    console.log('All videos loaded or timed out');
+    // All videos loaded (or attempted)
+    startGame();
+}
+
+// Update loading progress
+function updateProgress(loaded, total) {
+    const percentage = Math.round((loaded / total) * 100);
+    progressFill.style.width = `${percentage}%`;
+    loadingText.textContent = `${percentage}%`;
+}
+
+// Start the game
+function startGame() {
+    setTimeout(() => {
+        loadingScreen.style.display = 'none';
+        gameScreen.style.display = 'flex';
+        setupKeyboardListeners();
+    }, 500);
+}
+
+// Setup keyboard listeners
+function setupKeyboardListeners() {
+    document.addEventListener('keydown', (e) => {
+        const key = e.key.toLowerCase();
+        
+        // Check if it's a letter
+        if (letters.includes(key) && !isPlaying) {
+            playVideo(key);
+        }
+    });
+}
+
+// Play video for the pressed key
+function playVideo(letter) {
+    // Check if this letter has a video file
+    if (!availableVideos.includes(letter)) {
+        console.warn(`No video for ${letter}`);
+        showCaption(letter);
+        return;
+    }
+
+    isPlaying = true;
+    
+    // Load and play video directly
+    videoPlayer.src = `${VIDEO_PATH}${letter}.mp4`;
+    videoPlayer.load();
+    
+    // Show caption
+    showCaption(letter);
+    
+    // Play video
+    videoPlayer.play().catch(err => {
+        console.error('Error playing video:', err);
+        isPlaying = false;
+    });
+    
+    // Reset when video ends
+    videoPlayer.onended = () => {
+        isPlaying = false;
+    };
+    
+    // Also allow interrupting
+    setTimeout(() => {
+        isPlaying = false;
+    }, 500);
+}
+
+// Show caption for the letter
+function showCaption(letter) {
+    const text = captions[letter] || `Letter ${letter.toUpperCase()}`;
+    caption.textContent = text;
+    
+    // Trigger animation by removing and re-adding
+    caption.style.animation = 'none';
+    setTimeout(() => {
+        caption.style.animation = '';
+    }, 10);
+}
+
+// Initialize
+console.log('Starting alphabet game...');
+// Skip preloading, start game immediately
+// Initialize
+console.log('Starting alphabet game...');
+setupKeyboardListeners();
+console.log('Keyboard listeners set up. Press any letter key!');
