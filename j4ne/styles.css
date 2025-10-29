@@ -140,6 +140,11 @@ body {
 
 /* Responsive */
 @media (max-width: 768px) {
+    .game-screen {
+        justify-content: flex-start;
+        padding-top: 80px;
+    }
+    
     .video-player {
         max-height: 60vh;
     }
