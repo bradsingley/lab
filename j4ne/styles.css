@@ -117,24 +117,26 @@ body {
 
 .caption {
     position: absolute;
-    bottom: 100px;
+    bottom: 96px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 40px;
+    width: 720px;
+    height: 96px;
+    font-size: 32px;
     font-family: 'Courier New', 'Monaco', 'Menlo', 'Consolas', monospace;
     font-weight: normal;
     text-align: center;
     color: #fff;
-    padding: 0 20px;
-    min-height: 2em;
-    max-width: 800px;
+    padding: 0;
     line-height: 1.4;
     z-index: 3;
     text-shadow: 
         0 2px 4px rgba(0, 0, 0, 0.3);
-    white-space: nowrap;
+    white-space: normal;
     overflow: hidden;
-    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .hidden-input {
