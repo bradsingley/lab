@@ -80,16 +80,43 @@ body {
     gap: 20px;
 }
 
-.video-player {
+.frame-wrapper {
+    position: relative;
+    width: 1280px;
+    height: 1096px;
     max-width: 90vw;
-    max-height: 70vh;
-    width: auto;
-    height: auto;
-    border-radius: 8px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    max-height: 80vh;
+}
+
+.video-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    object-fit: contain;
+}
+
+.video-player {
+    position: absolute;
+    top: 96px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 960px;
+    height: 720px;
+    z-index: 1;
+    border-radius: 0;
+    box-shadow: none;
+    object-fit: cover;
 }
 
 .caption {
+    position: absolute;
+    bottom: 140px;
+    left: 50%;
+    transform: translateX(-50%);
     font-size: 1.5em;
     text-align: center;
     color: #fff;
@@ -97,6 +124,8 @@ body {
     min-height: 2em;
     max-width: 800px;
     line-height: 1.4;
+    z-index: 3;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .hidden-input {
@@ -139,14 +168,29 @@ body {
 }
 
 /* Responsive */
+@media (max-width: 1400px) {
+    .frame-wrapper {
+        transform: scale(0.7);
+        transform-origin: center;
+    }
+}
+
+@media (max-width: 1000px) {
+    .frame-wrapper {
+        transform: scale(0.5);
+        transform-origin: center;
+    }
+}
+
 @media (max-width: 768px) {
     .game-screen {
         justify-content: flex-start;
-        padding-top: 40px;
+        padding-top: 20px;
     }
     
-    .video-player {
-        max-height: 60vh;
+    .frame-wrapper {
+        transform: scale(0.4);
+        transform-origin: center;
     }
     
     .caption {
@@ -155,5 +199,12 @@ body {
     
     .loading-content h1 {
         font-size: 1.5em;
+    }
+}
+
+@media (max-width: 600px) {
+    .frame-wrapper {
+        transform: scale(0.3);
+        transform-origin: center;
     }
 }

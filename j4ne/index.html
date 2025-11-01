@@ -10,8 +10,11 @@
     <div class="container">
         <div id="gameScreen" class="game-screen">
             <div class="video-container">
-                <video id="videoPlayer" class="video-player" preload="auto" disablePictureInPicture controlslist="nodownload nofullscreen noremoteplayback" playsinline webkit-playsinline></video>
-                <div id="caption" class="caption"></div>
+                <div class="frame-wrapper">
+                    <img src="videos/video-frame.png" alt="Video Frame" class="video-frame">
+                    <video id="videoPlayer" class="video-player" preload="auto" disablePictureInPicture controlslist="nodownload nofullscreen noremoteplayback" playsinline webkit-playsinline></video>
+                    <div id="caption" class="caption"></div>
+                </div>
             </div>
             <input type="text" id="hiddenInput" class="hidden-input" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             <div class="instructions">
