@@ -83,13 +83,13 @@ function startGame() {
         loadingScreen.style.display = 'none';
         gameScreen.style.display = 'flex';
         setupKeyboardListeners();
-        showHintText(); // Show hint text after game starts
     }, 500);
 }
 
 // Setup keyboard listeners
 function setupKeyboardListeners() {
     const hiddenInput = document.getElementById('hiddenInput');
+    const instructions = document.querySelector('.instructions');
     
     // Focus hidden input to trigger keyboard on mobile
     function focusInput() {
@@ -183,10 +183,8 @@ function showHintText() {
 function showCaption(letter) {
     const text = captions[letter] || `Letter ${letter.toUpperCase()}`;
     
-    // Hide the separate hint text element if it exists
-    if (hintText) {
-        hintText.classList.add('hidden');
-    }
+    // Hide hint text on first interaction
+    hintText.classList.add('hidden');
     
     // Split the caption to get just the sentence part (after the dash)
     const parts = text.split(' - ');
@@ -208,4 +206,6 @@ function showCaption(letter) {
 
 // Initialize
 console.log('Starting alphabet game...');
+setupKeyboardListeners();
+showHintText();
 console.log('Keyboard listeners set up. Press any letter key!');
