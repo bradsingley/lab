@@ -232,12 +232,6 @@ body {
         transform-origin: top center;
     }
     
-    .caption-container {
-        /* Scale caption container with frame */
-        transform: scale(var(--mobile-scale));
-        transform-origin: center;
-    }
-    
     .hint-text {
         font-size: 20px;
         margin-top: 10px;
@@ -260,12 +254,6 @@ body {
         transform-origin: top center;
     }
     
-    .caption-container {
-        /* Scale caption container with frame */
-        transform: scale(var(--mobile-scale));
-        transform-origin: center;
-    }
-    
     .hint-text {
         font-size: 18px;
         margin-top: 5px;
@@ -276,12 +264,6 @@ body {
     .frame-wrapper {
         /* Medium scaling for small desktop */
         --desktop-scale: min(var(--scale), 0.8);
-        transform: scale(var(--desktop-scale));
-        transform-origin: center;
-    }
-    
-    .caption-container {
-        /* Scale caption container with frame */
         transform: scale(var(--desktop-scale));
         transform-origin: center;
     }
