@@ -10,6 +10,8 @@ body {
     color: #fff;
     overflow: hidden;
     height: 100vh;
+    margin: 0;
+    padding: 0;
 }
 
 .container {
@@ -18,6 +20,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
 /* Loading Screen */
@@ -204,17 +207,46 @@ body {
     animation: fadeIn 0.3s ease;
 }
 
+.hint-text {
+    font-family: 'VT323', monospace;
+    font-size: 24px;
+    color: #FFBD43;
+    text-shadow: 0 0 4px #FFC98C;
+    text-align: center;
+    margin-top: 20px;
+    display: block;
+}
+
+.hint-text.hidden {
+    display: none;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .game-screen {
         justify-content: flex-start;
-        padding-top: 20px;
+        align-items: flex-start;
+        padding-top: 10px;
+        height: 100vh;
+        overflow: hidden;
+    }
+    
+    .video-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
     }
     
     .frame-wrapper {
         /* Additional scaling for mobile */
-        --mobile-scale: min(var(--scale), 0.6);
+        --mobile-scale: min(var(--scale), 0.5);
         transform: scale(var(--mobile-scale));
+        transform-origin: top center;
+    }
+    
+    .hint-text {
+        font-size: 20px;
+        margin-top: 10px;
     }
     
     .caption-sentence {
@@ -227,10 +259,20 @@ body {
 }
 
 @media (max-width: 480px) {
+    .game-screen {
+        padding-top: 5px;
+    }
+    
     .frame-wrapper {
         /* Even smaller scaling for very small screens */
-        --mobile-scale: min(var(--scale), 0.4);
+        --mobile-scale: min(var(--scale), 0.35);
         transform: scale(var(--mobile-scale));
+        transform-origin: top center;
+    }
+    
+    .hint-text {
+        font-size: 18px;
+        margin-top: 5px;
     }
     
     .caption-sentence {

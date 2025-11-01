@@ -11,6 +11,7 @@ const gameScreen = document.getElementById('gameScreen');
 const videoPlayer = document.getElementById('videoPlayer');
 const captionLetter = document.getElementById('captionLetter');
 const captionSentence = document.getElementById('captionSentence');
+const hintText = document.getElementById('hintText');
 
 // Video cache
 const videoCache = {};
@@ -175,6 +176,9 @@ function showHintText() {
 // Show caption for the letter
 function showCaption(letter) {
     const text = captions[letter] || `Letter ${letter.toUpperCase()}`;
+    
+    // Hide hint text on first interaction
+    hintText.classList.add('hidden');
     
     // Split the caption to get just the sentence part (after the dash)
     const parts = text.split(' - ');
