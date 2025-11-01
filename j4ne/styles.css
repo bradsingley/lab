@@ -202,7 +202,9 @@ body {
     text-shadow: 0 0 4px #FFC98C;
     text-align: center;
     margin-top: 20px;
-    display: block;
+    display: none; /* Hidden by default since hint shows in caption */
+    position: absolute;
+    width: 100%;
 }
 
 .hint-text.hidden {
