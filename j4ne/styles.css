@@ -80,7 +80,6 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 20px;
 }
 
 .frame-wrapper {
@@ -203,8 +202,12 @@ body {
     text-align: center;
     margin-top: 20px;
     display: none; /* Hidden by default since hint shows in caption */
-    position: absolute;
+    position: fixed; /* Use fixed instead of absolute to completely remove from layout */
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%;
+    pointer-events: none;
 }
 
 .hint-text.hidden {
