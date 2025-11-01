@@ -73,18 +73,16 @@ async function preloadVideos() {
 // Update loading progress
 function updateProgress(loaded, total) {
     const percentage = Math.round((loaded / total) * 100);
-    progressFill.style.width = `${percentage}%`;
-    loadingText.textContent = `${percentage}%`;
+    console.log(`Loading progress: ${percentage}%`);
 }
 
 // Start the game
 function startGame() {
     setTimeout(() => {
-        loadingScreen.style.display = 'none';
-        gameScreen.style.display = 'flex';
+        console.log('Game started!');
         setupKeyboardListeners();
         showHintText(); // Show hint text after game starts
-    }, 500);
+    }, 100);
 }
 
 // Setup keyboard listeners
@@ -208,4 +206,7 @@ function showCaption(letter) {
 
 // Initialize
 console.log('Starting alphabet game...');
+// Skip loading screen and start game directly
+setupKeyboardListeners();
+showHintText();
 console.log('Keyboard listeners set up. Press any letter key!');
