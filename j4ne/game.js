@@ -153,13 +153,11 @@ function playVideo(letter) {
         hiddenInput.focus(); // Refocus on error
     });
     
-    // Reset when video ends
+    // Reset when video ends - keep last frame and caption visible
     videoPlayer.onended = () => {
         isPlaying = false;
-        // Clear video and refocus input to bring keyboard back
-        videoPlayer.src = '';
-        videoPlayer.load();
-        captionSentence.innerHTML = '';
+        // Keep video on last frame and caption visible until next letter
+        // Just refocus input to bring keyboard back
         hiddenInput.focus();
     };
     
@@ -178,8 +176,21 @@ function showCaption(letter) {
     const letterPart = parts[0] || letter.toUpperCase();
     const sentencePart = parts[1] || text;
     
-    // Display only the sentence part in the new styling
+    // Display the sentence part
     captionSentence.innerHTML = sentencePart;
+    
+    // Remove any existing scrolling class
+    captionSentence.classList.remove('scrolling');
+    
+    // Check if text overflows and add scrolling if needed
+    setTimeout(() => {
+        const containerWidth = captionSentence.parentElement.offsetWidth;
+        const textWidth = captionSentence.scrollWidth;
+        
+        if (textWidth > containerWidth) {
+            captionSentence.classList.add('scrolling');
+        }
+    }, 100);
     
     // Trigger animation by removing and re-adding
     captionSentence.style.animation = 'none';

@@ -144,6 +144,21 @@ body {
     text-align: left;
     width: 100%;
     overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+}
+
+.caption-sentence.scrolling {
+    animation: marquee 8s linear infinite;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
 }
 
 .hidden-input {
