@@ -9,78 +9,8 @@ const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 // DOM elements - will be set after DOM loads
 let gameScreen, videoPlayer, captionLetter, captionSentence, hintText;
 
-// Video cache
-const videoCache = {};
+// State
 let isPlaying = false;
-
-// Preload all videos
-async function preloadVideos() {
-    let loaded = 0;
-    const total = availableVideos.length;
-
-    console.log(`Starting to load ${total} videos...`);
-
-    for (const letter of availableVideos) {
-        console.log(`Loading ${letter}.mp4...`);
-        try {
-            const video = document.createElement('video');
-            video.preload = 'auto';
-            video.src = `${VIDEO_PATH}${letter}.mp4`;
-            
-            // Wait for video to be loadable
-            await new Promise((resolve) => {
-                video.addEventListener('canplaythrough', () => {
-                    videoCache[letter] = video;
-                    loaded++;
-                    console.log(`Loaded ${letter}.mp4 (${loaded}/${total})`);
-                    updateProgress(loaded, total);
-                    resolve();
-                }, { once: true });
-                
-                video.addEventListener('error', (e) => {
-                    console.error(`Failed to load ${letter}.mp4:`, e);
-                    loaded++;
-                    updateProgress(loaded, total);
-                    resolve(); // Continue even if video fails
-                }, { once: true });
-                
-                // Timeout after 3 seconds
-                setTimeout(() => {
-                    if (!videoCache[letter]) {
-                        console.warn(`Timeout loading ${letter}.mp4`);
-                        loaded++;
-                        updateProgress(loaded, total);
-                        resolve();
-                    }
-                }, 3000);
-            });
-        } catch (error) {
-            console.error(`Error preloading ${letter}.mp4:`, error);
-            loaded++;
-            updateProgress(loaded, total);
-        }
-    }
-
-    console.log('All videos loaded or timed out');
-    // All videos loaded (or attempted)
-    startGame();
-}
-
-// Update loading progress
-function updateProgress(loaded, total) {
-    const percentage = Math.round((loaded / total) * 100);
-    progressFill.style.width = `${percentage}%`;
-    loadingText.textContent = `${percentage}%`;
-}
-
-// Start the game
-function startGame() {
-    setTimeout(() => {
-        loadingScreen.style.display = 'none';
-        gameScreen.style.display = 'flex';
-        setupKeyboardListeners();
-    }, 500);
-}
 
 // Setup keyboard listeners
 function setupKeyboardListeners() {
@@ -166,13 +96,9 @@ function playVideo(letter) {
 
 // Show hint text on page load
 function showHintText() {
-    captionSentence.innerHTML = 'Press any letter key (A-Z) to play';
-}
-
-// Show hint text on page load
-function showHintText() {
-    if (captionSentence && captions.hint) {
-        captionSentence.innerHTML = captions.hint;
+    if (hintText && captions.hint) {
+        hintText.innerHTML = captions.hint;
+        hintText.classList.remove('hidden');
     }
 }
 
@@ -207,26 +133,31 @@ console.log('Starting alphabet game...');
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, setting up game...');
-    
+
     // Set DOM elements
     gameScreen = document.getElementById('gameScreen');
     videoPlayer = document.getElementById('videoPlayer');
     captionLetter = document.getElementById('captionLetter');
     captionSentence = document.getElementById('captionSentence');
     hintText = document.getElementById('hintText');
-    
+
     console.log('Elements found:', { gameScreen: !!gameScreen, videoPlayer: !!videoPlayer, captionLetter: !!captionLetter, captionSentence: !!captionSentence, hintText: !!hintText });
-    
+
     if (!captionSentence) {
         console.error('captionSentence element not found!');
         return;
     }
-    
+
     if (!videoPlayer) {
         console.error('videoPlayer element not found!');
         return;
     }
-    
+
+    if (!hintText) {
+        console.error('hintText element not found!');
+        return;
+    }
+
     // Set up the game
     setupKeyboardListeners();
     showHintText();
