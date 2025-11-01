@@ -6,12 +6,8 @@ const VIDEO_PATH = 'videos/';
 const availableVideos = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'n', 'p', 't', 'y'];
 const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
-// DOM elements
-const gameScreen = document.getElementById('gameScreen');
-const videoPlayer = document.getElementById('videoPlayer');
-const captionLetter = document.getElementById('captionLetter');
-const captionSentence = document.getElementById('captionSentence');
-const hintText = document.getElementById('hintText');
+// DOM elements - will be set after DOM loads
+let gameScreen, videoPlayer, captionLetter, captionSentence, hintText;
 
 // Video cache
 const videoCache = {};
@@ -206,7 +202,27 @@ function showCaption(letter) {
 
 // Initialize
 console.log('Starting alphabet game...');
-// Skip loading screen and start game directly
-setupKeyboardListeners();
-showHintText();
-console.log('Keyboard listeners set up. Press any letter key!');
+
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, setting up game...');
+    
+    // Set DOM elements
+    gameScreen = document.getElementById('gameScreen');
+    videoPlayer = document.getElementById('videoPlayer');
+    captionLetter = document.getElementById('captionLetter');
+    captionSentence = document.getElementById('captionSentence');
+    hintText = document.getElementById('hintText');
+    
+    console.log('Elements found:', { gameScreen, videoPlayer, captionLetter, captionSentence, hintText });
+    
+    if (!captionSentence) {
+        console.error('captionSentence element not found!');
+        return;
+    }
+    
+    // Skip loading screen and start game directly
+    setupKeyboardListeners();
+    showHintText();
+    console.log('Keyboard listeners set up. Press any letter key!');
+});
