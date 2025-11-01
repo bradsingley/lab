@@ -15,7 +15,6 @@ let isPlaying = false;
 // Setup keyboard listeners
 function setupKeyboardListeners() {
     const hiddenInput = document.getElementById('hiddenInput');
-    const instructions = document.querySelector('.instructions');
     
     // Focus hidden input to trigger keyboard on mobile
     function focusInput() {
@@ -96,8 +95,11 @@ function playVideo(letter) {
 
 // Show hint text on page load
 function showHintText() {
-    if (hintText && captions.hint) {
-        hintText.innerHTML = captions.hint;
+    if (captionSentence && captions.hint) {
+        captionSentence.innerHTML = captions.hint;
+    }
+    // Also show in the separate hint text element if it exists
+    if (hintText) {
         hintText.classList.remove('hidden');
     }
 }
@@ -107,7 +109,9 @@ function showCaption(letter) {
     const text = captions[letter] || `Letter ${letter.toUpperCase()}`;
     
     // Hide hint text on first interaction
-    hintText.classList.add('hidden');
+    if (hintText) {
+        hintText.classList.add('hidden');
+    }
     
     // Split the caption to get just the sentence part (after the dash)
     const parts = text.split(' - ');
@@ -153,9 +157,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    // hintText is optional
     if (!hintText) {
-        console.error('hintText element not found!');
-        return;
+        console.warn('hintText element not found, hint will show in caption only');
     }
 
     // Set up the game
