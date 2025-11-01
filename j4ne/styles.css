@@ -149,15 +149,18 @@ body {
 }
 
 .caption-sentence.scrolling {
-    animation: marquee 8s linear infinite;
+    animation: marquee 20s linear infinite;
 }
 
 @keyframes marquee {
     0% {
-        transform: translateX(100%);
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(calc(680px - 100%));
     }
     100% {
-        transform: translateX(-100%);
+        transform: translateX(0);
     }
 }
 
