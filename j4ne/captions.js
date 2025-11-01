@@ -4,7 +4,7 @@ export const captions = {
     b: "B - Look at my new <strong>BELLY BUTTON</strong>",
     c: "C - Robots can hug a <strong>CACTUS</strong>",
     d: "D - I want to <strong>DANCE</strong>",
-    e: "E - <strong>ELECTRONICS</strong> (hard for me to say that)",
+    e: "E - <strong>ELECTRONICS</strong> (hard for me to say)",
     f: "F - Robots can <strong>FLY</strong>",
     g: "G - Do you like my <strong>GOGGLES?</strong>",
     h: "H - Robots can get <strong>HICCUPS</strong>",
