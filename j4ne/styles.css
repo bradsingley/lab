@@ -217,7 +217,7 @@ body {
         transform: scale(var(--mobile-scale));
     }
     
-    .caption {
+    .caption-sentence {
         font-size: 1.2em;
     }
     
@@ -233,7 +233,7 @@ body {
         transform: scale(var(--mobile-scale));
     }
     
-    .caption {
+    .caption-sentence {
         font-size: 1em;
     }
 }
