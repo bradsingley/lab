@@ -6,12 +6,8 @@ const VIDEO_PATH = 'videos/';
 const availableVideos = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'n', 'p', 't', 'y'];
 const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
-// DOM elements
-const gameScreen = document.getElementById('gameScreen');
-const videoPlayer = document.getElementById('videoPlayer');
-const captionLetter = document.getElementById('captionLetter');
-const captionSentence = document.getElementById('captionSentence');
-const hintText = document.getElementById('hintText');
+// DOM elements - will be set after DOM loads
+let gameScreen, videoPlayer, captionLetter, captionSentence, hintText;
 
 // Video cache
 const videoCache = {};
@@ -173,6 +169,13 @@ function showHintText() {
     captionSentence.innerHTML = 'Press any letter key (A-Z) to play';
 }
 
+// Show hint text on page load
+function showHintText() {
+    if (captionSentence && captions.hint) {
+        captionSentence.innerHTML = captions.hint;
+    }
+}
+
 // Show caption for the letter
 function showCaption(letter) {
     const text = captions[letter] || `Letter ${letter.toUpperCase()}`;
@@ -200,5 +203,32 @@ function showCaption(letter) {
 
 // Initialize
 console.log('Starting alphabet game...');
-setupKeyboardListeners();
-console.log('Keyboard listeners set up. Press any letter key!');
+
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, setting up game...');
+    
+    // Set DOM elements
+    gameScreen = document.getElementById('gameScreen');
+    videoPlayer = document.getElementById('videoPlayer');
+    captionLetter = document.getElementById('captionLetter');
+    captionSentence = document.getElementById('captionSentence');
+    hintText = document.getElementById('hintText');
+    
+    console.log('Elements found:', { gameScreen: !!gameScreen, videoPlayer: !!videoPlayer, captionLetter: !!captionLetter, captionSentence: !!captionSentence, hintText: !!hintText });
+    
+    if (!captionSentence) {
+        console.error('captionSentence element not found!');
+        return;
+    }
+    
+    if (!videoPlayer) {
+        console.error('videoPlayer element not found!');
+        return;
+    }
+    
+    // Set up the game
+    setupKeyboardListeners();
+    showHintText();
+    console.log('Game initialized. Press any letter key!');
+});
