@@ -9,7 +9,8 @@ const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 // DOM elements
 const gameScreen = document.getElementById('gameScreen');
 const videoPlayer = document.getElementById('videoPlayer');
-const caption = document.getElementById('caption');
+const captionLetter = document.getElementById('captionLetter');
+const captionSentence = document.getElementById('captionSentence');
 
 // Video cache
 const videoCache = {};
@@ -158,7 +159,7 @@ function playVideo(letter) {
         // Clear video and refocus input to bring keyboard back
         videoPlayer.src = '';
         videoPlayer.load();
-        caption.innerHTML = '';
+        captionSentence.innerHTML = '';
         hiddenInput.focus();
     };
     
@@ -171,12 +172,19 @@ function playVideo(letter) {
 // Show caption for the letter
 function showCaption(letter) {
     const text = captions[letter] || `Letter ${letter.toUpperCase()}`;
-    caption.innerHTML = text;
+    
+    // Split the caption to get just the sentence part (after the dash)
+    const parts = text.split(' - ');
+    const letterPart = parts[0] || letter.toUpperCase();
+    const sentencePart = parts[1] || text;
+    
+    // Display only the sentence part in the new styling
+    captionSentence.innerHTML = sentencePart;
     
     // Trigger animation by removing and re-adding
-    caption.style.animation = 'none';
+    captionSentence.style.animation = 'none';
     setTimeout(() => {
-        caption.style.animation = '';
+        captionSentence.style.animation = '';
     }, 10);
 }
 

@@ -115,28 +115,35 @@ body {
     object-fit: cover;
 }
 
-.caption {
+.caption-container {
     position: absolute;
-    bottom: 96px;
+    bottom: 108px;
     left: 50%;
     transform: translateX(-50%);
-    width: 720px;
-    height: 96px;
-    font-size: 32px;
-    font-family: 'Courier New', 'Monaco', 'Menlo', 'Consolas', monospace;
-    font-weight: normal;
-    text-align: center;
-    color: #fff;
-    padding: 0;
-    line-height: 1.4;
+    width: 680px;
+    height: 64px;
     z-index: 3;
-    text-shadow: 
-        0 2px 4px rgba(0, 0, 0, 0.3);
-    white-space: normal;
-    overflow: hidden;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
+}
+
+.caption-letter {
+    /* Styling for the letter will be added separately if needed */
+    display: none; /* Hidden for now since you mentioned focusing on the sentence */
+}
+
+.caption-sentence {
+    color: #FFBD43;
+    text-shadow: 0 0 4px #FFC98C;
+    font-family: 'VT323', monospace;
+    font-size: 56px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 64px;
+    text-align: left;
+    width: 100%;
+    overflow: hidden;
 }
 
 .hidden-input {

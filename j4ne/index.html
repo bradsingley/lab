@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alphabet Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -13,7 +16,10 @@
                 <div class="frame-wrapper">
                     <img src="videos/video-frame.png" alt="Video Frame" class="video-frame">
                     <video id="videoPlayer" class="video-player" preload="auto" disablePictureInPicture controlslist="nodownload nofullscreen noremoteplayback" playsinline webkit-playsinline></video>
-                    <div id="caption" class="caption"></div>
+                    <div class="caption-container">
+                        <div id="captionLetter" class="caption-letter"></div>
+                        <div id="captionSentence" class="caption-sentence"></div>
+                    </div>
                 </div>
             </div>
             <input type="text" id="hiddenInput" class="hidden-input" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
