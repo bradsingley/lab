@@ -176,6 +176,9 @@ function showCaption(letter) {
     const letterPart = parts[0] || letter.toUpperCase();
     const sentencePart = parts[1] || text;
     
+    // Display the capital letter in the letter field
+    captionLetter.innerHTML = letter.toUpperCase();
+    
     // Display the sentence part
     captionSentence.innerHTML = sentencePart;
     
