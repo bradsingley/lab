@@ -1,7 +1,6 @@
 // Captions for each letter video
 export const captions = {
-    hint: "Press any letter key (A-Z) to play",
-    a: "A - Robots are <strong>afraid</strong> of the dark",
+    a: "A - Robots are <strong>AFRAID</strong> of the dark",
     b: "B - Look at my new <strong>BELLY BUTTON</strong>",
     c: "C - Robots can hug a <strong>CACTUS</strong>",
     d: "D - I want to <strong>DANCE</strong>",

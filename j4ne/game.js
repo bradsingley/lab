@@ -173,12 +173,6 @@ function showHintText() {
     captionSentence.innerHTML = 'Press any letter key (A-Z) to play';
 }
 
-// Show hint text on page load
-function showHintText() {
-    const hintText = captions.hint || "Press any letter key (A-Z) to play";
-    captionSentence.innerHTML = hintText;
-}
-
 // Show caption for the letter
 function showCaption(letter) {
     const text = captions[letter] || `Letter ${letter.toUpperCase()}`;
@@ -207,5 +201,4 @@ function showCaption(letter) {
 // Initialize
 console.log('Starting alphabet game...');
 setupKeyboardListeners();
-showHintText();
 console.log('Keyboard listeners set up. Press any letter key!');
