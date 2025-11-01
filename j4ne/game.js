@@ -7,7 +7,7 @@ const availableVideos = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 
 const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
 // DOM elements - will be set after DOM loads
-let gameScreen, videoPlayer, captionLetter, captionSentence, hintText;
+let gameScreen, videoPlayer, captionLetter, captionSentence, hintText, splashImage;
 
 // State
 let isPlaying = false;
@@ -64,6 +64,14 @@ function playVideo(letter) {
     }
 
     isPlaying = true;
+    
+    // Hide splash image and show video player on first play
+    if (splashImage && !splashImage.classList.contains('hidden')) {
+        splashImage.classList.add('hidden');
+    }
+    if (videoPlayer && !videoPlayer.classList.contains('active')) {
+        videoPlayer.classList.add('active');
+    }
     
     // Load and play video directly
     videoPlayer.src = `${VIDEO_PATH}${letter}.mp4`;
@@ -141,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set DOM elements
     gameScreen = document.getElementById('gameScreen');
     videoPlayer = document.getElementById('videoPlayer');
+    splashImage = document.getElementById('splashImage');
     captionLetter = document.getElementById('captionLetter');
     captionSentence = document.getElementById('captionSentence');
     hintText = document.getElementById('hintText');

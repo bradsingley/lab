@@ -105,6 +105,20 @@ body {
     object-fit: contain;
 }
 
+.splash-image {
+    position: absolute;
+    top: 96px;
+    left: 160px; /* (1280 - 960) / 2 = 160px for centering */
+    width: 960px;
+    height: 720px;
+    z-index: 1;
+    object-fit: cover;
+}
+
+.splash-image.hidden {
+    display: none;
+}
+
 .video-player {
     position: absolute;
     top: 96px;
@@ -115,6 +129,11 @@ body {
     border-radius: 0;
     box-shadow: none;
     object-fit: cover;
+    display: none; /* Hidden initially until first video plays */
+}
+
+.video-player.active {
+    display: block;
 }
 
 .caption-container {
