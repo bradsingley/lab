@@ -179,19 +179,6 @@ function showCaption(letter) {
     // Display the sentence part
     captionSentence.innerHTML = sentencePart;
     
-    // Remove any existing scrolling class
-    captionSentence.classList.remove('scrolling');
-    
-    // Check if text overflows and add scrolling if needed
-    setTimeout(() => {
-        const containerWidth = captionSentence.parentElement.offsetWidth;
-        const textWidth = captionSentence.scrollWidth;
-        
-        if (textWidth > containerWidth) {
-            captionSentence.classList.add('scrolling');
-        }
-    }, 100);
-    
     // Trigger animation by removing and re-adding
     captionSentence.style.animation = 'none';
     setTimeout(() => {
