@@ -117,24 +117,21 @@ body {
 
 .caption {
     position: absolute;
-    bottom: 120px;
+    bottom: 100px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 20px;
+    font-size: 40px;
     font-family: 'Courier New', 'Monaco', 'Menlo', 'Consolas', monospace;
-    font-weight: bold;
+    font-weight: normal;
     text-align: center;
-    color: #00ff00;
+    color: #fff;
     padding: 0 20px;
     min-height: 2em;
     max-width: 800px;
     line-height: 1.4;
     z-index: 3;
     text-shadow: 
-        0 0 5px #00ff00,
-        0 0 10px #00ff00,
-        0 0 15px #00ff00,
-        0 0 20px #00ff00;
+        0 2px 4px rgba(0, 0, 0, 0.3);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
