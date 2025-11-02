@@ -21,12 +21,22 @@
                     <video id="videoPlayer" class="video-player" preload="auto" disablePictureInPicture controlslist="nodownload nofullscreen noremoteplayback" playsinline webkit-playsinline></video>
                     <div class="caption-container">
                         <div id="captionLetter" class="caption-letter"></div>
+                        <div id="infoIcon" class="info-icon">ⓘ</div>
                         <div id="captionSentence" class="caption-sentence"></div>
                     </div>
                 </div>
             </div>
             <input type="text" id="hiddenInput" class="hidden-input" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             <div id="hintText" class="hint-text">Press any letter key (A-Z) to play</div>
+        </div>
+        
+        <!-- Info Modal -->
+        <div id="infoModal" class="modal hidden">
+            <div class="modal-content">
+                <button class="modal-close" id="closeModal">×</button>
+                <h2>About this game</h2>
+                <p>In 2009, I made an alphabet game in Flash with my 4-year-old daughter Jane. She loved talking like a robot, so we made a character out of it. The animations were pretty simple, but we were surprised how many people shared it with their kids. With new AI tools available, I thought it was a good chance to bring it back with a fresh coat of paint (and the original audio). I hope you enjoy it!</p>
+            </div>
         </div>
     </div>
 

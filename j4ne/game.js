@@ -7,7 +7,7 @@ const availableVideos = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 
 const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
 // DOM elements - will be set after DOM loads
-let gameScreen, videoPlayer, captionLetter, captionSentence, hintText, splashImage;
+let gameScreen, videoPlayer, captionLetter, captionSentence, hintText, splashImage, infoIcon, infoModal, closeModal;
 
 // State
 let isPlaying = false;
@@ -116,9 +116,12 @@ function showHintText() {
 function showCaption(letter) {
     const text = captions[letter] || `Letter ${letter.toUpperCase()}`;
     
-    // Hide hint text on first interaction
+    // Hide hint text and info icon on first interaction
     if (hintText) {
         hintText.classList.add('hidden');
+    }
+    if (infoIcon) {
+        infoIcon.classList.add('hidden');
     }
     
     // Split the caption to get just the sentence part (after the dash)
@@ -153,6 +156,36 @@ document.addEventListener('DOMContentLoaded', function() {
     captionLetter = document.getElementById('captionLetter');
     captionSentence = document.getElementById('captionSentence');
     hintText = document.getElementById('hintText');
+    infoIcon = document.getElementById('infoIcon');
+    infoModal = document.getElementById('infoModal');
+    closeModal = document.getElementById('closeModal');
+    
+    // Set up info modal
+    if (infoIcon) {
+        infoIcon.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (infoModal) {
+                infoModal.classList.remove('hidden');
+            }
+        });
+    }
+    
+    if (closeModal) {
+        closeModal.addEventListener('click', function() {
+            if (infoModal) {
+                infoModal.classList.add('hidden');
+            }
+        });
+    }
+    
+    // Close modal when clicking outside
+    if (infoModal) {
+        infoModal.addEventListener('click', function(e) {
+            if (e.target === infoModal) {
+                infoModal.classList.add('hidden');
+            }
+        });
+    }
 
     console.log('Elements found:', { gameScreen: !!gameScreen, videoPlayer: !!videoPlayer, captionLetter: !!captionLetter, captionSentence: !!captionSentence, hintText: !!hintText });
 
