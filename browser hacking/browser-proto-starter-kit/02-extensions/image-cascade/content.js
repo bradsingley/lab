@@ -31,8 +31,9 @@
       // Skip if image is too small
       if (img.width < 50 || img.height < 50) return;
 
-      // Add black outline to all images
-      img.style.outline = "1px solid black";
+      // Add black border to all images
+      img.style.border = "1px solid black";
+      img.style.boxSizing = "border-box";
 
       // Remove existing listener if any
       img.removeEventListener("mouseenter", img._cascadeHandler);
@@ -51,7 +52,8 @@
   function disableExtension() {
     const images = document.querySelectorAll("img");
     images.forEach((img) => {
-      img.style.outline = "";
+      img.style.border = "";
+      img.style.boxSizing = "";
       if (img._cascadeHandler) {
         img.removeEventListener("mouseenter", img._cascadeHandler);
       }
@@ -59,10 +61,12 @@
   }
 
   function cascadeImage(img) {
-    // Get the image's starting position
+    // Get the image's starting position and rendered dimensions
     const rect = img.getBoundingClientRect();
     let x = rect.left;
     let y = rect.top;
+    const renderedWidth = rect.width;
+    const renderedHeight = rect.height;
 
     // Random horizontal velocity
     let vx = (Math.random() - 0.5) * 10;
@@ -86,22 +90,22 @@
       y += vy;
 
       // Bounce off bottom
-      if (y + img.height >= window.innerHeight) {
-        y = window.innerHeight - img.height;
+      if (y + renderedHeight >= window.innerHeight) {
+        y = window.innerHeight - renderedHeight;
         vy = -vy * bounce;
         vx *= friction;
       }
 
       // Bounce off sides
-      if (x <= 0 || x + img.width >= window.innerWidth) {
-        x = x <= 0 ? 0 : window.innerWidth - img.width;
+      if (x <= 0 || x + renderedWidth >= window.innerWidth) {
+        x = x <= 0 ? 0 : window.innerWidth - renderedWidth;
         vx = -vx * bounce;
       }
 
       // Create trail copies at intervals
       const now = Date.now();
       if (now - lastTrailTime >= trailInterval) {
-        createTrailCopy(img, x, y);
+        createTrailCopy(img, x, y, renderedWidth, renderedHeight);
         lastTrailTime = now;
       }
 
@@ -114,16 +118,19 @@
     animate();
   }
 
-  function createTrailCopy(img, x, y) {
+  function createTrailCopy(img, x, y, width, height) {
     // Clone the image and fix it in position
     const clone = img.cloneNode(true);
     clone.style.position = "fixed";
     clone.style.left = x + "px";
     clone.style.top = y + "px";
+    clone.style.width = width + "px";
+    clone.style.height = height + "px";
     clone.style.zIndex = "999999";
     clone.style.pointerEvents = "none";
     clone.style.opacity = "0.8";
-    clone.style.outline = "1px solid black";
+    clone.style.border = "1px solid black";
+    clone.style.boxSizing = "border-box";
 
     document.body.appendChild(clone);
 

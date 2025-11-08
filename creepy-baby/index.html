@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Don't Wake the Baby</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="volume-reminder">
+            <p>🔊 Turn up your volume for the best experience!</p>
+        </div>
+        
+        <div class="image-container">
+            <img id="baby-image" src="images/closedeyes.jpg" alt="Baby">
+        </div>
+        
+        <div class="text-container">
+            <p id="game-text">Don't wake the baby</p>
+        </div>
+        
+        <div class="volume-meter-container">
+            <div class="volume-meter">
+                <div class="volume-bar" id="volume-bar"></div>
+                <div class="volume-threshold halfway" title="Warning level"></div>
+                <div class="volume-threshold danger" title="Danger level"></div>
+            </div>
+            <div class="volume-label">Volume</div>
+        </div>
+        
+        <button id="start-button" class="start-button">Start Game</button>
+        <div id="error-message" class="error-message" style="display: none;"></div>
+        
+        <!-- Audio elements with no preload -->
+        <audio id="lullaby-audio" loop preload="auto">
+            <source src="lullaby.m4a" type="audio/mp4">
+        </audio>
+        <audio id="scream-audio" preload="auto">
+            <source src="scream.m4a" type="audio/mp4">
+        </audio>
+        <audio id="shh-audio" preload="auto">
+            <source src="shh.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
