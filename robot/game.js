@@ -3,7 +3,7 @@ import { captions } from './captions.js';
 // Configuration
 const VIDEO_PATH = 'videos/';
 // Only include letters that have video files
-const availableVideos = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'n', 'p', 'q', 'r', 't', 'v', 'w', 'x', 'y', 'z', 'space'];
+const availableVideos = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'n', 'o', 'p', 'q', 'r', 't', 'v', 'w', 'x', 'y', 'z', 'space'];
 const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
 // DOM elements - will be set after DOM loads
