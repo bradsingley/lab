@@ -59,27 +59,21 @@ def generate_frame_data(frame_pixels):
     return frame_data
 
 def generate_vba_code(all_frames_data, frame_delay=200):
-    """Generate VBA code for Excel animation with data stored as strings"""
+    """Generate VBA code for Excel animation with data stored as arrays"""
     
-    # Convert frame data to compressed string format
-    frame_strings = []
+    # Convert frame data to compressed format - but as arrays not strings
+    frame_data_arrays = []
     for frame_data in all_frames_data:
         # Group by color and create compact representation
-        color_groups = {}
+        pixels_by_color = {}
         for pixel in frame_data:
             color = pixel['color']
-            if color not in color_groups:
-                color_groups[color] = []
             # Skip white pixels
             if color != '#ffffff':
-                color_groups[color].append(f"{pixel['x']},{pixel['y']}")
-        
-        # Create string: "color:x1,y1,x2,y2;color:x1,y1..."
-        frame_parts = []
-        for color, positions in color_groups.items():
-            if positions:  # Only include if there are pixels
-                frame_parts.append(f"{color}:{';'.join(positions)}")
-        frame_strings.append('|'.join(frame_parts))
+                if color not in pixels_by_color:
+                    pixels_by_color[color] = []
+                pixels_by_color[color].append((pixel['x'], pixel['y']))
+        frame_data_arrays.append(pixels_by_color)
     
     vba_code = '''Option Explicit
 
@@ -91,54 +85,29 @@ Const GRID_HEIGHT As Integer = {height}
 Const START_COL As Integer = 2
 Const START_ROW As Integer = 2
 
-Dim frameData() As String
 Dim shouldStop As Boolean
 
 Sub InitializeAnimation()
-    LoadFrameData
     Dim ws As Worksheet
     Set ws = ActiveSheet
-    ws.Range(Cells(START_ROW, START_COL), Cells(START_ROW + GRID_HEIGHT - 1, START_COL + GRID_WIDTH - 1)).Clear
+    ws.Range(Cells(START_ROW, START_COL), Cells(START_ROW + GRID_HEIGHT - 1, START_COL + GRID_WIDTH - 1)).Interior.Color = RGB(255, 255, 255)
     ws.Range(Cells(START_ROW, START_COL), Cells(START_ROW + GRID_HEIGHT - 1, START_COL + GRID_WIDTH - 1)).ColumnWidth = 2
     ws.Range(Cells(START_ROW, START_COL), Cells(START_ROW + GRID_HEIGHT - 1, START_COL + GRID_WIDTH - 1)).RowHeight = 15
     DrawFrame 0
     MsgBox "Animation initialized. Run StartAnimation to begin.", vbInformation
 End Sub
 
-Sub LoadFrameData()
-    ReDim frameData(0 To NUM_FRAMES - 1)
-'''.format(
-        delay=frame_delay,
-        num_frames=len(all_frames_data),
-        width=max(p['x'] for f in all_frames_data for p in f) if all_frames_data else 32,
-        height=max(p['y'] for f in all_frames_data for p in f) if all_frames_data else 32
-    )
-    
-    # Add frame data as strings (split into chunks to avoid line length limits)
-    for idx, frame_str in enumerate(frame_strings):
-        # VBA has a 1024 character line limit, so we need to split long strings
-        if len(frame_str) > 800:
-            chunks = [frame_str[i:i+800] for i in range(0, len(frame_str), 800)]
-            vba_code += f'    frameData({idx}) = '
-            for i, chunk in enumerate(chunks):
-                if i == 0:
-                    vba_code += f'"{chunk}" & _\n'
-                elif i == len(chunks) - 1:
-                    vba_code += f'                    "{chunk}"\n'
-                else:
-                    vba_code += f'                    "{chunk}" & _\n'
-        else:
-            vba_code += f'    frameData({idx}) = "{frame_str}"\n'
-    
-    vba_code += '''End Sub
-
 Sub StartAnimation()
     Dim currentFrame As Integer
+    Dim rng As Range
     shouldStop = False
     currentFrame = 0
+    Set rng = Range(Cells(START_ROW, START_COL), Cells(START_ROW + GRID_HEIGHT - 1, START_COL + GRID_WIDTH - 1))
     
     Do While Not shouldStop
+        rng.Interior.Color = RGB(255, 255, 255)
         DrawFrame currentFrame
+        Application.Wait Now + TimeValue("0:00:00") + (FRAME_DELAY / 1000 / 86400)
         currentFrame = (currentFrame + 1) Mod NUM_FRAMES
         DoEvents
     Loop
@@ -147,59 +116,46 @@ End Sub
 Sub StopAnimation()
     shouldStop = True
 End Sub
-
+'''.format(
+        delay=frame_delay,
+        num_frames=len(all_frames_data),
+        width=max(p['x'] for f in all_frames_data for p in f) if all_frames_data else 32,
+        height=max(p['y'] for f in all_frames_data for p in f) if all_frames_data else 32
+    )
+    
+    # Generate individual DrawFrame subroutines for each frame - only non-white pixels
+    for idx, pixels_by_color in enumerate(frame_data_arrays):
+        vba_code += f'\nSub DrawFrame{idx}()\n'
+        vba_code += '    Dim ws As Worksheet\n'
+        vba_code += '    Set ws = ActiveSheet\n'
+        vba_code += '    \n'
+        
+        # Count total non-white pixels
+        total_pixels = sum(len(positions) for positions in pixels_by_color.values())
+        
+        if total_pixels > 0:
+            for color, positions in pixels_by_color.items():
+                # Convert hex to RGB
+                r = int(color[1:3], 16)
+                g = int(color[3:5], 16)
+                b = int(color[5:7], 16)
+                
+                # Set colored pixels
+                for x, y in positions:
+                    vba_code += f'    Cells(START_ROW+{y-1},START_COL+{x-1}).Interior.Color=RGB({r},{g},{b})\n'
+        
+        vba_code += 'End Sub\n'
+    
+    # Add dispatcher function
+    vba_code += '''
 Sub DrawFrame(frameIndex As Integer)
-    Dim ws As Worksheet
-    Set ws = ActiveSheet
+    Select Case frameIndex
+'''
     
-    ' Clear previous frame
-    ws.Range(Cells(START_ROW, START_COL), _
-             Cells(START_ROW + GRID_HEIGHT - 1, START_COL + GRID_WIDTH - 1)).Interior.Color = RGB(255, 255, 255)
+    for idx in range(len(frame_data_arrays)):
+        vba_code += f'        Case {idx}: DrawFrame{idx}\n'
     
-    ' Parse and draw frame data
-    Dim data As String
-    data = frameData(frameIndex)
-    
-    If Len(data) = 0 Then Exit Sub
-    
-    Dim colorGroups As Variant
-    Dim colorGroup As Variant
-    Dim colorParts As Variant
-    Dim hexColor As String
-    Dim positions As Variant
-    Dim pos As Variant
-    Dim coords As Variant
-    Dim r As Integer, g As Integer, b As Integer
-    Dim x As Integer, y As Integer
-    
-    colorGroups = Split(data, "|")
-    
-    For Each colorGroup In colorGroups
-        If Len(colorGroup) > 0 Then
-            colorParts = Split(colorGroup, ":")
-            If UBound(colorParts) >= 1 Then
-                hexColor = colorParts(0)
-                positions = Split(colorParts(1), ";")
-                
-                ' Convert hex to RGB
-                r = CLng("&H" & Mid(hexColor, 2, 2))
-                g = CLng("&H" & Mid(hexColor, 4, 2))
-                b = CLng("&H" & Mid(hexColor, 6, 2))
-                
-                ' Draw all positions with this color
-                For Each pos In positions
-                    If Len(pos) > 0 Then
-                        coords = Split(pos, ",")
-                        If UBound(coords) >= 1 Then
-                            x = CInt(coords(0))
-                            y = CInt(coords(1))
-                            Cells(START_ROW + y - 1, START_COL + x - 1).Interior.Color = RGB(r, g, b)
-                        End If
-                    End If
-                Next pos
-            End If
-        End If
-    Next colorGroup
+    vba_code += '''    End Select
 End Sub
 '''
     
