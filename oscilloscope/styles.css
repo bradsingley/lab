@@ -1,0 +1,269 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    position: relative;
+}
+
+.oscilloscope {
+    background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+    border: 4px solid #1a1a1a;
+    border-radius: 8px;
+    padding: 40px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.8),
+        inset 0 2px 0 rgba(255, 255, 255, 0.1),
+        inset 0 0 40px rgba(0, 0, 0, 0.3);
+    max-width: 900px;
+    position: relative;
+}
+
+.oscilloscope::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+.screen {
+    position: relative;
+    background: #0a1e1a;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 
+        inset 0 4px 10px rgba(0, 0, 0, 0.8),
+        inset 0 0 20px rgba(0, 0, 0, 0.5),
+        0 0 30px rgba(0, 255, 136, 0.1);
+    margin-bottom: 30px;
+}
+
+.grid {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    background-image: 
+        repeating-linear-gradient(0deg, 
+            transparent, 
+            transparent 39px, 
+            rgba(0, 255, 136, 0.1) 39px, 
+            rgba(0, 255, 136, 0.1) 40px),
+        repeating-linear-gradient(90deg, 
+            transparent, 
+            transparent 39px, 
+            rgba(0, 255, 136, 0.1) 39px, 
+            rgba(0, 255, 136, 0.1) 40px),
+        repeating-linear-gradient(0deg, 
+            transparent, 
+            transparent 9px, 
+            rgba(0, 255, 136, 0.05) 9px, 
+            rgba(0, 255, 136, 0.05) 10px),
+        repeating-linear-gradient(90deg, 
+            transparent, 
+            transparent 9px, 
+            rgba(0, 255, 136, 0.05) 9px, 
+            rgba(0, 255, 136, 0.05) 10px);
+    pointer-events: none;
+    border-radius: 10px;
+}
+
+#canvas {
+    display: block;
+    width: 100%;
+    height: 400px;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.5));
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 25px;
+    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    border-radius: 6px;
+    border: 2px solid #0a0a0a;
+    box-shadow: 
+        inset 0 3px 8px rgba(0, 0, 0, 0.6),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.control-row {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    align-items: center;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-group label {
+    font-size: 10px;
+    font-weight: bold;
+    color: #999;
+    letter-spacing: 1.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.control-group input[type="range"] {
+    width: 120px;
+    height: 8px;
+    background: linear-gradient(to bottom, #0a0a0a, #1a1a1a);
+    border-radius: 4px;
+    outline: none;
+    border: 1px solid #000;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.control-group input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: radial-gradient(circle, #666, #333);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #1a1a1a;
+    box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.control-group input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background: radial-gradient(circle, #666, #333);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #1a1a1a;
+    box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.control-group span {
+    font-size: 13px;
+    font-weight: bold;
+    color: #00ff88;
+    min-width: 20px;
+    text-align: center;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+}
+
+.power-btn {
+    padding: 12px 30px;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(145deg, #2ecc71, #27ae60);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 
+        0 4px 0 #1e8449,
+        0 6px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.1s;
+    letter-spacing: 1px;
+}
+
+.power-btn:hover {
+    background: linear-gradient(145deg, #27ae60, #229954);
+}
+
+.power-btn:active {
+    transform: translateY(3px);
+    box-shadow: 
+        0 1px 0 #1e8449,
+        0 3px 5px rgba(0, 0, 0, 0.3);
+}
+
+.power-btn.active {
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+    box-shadow: 
+        0 4px 0 #a93226,
+        0 6px 10px rgba(0, 0, 0, 0.3);
+}
+
+.power-btn.active:hover {
+    background: linear-gradient(145deg, #c0392b, #a93226);
+}
+
+.brand {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.brand .model {
+    font-size: 24px;
+    font-weight: bold;
+    color: #666;
+    letter-spacing: 3px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.brand .name {
+    font-size: 11px;
+    color: #444;
+    letter-spacing: 2px;
+    margin-top: 5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+#status {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: #00ff88;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+#status.hidden {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .oscilloscope {
+        padding: 20px;
+    }
+    
+    .control-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    #canvas {
+        height: 300px;
+    }
+}
