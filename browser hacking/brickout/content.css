@@ -1,0 +1,17 @@
+/* Brickout Game Styles */
+
+#brickout-paddle {
+  /* Styles are inline for better control */
+}
+
+#brickout-ball {
+  /* Styles are inline for better control */
+}
+
+#brickout-launch-button {
+  /* Styles are inline for better control */
+}
+
+#brickout-launch-button:active {
+  transform: scale(0.95) !important;
+}

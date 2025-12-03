@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Brickout Icon Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #667eea;
+      text-align: center;
+    }
+    canvas {
+      border: 1px solid #ddd;
+      margin: 10px;
+      cursor: pointer;
+    }
+    .icons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .icon-container {
+      text-align: center;
+    }
+    .instructions {
+      margin-top: 30px;
+      padding: 15px;
+      background: #f0f0f0;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎮 Brickout Icon Generator</h1>
+    
+    <div class="icons">
+      <div class="icon-container">
+        <canvas id="icon16" width="16" height="16"></canvas>
+        <div>16x16</div>
+      </div>
+      <div class="icon-container">
+        <canvas id="icon48" width="48" height="48"></canvas>
+        <div>48x48</div>
+      </div>
+      <div class="icon-container">
+        <canvas id="icon128" width="128" height="128"></canvas>
+        <div>128x128</div>
+      </div>
+    </div>
+    
+    <div class="instructions">
+      <h3>Instructions:</h3>
+      <ol>
+        <li>Right-click on each icon above</li>
+        <li>Select "Save image as..."</li>
+        <li>Save with the corresponding filename (icon16.png, icon48.png, icon128.png)</li>
+        <li>Place the files in the brickout extension folder</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    function drawIcon(canvasId, size) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#667eea');
+      gradient.addColorStop(1, '#764ba2');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+      
+      // Scale factors
+      const scale = size / 128;
+      
+      // Draw paddle
+      const paddleWidth = 40 * scale;
+      const paddleHeight = 8 * scale;
+      const paddleX = (size - paddleWidth) / 2;
+      const paddleY = size - 20 * scale;
+      
+      ctx.fillStyle = '#4CAF50';
+      ctx.fillRect(paddleX, paddleY, paddleWidth, paddleHeight);
+      
+      // Draw ball
+      const ballRadius = 6 * scale;
+      const ballX = size / 2;
+      const ballY = size / 2 - 10 * scale;
+      
+      ctx.beginPath();
+      ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+      ctx.fillStyle = '#ff6b6b';
+      ctx.fill();
+      
+      // Draw some "bricks" (rectangles)
+      const brickWidth = 20 * scale;
+      const brickHeight = 8 * scale;
+      const brickGap = 4 * scale;
+      
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      
+      // Top row of bricks
+      const startY = 20 * scale;
+      for (let i = 0; i < 3; i++) {
+        const x = (size - (3 * brickWidth + 2 * brickGap)) / 2 + i * (brickWidth + brickGap);
+        ctx.fillRect(x, startY, brickWidth, brickHeight);
+      }
+      
+      // Make canvas downloadable
+      canvas.addEventListener('click', function() {
+        const link = document.createElement('a');
+        link.download = canvasId + '.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
+    
+    // Draw all icons
+    drawIcon('icon16', 16);
+    drawIcon('icon48', 48);
+    drawIcon('icon128', 128);
+  </script>
+</body>
+</html>

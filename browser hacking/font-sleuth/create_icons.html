@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Font Sleuth Icon Generator</title>
+</head>
+<body style="font-family: Arial;">
+  <h3>Right-click each icon and "Save Image As..." with the filename shown below it</h3>
+  <div style="margin: 20px;">
+    <canvas id="c16" width="16" height="16" style="border: 1px solid #ccc; image-rendering: pixelated; width: 64px; height: 64px;"></canvas>
+    <div>icon16.png (16x16)</div>
+  </div>
+  <div style="margin: 20px;">
+    <canvas id="c48" width="48" height="48" style="border: 1px solid #ccc; width: 96px; height: 96px;"></canvas>
+    <div>icon48.png (48x48)</div>
+  </div>
+  <div style="margin: 20px;">
+    <canvas id="c128" width="128" height="128" style="border: 1px solid #ccc; width: 128px; height: 128px;"></canvas>
+    <div>icon128.png (128x128)</div>
+  </div>
+  <script>
+    function drawIcon(canvas) {
+      const ctx = canvas.getContext('2d');
+      const size = canvas.width;
+      
+      // Blue background
+      ctx.fillStyle = '#4A90E2';
+      ctx.fillRect(0, 0, size, size);
+      
+      // Large letter A
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${size * 0.7}px Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('A', size / 2, size * 0.62);
+      
+      // Magnifying glass (white circle)
+      const glassX = size * 0.7;
+      const glassY = size * 0.23;
+      const glassRadius = size * 0.14;
+      
+      ctx.beginPath();
+      ctx.arc(glassX, glassY, glassRadius, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      
+      // Magnifying glass crosshair (blue)
+      ctx.strokeStyle = '#4A90E2';
+      ctx.lineWidth = size * 0.025;
+      ctx.lineCap = 'round';
+      
+      // Horizontal line
+      ctx.beginPath();
+      ctx.moveTo(glassX - glassRadius * 0.5, glassY);
+      ctx.lineTo(glassX + glassRadius * 0.5, glassY);
+      ctx.stroke();
+      
+      // Vertical line
+      ctx.beginPath();
+      ctx.moveTo(glassX, glassY - glassRadius * 0.5);
+      ctx.lineTo(glassX, glassY + glassRadius * 0.5);
+      ctx.stroke();
+    }
+    
+    drawIcon(document.getElementById('c16'));
+    drawIcon(document.getElementById('c48'));
+    drawIcon(document.getElementById('c128'));
+  </script>
+</body>
+</html>
