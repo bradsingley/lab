@@ -149,7 +149,7 @@
       height: 20px;
       background: #ff6b6b;
       border: 2px solid #555555;
-      border-radius: 0;
+      border-radius: 50%;
       pointer-events: none;
       z-index: 1000;
     }
@@ -341,7 +341,7 @@
       
       // Update cursor position
       const cursor = document.getElementById('cursor');
-      const screenX = normalizedX * window.innerWidth;
+      const screenX = (1 - normalizedX) * window.innerWidth;
       const screenY = normalizedY * window.innerHeight;
       cursor.style.left = (screenX - 10) + 'px';
       cursor.style.top = (screenY - 10) + 'px';
