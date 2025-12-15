@@ -23,42 +23,37 @@
     }
     
     #video {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      width: 320px;
-      height: 240px;
+      position: relative;
+      width: 242px;
+      height: 182px;
       border: 2px solid #555;
       border-radius: 6px;
       z-index: 1000;
       transform: scaleX(-1);
+      filter: grayscale(100%);
+      display: block;
+      margin: 0 auto;
     }
     
     #canvas {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
-      width: 320px;
-      height: 240px;
-      border: 2px solid #555;
+      top: 0;
+      left: 0;
+      width: 242px;
+      height: 182px;
+      border: none;
       border-radius: 6px;
       z-index: 1001;
       pointer-events: none;
       transform: scaleX(-1);
     }
     
-    .finger-tracker {
-      position: absolute;
-      bottom: 280px;
-      right: 20px;
-      background: #f5f5f5;
-      border: 2px solid #555;
-      padding: 15px;
-      border-radius: 6px;
-      color: #333;
-      font-size: 14px;
-      z-index: 1000;
+    #video-container {
+      position: relative;
+      display: inline-block;
+      width: 100%;
     }
+    
     
     .controls {
       position: absolute;
@@ -164,14 +159,11 @@
   </style>
 </head>
 <body>
-  <video id="video" autoplay muted playsinline></video>
-  <canvas id="canvas" width="320" height="240"></canvas>
-  <div class="finger-tracker">
-    <div>Index Finger Tracking</div>
-    <div id="tracking-status">Initializing...</div>
-    <div id="finger-position">Position: --</div>
-  </div>
   <div class="controls">
+    <div id="video-container" style="margin-bottom: 20px;">
+      <video id="video" autoplay muted playsinline></video>
+      <canvas id="canvas" width="242" height="182"></canvas>
+    </div>
     <div class="control-group">
       <label>Waveform</label>
       <select id="waveform">
@@ -193,7 +185,10 @@
         <option value="3">High (400-3200 Hz)</option>
       </select>
     </div>
-    <button onclick="toggleMute()">Mute/unmute</button>
+    <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 12px;">
+      <button id="control-btn" onclick="togglePlayback()" style="margin: 0; flex-shrink: 0;">Start</button>
+      <div style="font-size: 12px; color: #666;">(use your cursor or index finger to control pitch and volume)</div>
+    </div>
   </div>
 
   <div class="cursor" id="cursor"></div>
@@ -204,6 +199,8 @@
     let oscillator;
     let gainNode;
     let convolver;
+    let dryGain;
+    let wetGain;
     let isPlaying = false;
     let isMuted = false;
     
@@ -250,8 +247,8 @@
       
       oscillator = audioContext.createOscillator();
       gainNode = audioContext.createGain();
-      const dryGain = audioContext.createGain();
-      const wetGain = audioContext.createGain();
+      dryGain = audioContext.createGain();
+      wetGain = audioContext.createGain();
       
       // Set waveform
       oscillator.type = document.getElementById('waveform').value;
@@ -268,10 +265,14 @@
       
       // Set initial values
       gainNode.gain.value = volume;
-      updateReverb();
+      // Initialize reverb based on current slider
+      const reverbAmount = document.getElementById('reverb').value / 100;
+      dryGain.gain.value = 1 - reverbAmount;
+      wetGain.gain.value = reverbAmount;
       
       oscillator.start();
       isPlaying = true;
+      updateButtonText();
     }
     
     // Stop theremin
@@ -283,15 +284,14 @@
         oscillator = null;
       }
       isPlaying = false;
+      updateButtonText();
     }
     
     // Update reverb mix
     function updateReverb() {
-      if (!audioContext) return;
+      if (!dryGain || !wetGain) return;
       
       const reverbAmount = document.getElementById('reverb').value / 100;
-      const dryGain = audioContext.createGain();
-      const wetGain = audioContext.createGain();
       
       dryGain.gain.value = 1 - reverbAmount;
       wetGain.gain.value = reverbAmount;
@@ -316,7 +316,7 @@
     
     // Calculate volume from finger position
     function calculateVolume(normalizedX) {
-      // normalizedX is already 0-1
+      // Left is quiet, right is loud
       return Math.max(0, Math.min(1, normalizedX));
     }
     
@@ -341,7 +341,7 @@
       
       // Update cursor position
       const cursor = document.getElementById('cursor');
-      const screenX = (1 - normalizedX) * window.innerWidth;
+      const screenX = normalizedX * window.innerWidth;
       const screenY = normalizedY * window.innerHeight;
       cursor.style.left = (screenX - 10) + 'px';
       cursor.style.top = (screenY - 10) + 'px';
@@ -358,6 +358,26 @@
       }
     }
     
+    // Toggle playback (for button)
+    function togglePlayback() {
+      if (isPlaying) {
+        stopTheremin();
+      } else {
+        startTheremin();
+      }
+      updateButtonText();
+    }
+    
+    // Update button text
+    function updateButtonText() {
+      const btn = document.getElementById('control-btn');
+      if (isPlaying) {
+        btn.textContent = 'Stop';
+      } else {
+        btn.textContent = 'Start';
+      }
+    }
+    
     // Initialize finger tracking
     let hands;
     let camera;
@@ -365,15 +385,9 @@
     const canvas = document.getElementById('canvas');
     const canvasCtx = canvas.getContext('2d');
     
-    let lastPinchTime = 0;
-    const pinchDebounceDelay = 300; // ms between pinch toggles
-    let isPinching = false;
-    
-    function calculateDistance(point1, point2) {
-      const dx = point1.x - point2.x;
-      const dy = point1.y - point2.y;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
+    let hasBeenInitiated = false;
+    let wasPausedByDetection = false;
+    let fingerWasDetected = false;
     
     function onResults(results) {
       canvasCtx.save();
@@ -384,62 +398,61 @@
           // Draw hand landmarks
           if (typeof drawConnectors !== 'undefined' && typeof drawLandmarks !== 'undefined') {
             drawConnectors(canvasCtx, landmarks, window.Hands?.HAND_CONNECTIONS || [], {color: '#00FF00', lineWidth: 2});
-            drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 1});
+            // Draw all landmarks with background color first
+            drawLandmarks(canvasCtx, landmarks, {color: '#f5f5f5', lineWidth: 1});
+            // Then draw index finger tip in red (landmark 8)
+            if (landmarks[8]) {
+              canvasCtx.fillStyle = '#FF0000';
+              canvasCtx.beginPath();
+              canvasCtx.arc(landmarks[8].x * canvas.width, landmarks[8].y * canvas.height, 4, 0, 2 * Math.PI);
+              canvasCtx.fill();
+            }
           }
           
           // Thumb is landmark 4, index finger tip is landmark 8
           const thumbTip = landmarks[4];
           const indexTip = landmarks[8];
           
-          // Detect pinch gesture
-          if (thumbTip && indexTip) {
-            const distance = calculateDistance(thumbTip, indexTip);
-            const pinchThreshold = 0.05; // Distance threshold for pinch
-            
-            if (distance < pinchThreshold && !isPinching) {
-              // Pinch started
-              isPinching = true;
-              const now = Date.now();
-              if (now - lastPinchTime > pinchDebounceDelay) {
-                lastPinchTime = now;
-                if (isPlaying) {
-                  stopTheremin();
-                } else {
-                  startTheremin();
-                }
-              }
-            } else if (distance >= pinchThreshold) {
-              // Pinch released
-              isPinching = false;
-            }
-          }
-          
           if (indexTip) {
             fingerDetected = true;
-            // Use MediaPipe coordinates directly (X is mirrored by the canvas CSS transform)
-            fingerX = indexTip.x;
+            fingerWasDetected = true;
+            // Resume if it was paused by detection
+            if (wasPausedByDetection && hasBeenInitiated) {
+              wasPausedByDetection = false;
+              if (!isPlaying) {
+                startTheremin();
+              }
+            }
+            // Invert X coordinate to match mouse coordinate system
+            fingerX = 1 - indexTip.x;
             fingerY = indexTip.y;
             
             // Update theremin with finger position
             updateTheremin(fingerX, fingerY);
             
-            // Update status display
-            document.getElementById('tracking-status').textContent = 'Tracking Active';
-            document.getElementById('finger-position').textContent = 
-              `Position: X=${Math.round(fingerX * 100)}% Y=${Math.round(fingerY * 100)}%`;
-            
             // Draw a larger circle for the index finger tip
-            canvasCtx.fillStyle = '#00FFFF';
+            canvasCtx.fillStyle = '#ff6b6b';
             canvasCtx.beginPath();
             canvasCtx.arc(indexTip.x * canvas.width, indexTip.y * canvas.height, 8, 0, 2 * Math.PI);
             canvasCtx.fill();
+          } else if (fingerWasDetected) {
+            // Index finger was detected but now left camera view
+            fingerDetected = false;
+            fingerWasDetected = false;
+            if (isPlaying && hasBeenInitiated) {
+              wasPausedByDetection = true;
+              stopTheremin();
+            }
           }
         }
       } else {
         fingerDetected = false;
-        isPinching = false;
-        document.getElementById('tracking-status').textContent = 'No Hand Detected';
-        document.getElementById('finger-position').textContent = 'Position: --';
+        fingerWasDetected = false;
+        // Pause sound if hand goes off page (but only if initiated)
+        if (isPlaying && hasBeenInitiated) {
+          wasPausedByDetection = true;
+          stopTheremin();
+        }
       }
       
       canvasCtx.restore();
@@ -447,16 +460,6 @@
     
     async function initializeCamera() {
       try {
-        // Request camera permission explicitly
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            width: { ideal: 320 },
-            height: { ideal: 240 }
-          } 
-        });
-        // Stop the stream - we'll let Camera object handle it
-        stream.getTracks().forEach(track => track.stop());
-        
         hands = new Hands({
           locateFile: (file) => {
             return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
@@ -476,40 +479,69 @@
           onFrame: async () => {
             await hands.send({image: video});
           },
-          width: 320,
-          height: 240
+          width: 242,
+          height: 182
         });
         
         await camera.start();
-        document.getElementById('tracking-status').textContent = 'Camera Ready';
       } catch (error) {
         console.error('Error initializing camera:', error);
-        document.getElementById('tracking-status').textContent = 'Camera Error: ' + error.message;
       }
     }
     
     document.addEventListener('click', (e) => {
+      // Handle audio context resume (required by some browsers)
+      if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      
+      // Only respond to clicks if not on controls
       if (e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
-        if (isPlaying) {
-          stopTheremin();
-        } else {
+        // First click initiates
+        if (!hasBeenInitiated) {
+          hasBeenInitiated = true;
           startTheremin();
+        } else {
+          // Subsequent clicks toggle
+          if (isPlaying) {
+            stopTheremin();
+          } else {
+            startTheremin();
+          }
         }
       }
     });
-    
-    // Mouse tracking for theremin control
     document.addEventListener('mousemove', (e) => {
       if (isPlaying) {
         usingMouse = true;
         const normalizedX = e.clientX / window.innerWidth;
         const normalizedY = e.clientY / window.innerHeight;
         updateTheremin(normalizedX, normalizedY);
+      } else {
+        // Still update cursor position even when not playing
+        const cursor = document.getElementById('cursor');
+        const screenX = (e.clientX / window.innerWidth) * window.innerWidth;
+        const screenY = (e.clientY / window.innerHeight) * window.innerHeight;
+        cursor.style.left = (screenX - 10) + 'px';
+        cursor.style.top = (screenY - 10) + 'px';
       }
     });
     
     document.addEventListener('mouseleave', () => {
+      // Pause sound when cursor leaves the page
+      if (isPlaying && usingMouse && hasBeenInitiated) {
+        wasPausedByDetection = true;
+        stopTheremin();
+      }
       usingMouse = false;
+    });
+    
+    document.addEventListener('mouseenter', () => {
+      // Resume if it was paused by detection
+      if (wasPausedByDetection && hasBeenInitiated && !isPlaying) {
+        wasPausedByDetection = false;
+        startTheremin();
+      }
     });
     
     // Waveform change
@@ -551,18 +583,10 @@
     // Initialize display
     updateTheremin(fingerX, fingerY);
     
-    // Handle audio context resume (required by some browsers)
-    document.addEventListener('click', () => {
-      if (audioContext && audioContext.state === 'suspended') {
-        audioContext.resume();
-      }
-    }, { once: true });
-    
     // Initialize camera when page loads
     window.addEventListener('load', () => {
       initializeCamera().catch(err => {
         console.warn('Camera initialization failed, mouse control available:', err);
-        document.getElementById('tracking-status').textContent = 'Mouse control active';
       });
     });
   </script>
