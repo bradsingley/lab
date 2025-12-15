@@ -211,6 +211,7 @@
     let fingerX = 0.5; // Normalized position (0-1)
     let fingerY = 0.5; // Normalized position (0-1)
     let fingerDetected = false;
+    let usingMouse = false;
     
     // Initialize audio
     function initAudio() {
@@ -324,7 +325,7 @@
       frequency = calculateFrequency(normalizedY);
       volume = calculateVolume(normalizedX);
       
-      if (isMuted || !fingerDetected) volume = 0;
+      if (isMuted || (!fingerDetected && !usingMouse)) volume = 0;
       
       if (oscillator && gainNode) {
         oscillator.frequency.exponentialRampToValueAtTime(
@@ -337,8 +338,10 @@
       
       // Update cursor position
       const cursor = document.getElementById('cursor');
-      cursor.style.left = (x - 10) + 'px';
-      cursor.style.top = (y - 10) + 'px';
+      const screenX = normalizedX * window.innerWidth;
+      const screenY = normalizedY * window.innerHeight;
+      cursor.style.left = (screenX - 10) + 'px';
+      cursor.style.top = (screenY - 10) + 'px';
     }
     
     // Toggle mute
@@ -451,6 +454,20 @@
       }
     });
     
+    // Mouse tracking for theremin control
+    document.addEventListener('mousemove', (e) => {
+      if (isPlaying) {
+        usingMouse = true;
+        const normalizedX = e.clientX / window.innerWidth;
+        const normalizedY = e.clientY / window.innerHeight;
+        updateTheremin(normalizedX, normalizedY);
+      }
+    });
+    
+    document.addEventListener('mouseleave', () => {
+      usingMouse = false;
+    });
+    
     // Waveform change
     document.getElementById('waveform').addEventListener('change', () => {
       if (oscillator) {
@@ -499,7 +516,10 @@
     
     // Initialize camera when page loads
     window.addEventListener('load', () => {
-      initializeCamera();
+      initializeCamera().catch(err => {
+        console.warn('Camera initialization failed, mouse control available:', err);
+        document.getElementById('tracking-status').textContent = 'Mouse control active';
+      });
     });
   </script>
 </body>
