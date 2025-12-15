@@ -365,13 +365,19 @@
     const canvas = document.getElementById('canvas');
     const canvasCtx = canvas.getContext('2d');
     
+    let lastPinchTime = 0;
+    const pinchDebounceDelay = 300; // ms between pinch toggles
+    let isPinching = false;
+    
+    function calculateDistance(point1, point2) {
+      const dx = point1.x - point2.x;
+      const dy = point1.y - point2.y;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    
     function onResults(results) {
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Mirror the canvas to match the video
-      canvasCtx.translate(canvas.width, 0);
-      canvasCtx.scale(-1, 1);
       
       if (results.multiHandLandmarks) {
         for (const landmarks of results.multiHandLandmarks) {
@@ -381,13 +387,37 @@
             drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 1});
           }
           
-          // Index finger tip is landmark 8
+          // Thumb is landmark 4, index finger tip is landmark 8
+          const thumbTip = landmarks[4];
           const indexTip = landmarks[8];
+          
+          // Detect pinch gesture
+          if (thumbTip && indexTip) {
+            const distance = calculateDistance(thumbTip, indexTip);
+            const pinchThreshold = 0.05; // Distance threshold for pinch
+            
+            if (distance < pinchThreshold && !isPinching) {
+              // Pinch started
+              isPinching = true;
+              const now = Date.now();
+              if (now - lastPinchTime > pinchDebounceDelay) {
+                lastPinchTime = now;
+                if (isPlaying) {
+                  stopTheremin();
+                } else {
+                  startTheremin();
+                }
+              }
+            } else if (distance >= pinchThreshold) {
+              // Pinch released
+              isPinching = false;
+            }
+          }
+          
           if (indexTip) {
             fingerDetected = true;
-            // Convert from MediaPipe coordinates (0-1) to screen coordinates
-            // Note: MediaPipe X is already mirrored, so we use it directly
-            fingerX = 1 - indexTip.x; // Mirror X coordinate
+            // Use MediaPipe coordinates directly (X is mirrored by the canvas CSS transform)
+            fingerX = indexTip.x;
             fingerY = indexTip.y;
             
             // Update theremin with finger position
@@ -407,6 +437,7 @@
         }
       } else {
         fingerDetected = false;
+        isPinching = false;
         document.getElementById('tracking-status').textContent = 'No Hand Detected';
         document.getElementById('finger-position').textContent = 'Position: --';
       }
