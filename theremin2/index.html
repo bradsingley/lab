@@ -20,6 +20,7 @@
       background-repeat: no-repeat;
       cursor: none;
       font-family: 'Avenir', 'Helvetica Neue', 'Arial', sans-serif;
+      transform: scaleX(-1);
     }
     
     #video {
@@ -298,7 +299,8 @@
     // Calculate frequency from finger position
     function calculateFrequency(normalizedY) {
       const range = document.getElementById('range').value;
-      // normalizedY is already 0-1, with 1 being top of screen
+      // Invert Y so that 0 is at bottom (low) and 1 is at top (high)
+      const invertedY = 1 - normalizedY;
       
       let minFreq, maxFreq;
       switch (range) {
@@ -308,7 +310,7 @@
       }
       
       // Exponential scaling for more natural pitch control
-      return minFreq * Math.pow(maxFreq / minFreq, normalizedY);
+      return minFreq * Math.pow(maxFreq / minFreq, invertedY);
     }
     
     // Calculate volume from finger position
@@ -413,6 +415,16 @@
     
     async function initializeCamera() {
       try {
+        // Request camera permission explicitly
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            width: { ideal: 320 },
+            height: { ideal: 240 }
+          } 
+        });
+        // Stop the stream - we'll let Camera object handle it
+        stream.getTracks().forEach(track => track.stop());
+        
         hands = new Hands({
           locateFile: (file) => {
             return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
@@ -440,7 +452,7 @@
         document.getElementById('tracking-status').textContent = 'Camera Ready';
       } catch (error) {
         console.error('Error initializing camera:', error);
-        document.getElementById('tracking-status').textContent = 'Camera Error';
+        document.getElementById('tracking-status').textContent = 'Camera Error: ' + error.message;
       }
     }
     
