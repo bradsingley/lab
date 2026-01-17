@@ -19,7 +19,7 @@ const CONFIG = {
   sandColor: 0xe8dcc4,
   gardenWorldSize: 12.8,
   baseHeight: 6,
-  rockColor: 0x2a2a2a,
+  rockColor: 0x3a3a3a,
   rocks: [
     { diameter: 250, heightRatio: 0.4 },  // Large rock
     { diameter: 100, heightRatio: 0.5 },  // Medium rock (near small)
@@ -438,16 +438,23 @@ class ZenGardenApp {
     const largeZ = (Math.random() - 0.5) * (CONFIG.gardenWorldSize - margin * 2);
     
     // Place two smaller rocks near each other, away from large rock
+    // but 50-200 grid units apart from each other
     let clusterX, clusterZ;
     do {
       clusterX = (Math.random() - 0.5) * (CONFIG.gardenWorldSize - margin * 2);
       clusterZ = (Math.random() - 0.5) * (CONFIG.gardenWorldSize - margin * 2);
     } while (Math.sqrt((clusterX - largeX) ** 2 + (clusterZ - largeZ) ** 2) < 3);
     
+    // Calculate offset for second small rock: 50-200 grid units = 0.625-2.5 world units
+    const minDist = (50 / CONFIG.gridWidth) * CONFIG.gardenWorldSize;
+    const maxDist = (200 / CONFIG.gridWidth) * CONFIG.gardenWorldSize;
+    const angle = Math.random() * Math.PI * 2;
+    const dist = minDist + Math.random() * (maxDist - minDist);
+    
     const positions = [
       { x: largeX, z: largeZ },
-      { x: clusterX + (Math.random() - 0.5) * 1.5, z: clusterZ + (Math.random() - 0.5) * 1.5 },
-      { x: clusterX + (Math.random() - 0.5) * 1.5, z: clusterZ + (Math.random() - 0.5) * 1.5 }
+      { x: clusterX, z: clusterZ },
+      { x: clusterX + Math.cos(angle) * dist, z: clusterZ + Math.sin(angle) * dist }
     ];
     
     CONFIG.rocks.forEach((rockConfig, i) => {
