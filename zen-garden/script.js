@@ -397,9 +397,8 @@ class ZenGardenApp {
     this.scene.add(sun);
     this.scene.add(new THREE.DirectionalLight(0xaaccff, 0.3).translateX(-5).translateY(4));
     
-    // Garden container (rotated 45 degrees for isometric look)
+    // Garden container (no rotation - camera angle provides diagonal view)
     this.gardenContainer = new THREE.Group();
-    this.gardenContainer.rotation.y = Math.PI / 4;
     this.scene.add(this.gardenContainer);
     
     // Garden bed frame - raised above grass to prevent z-fighting
@@ -785,11 +784,7 @@ class ZenGardenApp {
   initControls() {
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
-    this.groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.3); // Adjusted for sand height
-    
-    // Inverse rotation matrix for converting world coords to garden local coords
-    this.gardenInverseMatrix = new THREE.Matrix4();
-    this.gardenInverseMatrix.copy(this.gardenContainer.matrixWorld).invert();
+    this.groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.3);
     
     const indicator = new THREE.Mesh(
       new THREE.RingGeometry(0.3, 0.4, 32),
@@ -797,7 +792,7 @@ class ZenGardenApp {
     );
     indicator.rotation.x = -Math.PI / 2;
     indicator.visible = false;
-    this.gardenContainer.add(indicator); // Add to garden container so it rotates with it
+    this.scene.add(indicator);
     this.indicator = indicator;
     
     const canvas = this.renderer.domElement;
@@ -818,28 +813,19 @@ class ZenGardenApp {
     return pt;
   }
   
-  // Convert world position to garden local coordinates
-  worldToLocal(worldPos) {
-    const local = worldPos.clone();
-    local.applyMatrix4(this.gardenInverseMatrix);
-    return local;
-  }
-  
   onMove(cx, cy) {
-    const worldPos = this.getWorldPos(cx, cy);
-    if (worldPos) {
-      const localPos = this.worldToLocal(worldPos);
-      this.indicator.position.set(localPos.x, 0.4, localPos.z);
+    const pos = this.getWorldPos(cx, cy);
+    if (pos) {
+      this.indicator.position.set(pos.x, 0.4, pos.z);
       this.indicator.visible = true;
-      if (this.rake.isActive) this.rake.update(localPos.x, localPos.z);
+      if (this.rake.isActive) this.rake.update(pos.x, pos.z);
     }
   }
   
   onDown(cx, cy) {
-    const worldPos = this.getWorldPos(cx, cy);
-    if (worldPos) {
-      const localPos = this.worldToLocal(worldPos);
-      this.rake.start(localPos.x, localPos.z);
+    const pos = this.getWorldPos(cx, cy);
+    if (pos) {
+      this.rake.start(pos.x, pos.z);
       this.orbit.enabled = false;
     }
   }
