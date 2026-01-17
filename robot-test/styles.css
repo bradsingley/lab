@@ -331,6 +331,12 @@ body {
 @media (max-width: 768px) {
     .video-container {
         padding: 15px;
+        justify-content: flex-start;
+        padding-top: 20px;
+    }
+    
+    .frame-wrapper {
+        transform-origin: top center;
     }
     
     .hint-text {
@@ -358,6 +364,8 @@ body {
 @media (max-width: 480px) {
     .video-container {
         padding: 10px;
+        justify-content: flex-start;
+        padding-top: 15px;
     }
     
     .hint-text {
