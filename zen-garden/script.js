@@ -18,7 +18,13 @@ const CONFIG = {
   voxelSize: 0.0125,
   sandColor: 0xe8dcc4,
   gardenWorldSize: 12.8,
-  baseHeight: 6
+  baseHeight: 6,
+  rockColor: 0x2a2a2a,
+  rocks: [
+    { diameter: 250, heightRatio: 0.4 },  // Large rock
+    { diameter: 100, heightRatio: 0.5 },  // Medium rock (near small)
+    { diameter: 75, heightRatio: 0.55 }   // Small rock (near medium)
+  ]
 };
 
 // ============================================
@@ -411,11 +417,99 @@ class ZenGardenApp {
     bottom.receiveShadow = true;
     this.scene.add(bottom);
     
+    this.createRocks();
+    
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(window.innerWidth, window.innerHeight);
     });
+  }
+  
+  createRocks() {
+    this.rocks = [];
+    this.rockPositions = [];
+    
+    const half = CONFIG.gardenWorldSize / 2;
+    const margin = 1.5;
+    
+    // Place large rock randomly
+    const largeX = (Math.random() - 0.5) * (CONFIG.gardenWorldSize - margin * 2);
+    const largeZ = (Math.random() - 0.5) * (CONFIG.gardenWorldSize - margin * 2);
+    
+    // Place two smaller rocks near each other, away from large rock
+    let clusterX, clusterZ;
+    do {
+      clusterX = (Math.random() - 0.5) * (CONFIG.gardenWorldSize - margin * 2);
+      clusterZ = (Math.random() - 0.5) * (CONFIG.gardenWorldSize - margin * 2);
+    } while (Math.sqrt((clusterX - largeX) ** 2 + (clusterZ - largeZ) ** 2) < 3);
+    
+    const positions = [
+      { x: largeX, z: largeZ },
+      { x: clusterX + (Math.random() - 0.5) * 1.5, z: clusterZ + (Math.random() - 0.5) * 1.5 },
+      { x: clusterX + (Math.random() - 0.5) * 1.5, z: clusterZ + (Math.random() - 0.5) * 1.5 }
+    ];
+    
+    CONFIG.rocks.forEach((rockConfig, i) => {
+      const worldRadius = (rockConfig.diameter / CONFIG.gridWidth) * CONFIG.gardenWorldSize / 2;
+      const height = worldRadius * rockConfig.heightRatio * 2;
+      
+      const rock = this.createIrregularRock(worldRadius, height);
+      rock.position.set(positions[i].x, height * 0.3, positions[i].z);
+      rock.rotation.y = Math.random() * Math.PI * 2;
+      rock.castShadow = true;
+      rock.receiveShadow = true;
+      this.scene.add(rock);
+      this.rocks.push(rock);
+      
+      // Store position and radius for sand displacement
+      this.rockPositions.push({
+        x: positions[i].x,
+        z: positions[i].z,
+        radius: worldRadius * 1.1,
+        gridRadius: Math.ceil(rockConfig.diameter / 2 * 1.1)
+      });
+    });
+  }
+  
+  createIrregularRock(radius, height) {
+    // Create irregular rock using displaced icosahedron
+    const geo = new THREE.IcosahedronGeometry(radius, 3);
+    const posAttr = geo.attributes.position;
+    const vertex = new THREE.Vector3();
+    
+    // Create noise-based displacement for irregular shape
+    const seed = Math.random() * 1000;
+    for (let i = 0; i < posAttr.count; i++) {
+      vertex.fromBufferAttribute(posAttr, i);
+      
+      // Flatten to ellipsoid shape (wider than tall)
+      vertex.y *= height / radius * 0.5;
+      
+      // Add irregular bumps using pseudo-noise
+      const angle1 = Math.atan2(vertex.z, vertex.x);
+      const angle2 = Math.atan2(vertex.y, Math.sqrt(vertex.x * vertex.x + vertex.z * vertex.z));
+      const noise = 
+        Math.sin(angle1 * 3 + seed) * 0.15 +
+        Math.sin(angle2 * 5 + seed * 2) * 0.1 +
+        Math.sin(angle1 * 7 + angle2 * 4 + seed * 3) * 0.08;
+      
+      const len = vertex.length();
+      vertex.normalize().multiplyScalar(len * (1 + noise));
+      
+      posAttr.setXYZ(i, vertex.x, vertex.y, vertex.z);
+    }
+    
+    geo.computeVertexNormals();
+    
+    const mat = new THREE.MeshStandardMaterial({
+      color: CONFIG.rockColor,
+      roughness: 0.95,
+      metalness: 0.05,
+      flatShading: true
+    });
+    
+    return new THREE.Mesh(geo, mat);
   }
   
   initGrid() {
