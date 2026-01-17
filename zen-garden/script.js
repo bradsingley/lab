@@ -592,6 +592,161 @@ class ZenGardenApp {
       this.cm.markAllDirty();
       this.cm.markAllActive();
     });
+    
+    // Hand tracking toggle
+    const handToggle = document.getElementById('handTrackingToggle');
+    handToggle.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        this.startHandTracking();
+      } else {
+        this.stopHandTracking();
+      }
+    });
+  }
+  
+  async startHandTracking() {
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('handCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    this.handTrackingActive = true;
+    this.handWasDown = false;
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { width: 640, height: 480, facingMode: 'user' } 
+      });
+      video.srcObject = stream;
+      video.classList.add('active');
+      canvas.classList.add('active');
+      canvas.width = 200;
+      canvas.height = 150;
+      
+      // Initialize MediaPipe Hands
+      this.hands = new Hands({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`
+      });
+      
+      this.hands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 0,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+      
+      this.hands.onResults((results) => this.onHandResults(results, ctx, canvas));
+      
+      // Use Camera utility for consistent frame processing
+      this.camera = new Camera(video, {
+        onFrame: async () => {
+          if (this.handTrackingActive) {
+            await this.hands.send({ image: video });
+          }
+        },
+        width: 640,
+        height: 480
+      });
+      this.camera.start();
+      
+    } catch (err) {
+      console.error('Failed to start webcam:', err);
+      document.getElementById('handTrackingToggle').checked = false;
+      alert('Could not access webcam. Please allow camera permissions.');
+    }
+  }
+  
+  stopHandTracking() {
+    this.handTrackingActive = false;
+    
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('handCanvas');
+    
+    video.classList.remove('active');
+    canvas.classList.remove('active');
+    
+    if (video.srcObject) {
+      video.srcObject.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
+    }
+    
+    if (this.camera) {
+      this.camera.stop();
+      this.camera = null;
+    }
+    
+    // End any active rake stroke
+    this.rake.end();
+  }
+  
+  onHandResults(results, ctx, canvas) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+      if (this.handWasDown) {
+        this.rake.end();
+        this.handWasDown = false;
+      }
+      return;
+    }
+    
+    const landmarks = results.multiHandLandmarks[0];
+    
+    // Draw hand skeleton on preview
+    ctx.strokeStyle = 'rgba(150, 200, 150, 0.8)';
+    ctx.lineWidth = 2;
+    const connections = [
+      [0,1],[1,2],[2,3],[3,4],
+      [0,5],[5,6],[6,7],[7,8],
+      [5,9],[9,10],[10,11],[11,12],
+      [9,13],[13,14],[14,15],[15,16],
+      [13,17],[17,18],[18,19],[19,20],[0,17]
+    ];
+    for (const [a, b] of connections) {
+      ctx.beginPath();
+      ctx.moveTo(landmarks[a].x * canvas.width, landmarks[a].y * canvas.height);
+      ctx.lineTo(landmarks[b].x * canvas.width, landmarks[b].y * canvas.height);
+      ctx.stroke();
+    }
+    
+    // Draw index fingertip
+    const indexTip = landmarks[8];
+    ctx.fillStyle = 'rgba(255, 200, 150, 0.9)';
+    ctx.beginPath();
+    ctx.arc(indexTip.x * canvas.width, indexTip.y * canvas.height, 6, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Map hand position to garden coordinates
+    // X: 0-1 maps to garden width (mirrored)
+    // Y: 0-1 maps to garden depth
+    const half = CONFIG.gardenWorldSize / 2;
+    const wx = (1 - indexTip.x) * CONFIG.gardenWorldSize - half; // Mirror X
+    const wz = indexTip.y * CONFIG.gardenWorldSize - half;
+    
+    // Use pinch gesture (thumb tip close to index tip) to activate raking
+    const thumbTip = landmarks[4];
+    const pinchDist = Math.sqrt(
+      Math.pow(thumbTip.x - indexTip.x, 2) + 
+      Math.pow(thumbTip.y - indexTip.y, 2)
+    );
+    const isPinching = pinchDist < 0.08;
+    
+    // Update indicator
+    this.indicator.position.set(wx, 0.1, wz);
+    this.indicator.visible = true;
+    
+    if (isPinching) {
+      if (!this.handWasDown) {
+        this.rake.start(wx, wz);
+        this.handWasDown = true;
+      } else {
+        this.rake.update(wx, wz);
+      }
+    } else {
+      if (this.handWasDown) {
+        this.rake.end();
+        this.handWasDown = false;
+      }
+    }
   }
   
   animate() {

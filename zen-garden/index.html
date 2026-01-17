@@ -16,12 +16,23 @@
       <button id="resetBtn">Reset Sand</button>
       <button id="flattenBtn">Flatten</button>
     </div>
+    <div class="toggle-group">
+      <label class="toggle">
+        <input type="checkbox" id="handTrackingToggle">
+        <span class="toggle-slider"></span>
+        <span class="toggle-label">Hand Tracking</span>
+      </label>
+    </div>
     <div class="stats">
       <span id="activeChunks">Active: 0</span>
     </div>
   </div>
   <div id="loading">Initializing voxel grid...</div>
+  <video id="webcam" autoplay playsinline></video>
+  <canvas id="handCanvas"></canvas>
   
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.min.js"></script>
   <script type="importmap">
   {
     "imports": {
