@@ -9,11 +9,24 @@
 <body>
   <div id="canvas-container"></div>
   <div id="ui">
-    <h1>Zen Garden</h1>
-    <p>Click and drag the rake to create patterns in the sand</p>
+    <h1>🪨 Zen Garden</h1>
+    <p>Click and drag to rake the sand</p>
+    <p>Scroll to zoom • Right-click drag to rotate</p>
+    <div class="controls">
+      <button id="resetBtn">Reset Sand</button>
+    </div>
   </div>
+  <div id="loading">Loading particles...</div>
   
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="script.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+      "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
+    }
+  }
+  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
