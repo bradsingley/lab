@@ -382,9 +382,9 @@ class ZenGardenApp {
     this.orbit.maxPolarAngle = Math.PI / 2.1;
     
     // Lighting
-    this.scene.add(new THREE.AmbientLight(0xffeedd, 0.7));
-    const sun = new THREE.DirectionalLight(0xfff5e6, 1.0);
-    sun.position.set(8, 15, 5);
+    this.scene.add(new THREE.AmbientLight(0xffeedd, 0.5));
+    const sun = new THREE.DirectionalLight(0xfff5e6, 1.2);
+    sun.position.set(10, 6, 5);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
     sun.shadow.camera.left = sun.shadow.camera.bottom = -10;
@@ -392,7 +392,7 @@ class ZenGardenApp {
     sun.shadow.bias = -0.0001;
     sun.shadow.normalBias = 0.02;
     this.scene.add(sun);
-    this.scene.add(new THREE.DirectionalLight(0xaaccff, 0.4).translateX(-5).translateY(8));
+    this.scene.add(new THREE.DirectionalLight(0xaaccff, 0.3).translateX(-5).translateY(4));
     
     // Garden bed
     const frame = new THREE.Mesh(
