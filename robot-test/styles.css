@@ -329,10 +329,15 @@ body {
 }
 
 @media (max-width: 768px) {
+    .game-screen {
+        justify-content: flex-start;
+    }
+    
     .video-container {
         padding: 15px;
         justify-content: flex-start;
         padding-top: 20px;
+        align-items: center;
     }
     
     .frame-wrapper {
@@ -362,10 +367,19 @@ body {
 }
 
 @media (max-width: 480px) {
+    .game-screen {
+        justify-content: flex-start;
+    }
+    
     .video-container {
         padding: 10px;
         justify-content: flex-start;
         padding-top: 15px;
+        align-items: center;
+    }
+    
+    .frame-wrapper {
+        transform-origin: top center;
     }
     
     .hint-text {
