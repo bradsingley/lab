@@ -15,9 +15,9 @@ const CONFIG = {
   rakeTeethSpacing: 12,
   rakeTeethRadius: 4,
   rakeDepth: 2,
-  voxelSize: 0.0125,
-  sandColor: 0xe8dcc4,
   gardenWorldSize: 12.8,
+  get voxelSize() { return this.gardenWorldSize / this.gridWidth; },
+  sandColor: 0xe8dcc4,
   baseHeight: 6,
   rockColor: 0x3a3a3a,
   rocks: [
@@ -28,57 +28,29 @@ const CONFIG = {
 };
 
 // ============================================
-// VOXEL GRID
+// HEIGHTMAP GRID (2D instead of 3D for memory efficiency)
 // ============================================
 class VoxelGrid {
   constructor(width, height, depth) {
     this.width = width;
     this.height = height;
     this.depth = depth;
-    this.data = new Uint8Array(width * height * depth);
-  }
-  
-  getIndex(x, y, z) {
-    if (x < 0 || x >= this.width || y < 0 || y >= this.height || z < 0 || z >= this.depth) {
-      return -1;
-    }
-    return x + y * this.width + z * this.width * this.height;
-  }
-  
-  get(x, y, z) {
-    const idx = this.getIndex(x, y, z);
-    return idx >= 0 ? this.data[idx] : 0;
-  }
-  
-  set(x, y, z, value) {
-    const idx = this.getIndex(x, y, z);
-    if (idx >= 0) {
-      this.data[idx] = value;
-      return true;
-    }
-    return false;
+    // Use 2D heightmap instead of 3D array (saves ~15MB)
+    this.heights = new Uint8Array(width * depth);
   }
   
   getHeight(x, z) {
-    for (let y = this.height - 1; y >= 0; y--) {
-      if (this.get(x, y, z)) return y + 1;
-    }
-    return 0;
+    if (x < 0 || x >= this.width || z < 0 || z >= this.depth) return 0;
+    return this.heights[x + z * this.width];
   }
   
   setHeight(x, z, h) {
-    h = Math.max(0, Math.min(this.height, h));
-    for (let y = 0; y < this.height; y++) {
-      this.set(x, y, z, y < h ? 1 : 0);
-    }
+    if (x < 0 || x >= this.width || z < 0 || z >= this.depth) return;
+    this.heights[x + z * this.width] = Math.max(0, Math.min(this.height, h));
   }
   
   fillToHeight(h) {
-    for (let z = 0; z < this.depth; z++) {
-      for (let x = 0; x < this.width; x++) {
-        this.setHeight(x, z, h);
-      }
-    }
+    this.heights.fill(Math.max(0, Math.min(this.height, h)));
   }
 }
 
