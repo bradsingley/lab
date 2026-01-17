@@ -15,7 +15,7 @@ const CONFIG = {
   rakeTeethSpacing: 6,
   rakeTeethRadius: 2,
   rakeDepth: 2,
-  voxelSize: 0.1,
+  voxelSize: 0.025,
   sandColor: 0xe8dcc4,
   gardenWorldSize: 12.8,
   baseHeight: 6
