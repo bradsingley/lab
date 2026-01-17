@@ -10,16 +10,16 @@ body {
     color: #fff;
     overflow: hidden;
     height: 100vh;
-    height: 100dvh;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
     margin: 0;
     padding: 0;
-    touch-action: manipulation;
+    touch-action: manipulation; /* Improve touch responsiveness */
 }
 
 .container {
     width: 100vw;
     height: 100vh;
-    height: 100dvh;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -27,6 +27,7 @@ body {
     box-sizing: border-box;
 }
 
+/* Loading Screen */
 .loading-screen {
     display: flex;
     align-items: center;
@@ -67,6 +68,7 @@ body {
     color: #aaa;
 }
 
+/* Game Screen */
 .game-screen {
     display: flex;
     flex-direction: column;
@@ -85,15 +87,66 @@ body {
     height: 100%;
     padding: 20px;
     box-sizing: border-box;
-    overflow: hidden;
 }
 
 .frame-wrapper {
     position: relative;
     width: 1280px;
     height: 1096px;
-    flex-shrink: 0;
+    max-width: 100%;
+    max-height: 100%;
+    flex-shrink: 1;
+}
+
+/* Responsive scaling using container query approach */
+@media (max-aspect-ratio: 1280/1096) {
+    /* Height is the limiting factor - scale based on height */
+    .frame-wrapper {
+        width: auto;
+        height: 100%;
+        aspect-ratio: 1280 / 1096;
+    }
+}
+
+@media (min-aspect-ratio: 1280/1096) {
+    /* Width is the limiting factor - scale based on width */
+    .frame-wrapper {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1280 / 1096;
+    }
+}
+
+.video-container {
+    display: f%;
+    height: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    max-height: 100dvh; /* Dynamic viewport height for mobile */
+}
+
+.frame-wrapper {
+    position: relative;
+    width: 1280px;
+    height: 1096px;
+    /* Calculate scale to fit within viewport with safe padding */
+    --padding: 20px;
+    --available-width: calc(100vw - var(--padding) * 2);
+    --available-height: calc(100vh - var(--padding) * 2);
+    --available-height-dvh: calc(100dvh - var(--padding) * 2);
+    --scale-x: calc(var(--available-width) / 1280);
+    --scale-y: calc(var(--available-height-dvh) / 1096);
+    --scale: min(var(--scale-x), var(--scale-y), 1);
+    transform: scale(var(--scale));
     transform-origin: center center;
+    flex-shrink: 0;
+    /* Prevent any overflow */
+    max-width: 100%;
+    max-height: 100%ar(--scale-x), var(--scale-y), 1);
+    transform: scale(var(--scale));
+    transform-origin: center;
+    /* Ensure proper scaling behavior */
+    flex-shrink: 0;
 }
 
 .video-frame {
@@ -109,10 +162,10 @@ body {
 
 .splash-image {
     position: absolute;
-    top: 8.76%;
-    left: 12.5%;
-    width: 75%;
-    height: 65.69%;
+    top: 8.76%; /* 96/1096 */
+    left: 12.5%; /* 160/1280 */
+    width: 75%; /* 960/1280 */
+    height: 65.69%; /* 720/1096 */
     z-index: 1;
     object-fit: cover;
 }
@@ -123,15 +176,15 @@ body {
 
 .video-player {
     position: absolute;
-    top: 8.76%;
-    left: 12.5%;
-    width: 75%;
-    height: 65.69%;
+    top: 8.76%; /* 96/1096 */
+    left: 12.5%; /* 160/1280 */
+    width: 75%; /* 960/1280 */
+    height: 65.69%; /* 720/1096 */
     z-index: 1;
     border-radius: 0;
     box-shadow: none;
     object-fit: cover;
-    display: none;
+    display: none; /* Hidden initially until first video plays */
 }
 
 .video-player.active {
@@ -140,11 +193,11 @@ body {
 
 .caption-container {
     position: absolute;
-    bottom: 9.85%;
+    bottom: 9.85%; /* 108/1096 */
     left: 50%;
     transform: translateX(-50%);
-    width: 53.13%;
-    height: 5.84%;
+    width: 53.13%; /* 680/1280 */
+    height: 5.84%; /* 64/1096 */
     z-index: 3;
     display: flex;
     flex-direction: column;
@@ -153,9 +206,9 @@ body {
 
 .caption-letter {
     position: absolute;
-    left: -22.8%;
-    top: 6.25%;
-    width: 8.24%;
+    left: -22.8%; /* -155/680 */
+    top: 6.25%; /* 4/64 */
+    width: 8.24%; /* 56/680 */
     aspect-ratio: 1;
     color: #FFBD43;
     text-shadow: 0 0 4px #FFC98C;
@@ -173,9 +226,9 @@ body {
 
 .info-icon {
     position: absolute;
-    left: -22.8%;
-    top: 6.25%;
-    width: 8.24%;
+    left: -22.8%; /* -155/680 */
+    top: 6.25%; /* 4/64 */
+    width: 8.24%; /* 56/680 */
     aspect-ratio: 1;
     color: #FFBD43;
     text-shadow: 0 0 4px #FFC98C;
@@ -215,6 +268,8 @@ body {
     position: relative;
 }
 
+
+
 .hidden-input {
     position: fixed;
     opacity: 0;
@@ -226,6 +281,9 @@ body {
     z-index: -1;
 }
 
+
+
+/* Animations */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -248,8 +306,8 @@ body {
     text-shadow: 0 0 4px #FFC98C;
     text-align: center;
     margin-top: 20px;
-    display: none;
-    position: fixed;
+    display: none; /* Hidden by default since hint shows in caption */
+    position: fixed; /* Use fixed instead of absolute to completely remove from layout */
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
@@ -261,6 +319,7 @@ body {
     display: none;
 }
 
+/* Modal */
 .modal {
     position: fixed;
     top: 0;
@@ -321,16 +380,12 @@ body {
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-}
-
-.modal-close:hover {
-    color: #FFF;
-    transform: scale(1.2);
-}
-
-@media (max-width: 768px) {
-    .video-container {
-        padding: 15px;
+}container {
+        padding: 5px; /* Tighter padding for tablets */
+    }
+    
+    .frame-wrapper {
+        --padding: 10px;
     }
     
     .hint-text {
@@ -356,8 +411,12 @@ body {
 }
 
 @media (max-width: 480px) {
-    .video-container {
-        padding: 10px;
+    .container {
+        padding: 2px; /* Minimal padding for phones */
+    }
+    
+    .frame-wrapper {
+        --padding: 5px;
     }
     
     .hint-text {
@@ -378,9 +437,10 @@ body {
     }
 }
 
+/* Handle very short screens (landscape phones) */
 @media (max-height: 500px) {
-    .video-container {
-        padding: 10px;
+    .frame-wrapper {
+        --padding: 5px;
     }
     
     .modal-content {
@@ -397,6 +457,15 @@ body {
     
     .modal-content p {
         font-size: 0.9em;
-        line-height: 1.4;
+        line-height: 1.4x) {
+    .frame-wrapper {
+        /* Tighter margins for very small screens */
+        --scale-x: calc((100vw - 10px) / 1280px);
+        --scale-y: calc((100vh - 10px) / 1096px);
+        --scale: min(var(--scale-x), var(--scale-y), 1);
+    }
+    
+    .hint-text {
+        font-size: 18px;
     }
 }

@@ -7,10 +7,36 @@ const availableVideos = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 
 const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
 // DOM elements - will be set after DOM loads
-let gameScreen, videoPlayer, captionLetter, captionSentence, hintText, splashImage, infoIcon, infoModal, closeModal;
+let gameScreen, videoPlayer, captionLetter, captionSentence, hintText, splashImage, infoIcon, infoModal, closeModal, frameWrapper, videoContainer;
 
 // State
 let isPlaying = false;
+
+// Frame dimensions
+const FRAME_WIDTH = 1280;
+const FRAME_HEIGHT = 1096;
+const PADDING = 20;
+
+// Scale the frame to fit the container
+function scaleFrame() {
+    if (!frameWrapper) {
+        console.error('frameWrapper not found!');
+        return;
+    }
+    
+    // Use window dimensions minus padding
+    const availableWidth = window.innerWidth - (PADDING * 2);
+    const availableHeight = window.innerHeight - (PADDING * 2);
+    
+    // Calculate scale to fit both dimensions, but never exceed 1
+    const scaleX = availableWidth / FRAME_WIDTH;
+    const scaleY = availableHeight / FRAME_HEIGHT;
+    const scale = Math.min(scaleX, scaleY, 1);
+    
+    console.log('Scaling:', { availableWidth, availableHeight, scaleX, scaleY, scale });
+    
+    frameWrapper.style.transform = `scale(${scale})`;
+}
 
 // Setup keyboard listeners
 function setupKeyboardListeners() {
@@ -167,6 +193,12 @@ document.addEventListener('DOMContentLoaded', function() {
     infoIcon = document.getElementById('infoIcon');
     infoModal = document.getElementById('infoModal');
     closeModal = document.getElementById('closeModal');
+    frameWrapper = document.querySelector('.frame-wrapper');
+    videoContainer = document.querySelector('.video-container');
+    
+    // Initial scale and listen for resize
+    scaleFrame();
+    window.addEventListener('resize', scaleFrame);
     
     // Set up info modal
     if (infoIcon) {
