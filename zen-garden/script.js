@@ -11,7 +11,7 @@ const CONFIG = {
   chunkSize: 16,
   angleOfRepose: 3,
   stepsPerFrame: 1,
-  rakeTeeth: 6,
+  rakeTeeth: 5,
   rakeTeethSpacing: 6,
   rakeTeethRadius: 2,
   rakeDepth: 2,
@@ -275,9 +275,10 @@ class RakeController {
     if (!this.isActive || !this.lastPos) return;
     const dx = wx - this.lastPos.x, dz = wz - this.lastPos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    if (dist > 0.02) {
-      // Interpolate for smoother lines
-      const steps = Math.ceil(dist / 0.02);
+    if (dist > 0.005) {
+      // Interpolate for smoother lines - smaller steps for tight corners
+      const stepSize = 0.008;
+      const steps = Math.max(1, Math.ceil(dist / stepSize));
       for (let i = 1; i <= steps; i++) {
         const t = i / steps;
         const ix = this.lastPos.x + dx * t;
