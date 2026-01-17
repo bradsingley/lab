@@ -5,15 +5,15 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 // CONFIGURATION
 // ============================================
 const CONFIG = {
-  gridWidth: 256,
+  gridWidth: 512,
   gridHeight: 16,
-  gridDepth: 256,
+  gridDepth: 512,
   chunkSize: 16,
   angleOfRepose: 2,
   stepsPerFrame: 1,
   rakeTeeth: 4,
-  rakeTeethSpacing: 5,
-  rakeTeethRadius: 3,
+  rakeTeethSpacing: 10,
+  rakeTeethRadius: 6,
   rakeDepth: 3,
   voxelSize: 0.1,
   sandColor: 0xe8dcc4,
@@ -213,17 +213,44 @@ class RakeController {
     
     // 4 teeth aligned perpendicular to movement direction
     const spacing = CONFIG.rakeTeethSpacing;
-    const offsets = [-1.5, -0.5, 0.5, 1.5];
+    const toothOffsets = [-1.5, -0.5, 0.5, 1.5];
     
-    for (const off of offsets) {
+    // First dig the grooves and track removed sand per tooth
+    const removedPerTooth = [];
+    for (const off of toothOffsets) {
       const tx = Math.round(cx + perpX * off * spacing);
       const tz = Math.round(cz + perpZ * off * spacing);
-      this.applyTooth(tx, tz, perpX, perpZ);
+      removedPerTooth.push({ off, removed: this.applyTooth(tx, tz) });
+    }
+    
+    // Create ridges between teeth (3 ridges between 4 teeth, plus 2 outer ridges)
+    const ridgeOffsets = [-2, -1, 0, 1, 2];
+    for (let i = 0; i < ridgeOffsets.length; i++) {
+      const ridgeOff = ridgeOffsets[i];
+      const rx = Math.round(cx + perpX * ridgeOff * spacing);
+      const rz = Math.round(cz + perpZ * ridgeOff * spacing);
+      if (rx >= 0 && rx < this.grid.width && rz >= 0 && rz < this.grid.depth) {
+        // Sum removed sand from adjacent teeth
+        let sandToAdd = 0;
+        for (const t of removedPerTooth) {
+          const dist = Math.abs(ridgeOff - t.off);
+          if (dist <= 1) {
+            sandToAdd += t.removed * (1 - dist * 0.5);
+          }
+        }
+        if (sandToAdd > 0) {
+          const rh = this.grid.getHeight(rx, rz);
+          const add = Math.ceil(sandToAdd / 6);
+          this.grid.setHeight(rx, rz, Math.min(this.grid.height - 1, rh + add));
+          this.cm.markVoxelChanged(rx, rz);
+        }
+      }
     }
   }
   
-  applyTooth(cx, cz, perpX, perpZ) {
+  applyTooth(cx, cz) {
     const r = CONFIG.rakeTeethRadius;
+    let removed = 0;
     for (let dz = -r; dz <= r; dz++) {
       for (let dx = -r; dx <= r; dx++) {
         const x = cx + dx, z = cz + dz;
@@ -238,11 +265,13 @@ class RakeController {
         
         if (dig > 0 && h > 0) {
           const newH = Math.max(1, h - dig);
+          removed += h - newH;
           this.grid.setHeight(x, z, newH);
           this.cm.markVoxelChanged(x, z);
         }
       }
     }
+    return removed;
   }
   
   start(wx, wz) { this.isActive = true; this.lastPos = { x: wx, z: wz }; }
