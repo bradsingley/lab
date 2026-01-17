@@ -298,7 +298,12 @@ class VoxelRenderer {
       new Float32Array(this.maxVoxels * 3), 3
     );
     
-    scene.add(this.mesh);
+    // Add to garden container for rotation
+    if (window.gardenApp && window.gardenApp.gardenContainer) {
+      window.gardenApp.gardenContainer.add(this.mesh);
+    } else {
+      scene.add(this.mesh);
+    }
     
     this.dummy = new THREE.Object3D();
     this.baseColor = new THREE.Color(CONFIG.sandColor);
@@ -361,11 +366,11 @@ class ZenGardenApp {
   
   initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x1a1a1a);
-    this.scene.fog = new THREE.Fog(0x1a1a1a, 15, 35);
+    this.scene.background = new THREE.Color(0x2a3a4a);
+    this.scene.fog = new THREE.Fog(0x2a3a4a, 25, 60);
     
-    this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
-    this.camera.position.set(0, 10, 10);
+    this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
+    this.camera.position.set(18, 14, 18);
     
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -377,8 +382,9 @@ class ZenGardenApp {
     
     this.orbit = new OrbitControls(this.camera, this.renderer.domElement);
     this.orbit.enableDamping = true;
-    this.orbit.minDistance = 5;
-    this.orbit.maxDistance = 25;
+    this.orbit.target.set(0, 0, 0);
+    this.orbit.minDistance = 10;
+    this.orbit.maxDistance = 50;
     this.orbit.maxPolarAngle = Math.PI / 2.1;
     
     // Lighting
@@ -387,21 +393,26 @@ class ZenGardenApp {
     sun.position.set(10, 6, 5);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
-    sun.shadow.camera.left = sun.shadow.camera.bottom = -10;
-    sun.shadow.camera.right = sun.shadow.camera.top = 10;
+    sun.shadow.camera.left = sun.shadow.camera.bottom = -25;
+    sun.shadow.camera.right = sun.shadow.camera.top = 25;
     sun.shadow.bias = -0.0001;
     sun.shadow.normalBias = 0.02;
     this.scene.add(sun);
     this.scene.add(new THREE.DirectionalLight(0xaaccff, 0.3).translateX(-5).translateY(4));
     
-    // Garden bed
+    // Garden container (rotated 45 degrees for isometric look)
+    this.gardenContainer = new THREE.Group();
+    this.gardenContainer.rotation.y = Math.PI / 4;
+    this.scene.add(this.gardenContainer);
+    
+    // Garden bed frame
     const frame = new THREE.Mesh(
       new THREE.BoxGeometry(CONFIG.gardenWorldSize + 0.5, 0.5, CONFIG.gardenWorldSize + 0.5),
       new THREE.MeshStandardMaterial({ color: 0x3d2817, roughness: 0.9 })
     );
     frame.position.y = -0.25;
     frame.receiveShadow = true;
-    this.scene.add(frame);
+    this.gardenContainer.add(frame);
     
     const bottom = new THREE.Mesh(
       new THREE.PlaneGeometry(CONFIG.gardenWorldSize, CONFIG.gardenWorldSize),
@@ -410,9 +421,10 @@ class ZenGardenApp {
     bottom.rotation.x = -Math.PI / 2;
     bottom.position.y = -0.01;
     bottom.receiveShadow = true;
-    this.scene.add(bottom);
+    this.gardenContainer.add(bottom);
     
     this.createRocks();
+    this.createBackgroundElements();
     
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -461,7 +473,7 @@ class ZenGardenApp {
       rock.rotation.y = Math.random() * Math.PI * 2;
       rock.castShadow = true;
       rock.receiveShadow = true;
-      this.scene.add(rock);
+      this.gardenContainer.add(rock);
       this.rocks.push(rock);
       
       // Store position and radius for sand displacement
@@ -512,6 +524,252 @@ class ZenGardenApp {
     });
     
     return new THREE.Mesh(geo, mat);
+  }
+  
+  createBackgroundElements() {
+    // Ground/grass platform extending around the garden
+    const grassGeo = new THREE.BoxGeometry(40, 0.5, 40);
+    const grassMat = new THREE.MeshStandardMaterial({ color: 0x4a7c3f, roughness: 0.9 });
+    const grass = new THREE.Mesh(grassGeo, grassMat);
+    grass.position.y = -0.5;
+    grass.receiveShadow = true;
+    this.scene.add(grass);
+    
+    // Mountains in background
+    this.createMountain(-8, 12, 8, 0x3d6b59);
+    this.createMountain(-4, 14, 10, 0x2d5a4a);
+    this.createMountain(2, 10, 6, 0x4a7c69);
+    
+    // Torii gate
+    this.createToriiGate(3, 0, -8);
+    
+    // Koi pond
+    this.createKoiPond(10, -6);
+    
+    // Japanese maple trees
+    this.createMapleTree(-9, -3, 0xcc4444);
+    this.createMapleTree(-10, 5, 0xdd5533);
+    this.createMapleTree(10, 8, 0xcc3333);
+    this.createMapleTree(12, -2, 0xdd4422);
+    
+    // Bushes/shrubs
+    this.createBush(-7, -6, 0.8);
+    this.createBush(-6, -7, 0.6);
+    this.createBush(8, 6, 0.7);
+    this.createBush(9, 5, 0.5);
+    this.createBush(-8, 7, 0.9);
+    this.createBush(6, -8, 0.6);
+    this.createBush(7, -9, 0.8);
+    
+    // Stepping stones path
+    this.createSteppingStones();
+    
+    // Bridge over pond
+    this.createBridge(12, -4);
+    
+    // Clouds
+    this.createCloud(-12, 16, 8);
+    this.createCloud(8, 18, 12);
+    this.createCloud(14, 15, 6);
+    
+    // Waterfall from mountain
+    this.createWaterfall(-5, 10);
+  }
+  
+  createMountain(x, z, height, color) {
+    const geo = new THREE.ConeGeometry(height * 0.8, height, 6);
+    const mat = new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.8 });
+    const mountain = new THREE.Mesh(geo, mat);
+    mountain.position.set(x, height / 2 - 0.5, z);
+    mountain.rotation.y = Math.random() * Math.PI;
+    mountain.castShadow = true;
+    this.scene.add(mountain);
+  }
+  
+  createToriiGate(x, y, z) {
+    const gateMat = new THREE.MeshStandardMaterial({ color: 0xcc3311, roughness: 0.7 });
+    const gate = new THREE.Group();
+    
+    // Pillars
+    const pillarGeo = new THREE.CylinderGeometry(0.15, 0.18, 3, 8);
+    const leftPillar = new THREE.Mesh(pillarGeo, gateMat);
+    leftPillar.position.set(-1.2, 1.5, 0);
+    gate.add(leftPillar);
+    
+    const rightPillar = new THREE.Mesh(pillarGeo, gateMat);
+    rightPillar.position.set(1.2, 1.5, 0);
+    gate.add(rightPillar);
+    
+    // Top beam
+    const topBeamGeo = new THREE.BoxGeometry(3.2, 0.25, 0.35);
+    const topBeam = new THREE.Mesh(topBeamGeo, gateMat);
+    topBeam.position.set(0, 3.2, 0);
+    gate.add(topBeam);
+    
+    // Second beam
+    const midBeamGeo = new THREE.BoxGeometry(2.6, 0.15, 0.25);
+    const midBeam = new THREE.Mesh(midBeamGeo, gateMat);
+    midBeam.position.set(0, 2.7, 0);
+    gate.add(midBeam);
+    
+    gate.position.set(x, y, z);
+    gate.rotation.y = Math.PI / 6;
+    gate.traverse(child => { if (child.isMesh) { child.castShadow = true; } });
+    this.scene.add(gate);
+  }
+  
+  createKoiPond(x, z) {
+    // Pond shape
+    const pondShape = new THREE.Shape();
+    pondShape.ellipse(0, 0, 3, 2, 0, Math.PI * 2);
+    const pondGeo = new THREE.ShapeGeometry(pondShape, 32);
+    const pondMat = new THREE.MeshStandardMaterial({ 
+      color: 0x3498db, 
+      roughness: 0.1, 
+      metalness: 0.3,
+      transparent: true,
+      opacity: 0.85
+    });
+    const pond = new THREE.Mesh(pondGeo, pondMat);
+    pond.rotation.x = -Math.PI / 2;
+    pond.position.set(x, 0.02, z);
+    pond.receiveShadow = true;
+    this.scene.add(pond);
+    
+    // Koi fish
+    const koiColors = [0xff6633, 0xffcc00, 0xffffff];
+    for (let i = 0; i < 4; i++) {
+      const koiGeo = new THREE.CapsuleGeometry(0.08, 0.25, 4, 8);
+      const koiMat = new THREE.MeshStandardMaterial({ color: koiColors[i % 3] });
+      const koi = new THREE.Mesh(koiGeo, koiMat);
+      const angle = (i / 4) * Math.PI * 2;
+      koi.position.set(x + Math.cos(angle) * 1.5, 0.1, z + Math.sin(angle) * 1);
+      koi.rotation.y = angle + Math.PI / 2;
+      koi.rotation.x = Math.PI / 2;
+      this.scene.add(koi);
+    }
+  }
+  
+  createMapleTree(x, z, color) {
+    const tree = new THREE.Group();
+    
+    // Trunk
+    const trunkGeo = new THREE.CylinderGeometry(0.15, 0.25, 2, 8);
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3728, roughness: 0.9 });
+    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+    trunk.position.y = 1;
+    tree.add(trunk);
+    
+    // Foliage layers
+    const foliageMat = new THREE.MeshStandardMaterial({ color, roughness: 0.8, flatShading: true });
+    for (let i = 0; i < 3; i++) {
+      const foliageGeo = new THREE.IcosahedronGeometry(1.2 - i * 0.25, 1);
+      const foliage = new THREE.Mesh(foliageGeo, foliageMat);
+      foliage.position.y = 2.5 + i * 0.6;
+      foliage.scale.y = 0.6;
+      tree.add(foliage);
+    }
+    
+    tree.position.set(x, 0, z);
+    tree.traverse(child => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
+    this.scene.add(tree);
+  }
+  
+  createBush(x, z, scale) {
+    const bushMat = new THREE.MeshStandardMaterial({ color: 0x3d7a3d, roughness: 0.85, flatShading: true });
+    const bushGeo = new THREE.IcosahedronGeometry(scale, 1);
+    const bush = new THREE.Mesh(bushGeo, bushMat);
+    bush.position.set(x, scale * 0.5, z);
+    bush.scale.y = 0.7;
+    bush.castShadow = true;
+    bush.receiveShadow = true;
+    this.scene.add(bush);
+  }
+  
+  createSteppingStones() {
+    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.9, flatShading: true });
+    const stonePositions = [
+      [-8, -4], [-7.5, -3], [-7, -2], [-6.5, -1], [-6, 0]
+    ];
+    stonePositions.forEach(([x, z]) => {
+      const stoneGeo = new THREE.CylinderGeometry(0.4, 0.45, 0.15, 7);
+      const stone = new THREE.Mesh(stoneGeo, stoneMat);
+      stone.position.set(x, 0.08, z);
+      stone.rotation.y = Math.random() * Math.PI;
+      stone.receiveShadow = true;
+      stone.castShadow = true;
+      this.scene.add(stone);
+    });
+  }
+  
+  createBridge(x, z) {
+    const bridgeMat = new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.8 });
+    const bridge = new THREE.Group();
+    
+    // Curved deck
+    const curve = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(-1.5, 0, 0),
+      new THREE.Vector3(0, 0.5, 0),
+      new THREE.Vector3(1.5, 0, 0)
+    );
+    const tubeGeo = new THREE.TubeGeometry(curve, 20, 0.4, 8, false);
+    const deck = new THREE.Mesh(tubeGeo, bridgeMat);
+    deck.scale.set(1, 0.3, 1);
+    bridge.add(deck);
+    
+    // Rails
+    const railGeo = new THREE.BoxGeometry(3.2, 0.08, 0.08);
+    const leftRail = new THREE.Mesh(railGeo, bridgeMat);
+    leftRail.position.set(0, 0.4, 0.35);
+    bridge.add(leftRail);
+    const rightRail = new THREE.Mesh(railGeo, bridgeMat);
+    rightRail.position.set(0, 0.4, -0.35);
+    bridge.add(rightRail);
+    
+    bridge.position.set(x, 0.2, z);
+    bridge.rotation.y = Math.PI / 3;
+    bridge.traverse(child => { if (child.isMesh) { child.castShadow = true; } });
+    this.scene.add(bridge);
+  }
+  
+  createCloud(x, y, z) {
+    const cloudMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 1, flatShading: true });
+    const cloud = new THREE.Group();
+    
+    for (let i = 0; i < 4; i++) {
+      const puffGeo = new THREE.SphereGeometry(0.5 + Math.random() * 0.3, 8, 6);
+      const puff = new THREE.Mesh(puffGeo, cloudMat);
+      puff.position.set((i - 1.5) * 0.6, Math.random() * 0.2, Math.random() * 0.3);
+      puff.scale.y = 0.6;
+      cloud.add(puff);
+    }
+    
+    cloud.position.set(x, y, z);
+    this.scene.add(cloud);
+  }
+  
+  createWaterfall(x, z) {
+    // Waterfall stream
+    const waterMat = new THREE.MeshStandardMaterial({ 
+      color: 0x66ccff, 
+      roughness: 0.2, 
+      transparent: true, 
+      opacity: 0.7 
+    });
+    
+    const streamGeo = new THREE.BoxGeometry(0.8, 4, 0.3);
+    const stream = new THREE.Mesh(streamGeo, waterMat);
+    stream.position.set(x, 2, z);
+    this.scene.add(stream);
+    
+    // Pool at bottom
+    const poolShape = new THREE.Shape();
+    poolShape.ellipse(0, 0, 1.2, 0.8, 0, Math.PI * 2);
+    const poolGeo = new THREE.ShapeGeometry(poolShape);
+    const pool = new THREE.Mesh(poolGeo, waterMat);
+    pool.rotation.x = -Math.PI / 2;
+    pool.position.set(x, 0.05, z - 1);
+    this.scene.add(pool);
   }
   
   initGrid() {
@@ -592,169 +850,6 @@ class ZenGardenApp {
       this.cm.markAllDirty();
       this.cm.markAllActive();
     });
-    
-    // Hand tracking toggle
-    const handToggle = document.getElementById('handTrackingToggle');
-    handToggle.addEventListener('change', (e) => {
-      if (e.target.checked) {
-        this.startHandTracking();
-      } else {
-        this.stopHandTracking();
-      }
-    });
-  }
-  
-  async startHandTracking() {
-    // Ask for permission first
-    const confirmed = confirm('Enable hand tracking?\n\nThis will request access to your webcam. Pinch your thumb and index finger together to rake the sand.');
-    if (!confirmed) {
-      document.getElementById('handTrackingToggle').checked = false;
-      return;
-    }
-    
-    const video = document.getElementById('webcam');
-    const canvas = document.getElementById('handCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    this.handTrackingActive = true;
-    this.handWasDown = false;
-    
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: 640, height: 480, facingMode: 'user' } 
-      });
-      video.srcObject = stream;
-      video.classList.add('active');
-      canvas.classList.add('active');
-      canvas.width = 200;
-      canvas.height = 150;
-      
-      // Initialize MediaPipe Hands
-      this.hands = new Hands({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`
-      });
-      
-      this.hands.setOptions({
-        maxNumHands: 1,
-        modelComplexity: 0,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
-      });
-      
-      this.hands.onResults((results) => this.onHandResults(results, ctx, canvas));
-      
-      // Use Camera utility for consistent frame processing
-      // Note: Use mpCamera to avoid conflict with Three.js this.camera
-      this.mpCamera = new Camera(video, {
-        onFrame: async () => {
-          if (this.handTrackingActive) {
-            await this.hands.send({ image: video });
-          }
-        },
-        width: 640,
-        height: 480
-      });
-      this.mpCamera.start();
-      
-    } catch (err) {
-      console.error('Failed to start webcam:', err);
-      document.getElementById('handTrackingToggle').checked = false;
-      alert('Could not access webcam. Please allow camera permissions.');
-    }
-  }
-  
-  stopHandTracking() {
-    this.handTrackingActive = false;
-    
-    const video = document.getElementById('webcam');
-    const canvas = document.getElementById('handCanvas');
-    
-    video.classList.remove('active');
-    canvas.classList.remove('active');
-    
-    if (video.srcObject) {
-      video.srcObject.getTracks().forEach(track => track.stop());
-      video.srcObject = null;
-    }
-    
-    if (this.mpCamera) {
-      this.mpCamera.stop();
-      this.mpCamera = null;
-    }
-    
-    // End any active rake stroke
-    this.rake.end();
-  }
-  
-  onHandResults(results, ctx, canvas) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
-      if (this.handWasDown) {
-        this.rake.end();
-        this.handWasDown = false;
-      }
-      return;
-    }
-    
-    const landmarks = results.multiHandLandmarks[0];
-    
-    // Draw hand skeleton on preview
-    ctx.strokeStyle = 'rgba(150, 200, 150, 0.8)';
-    ctx.lineWidth = 2;
-    const connections = [
-      [0,1],[1,2],[2,3],[3,4],
-      [0,5],[5,6],[6,7],[7,8],
-      [5,9],[9,10],[10,11],[11,12],
-      [9,13],[13,14],[14,15],[15,16],
-      [13,17],[17,18],[18,19],[19,20],[0,17]
-    ];
-    for (const [a, b] of connections) {
-      ctx.beginPath();
-      ctx.moveTo(landmarks[a].x * canvas.width, landmarks[a].y * canvas.height);
-      ctx.lineTo(landmarks[b].x * canvas.width, landmarks[b].y * canvas.height);
-      ctx.stroke();
-    }
-    
-    // Draw index fingertip
-    const indexTip = landmarks[8];
-    ctx.fillStyle = 'rgba(255, 200, 150, 0.9)';
-    ctx.beginPath();
-    ctx.arc(indexTip.x * canvas.width, indexTip.y * canvas.height, 6, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Map hand position to garden coordinates
-    // X: 0-1 maps to garden width (mirrored)
-    // Y: 0-1 maps to garden depth
-    const half = CONFIG.gardenWorldSize / 2;
-    const wx = (1 - indexTip.x) * CONFIG.gardenWorldSize - half; // Mirror X
-    const wz = indexTip.y * CONFIG.gardenWorldSize - half;
-    
-    // Use pinch gesture (thumb tip close to index tip) to activate raking
-    const thumbTip = landmarks[4];
-    const pinchDist = Math.sqrt(
-      Math.pow(thumbTip.x - indexTip.x, 2) + 
-      Math.pow(thumbTip.y - indexTip.y, 2)
-    );
-    const isPinching = pinchDist < 0.08;
-    
-    // Update indicator
-    this.indicator.position.set(wx, 0.1, wz);
-    this.indicator.visible = true;
-    
-    if (isPinching) {
-      if (!this.handWasDown) {
-        this.rake.start(wx, wz);
-        this.handWasDown = true;
-      } else {
-        this.rake.update(wx, wz);
-      }
-    } else {
-      if (this.handWasDown) {
-        this.rake.end();
-        this.handWasDown = false;
-      }
-    }
   }
   
   animate() {
@@ -769,4 +864,4 @@ class ZenGardenApp {
 // ============================================
 // INITIALIZE
 // ============================================
-new ZenGardenApp();
+window.gardenApp = new ZenGardenApp();
