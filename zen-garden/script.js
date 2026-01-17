@@ -17,7 +17,7 @@ const CONFIG = {
   rakeDepth: 2,
   gardenWorldSize: 12.8,
   get voxelSize() { return this.gardenWorldSize / this.gridWidth; },
-  sandColor: 0xe8dcc4,
+  sandColor: 0xebe4d7,
   baseHeight: 6,
   rockColor: 0x3a3a3a,
   rocks: [
@@ -605,6 +605,13 @@ class ZenGardenApp {
   }
   
   async startHandTracking() {
+    // Ask for permission first
+    const confirmed = confirm('Enable hand tracking?\n\nThis will request access to your webcam. Pinch your thumb and index finger together to rake the sand.');
+    if (!confirmed) {
+      document.getElementById('handTrackingToggle').checked = false;
+      return;
+    }
+    
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('handCanvas');
     const ctx = canvas.getContext('2d');
@@ -637,7 +644,8 @@ class ZenGardenApp {
       this.hands.onResults((results) => this.onHandResults(results, ctx, canvas));
       
       // Use Camera utility for consistent frame processing
-      this.camera = new Camera(video, {
+      // Note: Use mpCamera to avoid conflict with Three.js this.camera
+      this.mpCamera = new Camera(video, {
         onFrame: async () => {
           if (this.handTrackingActive) {
             await this.hands.send({ image: video });
@@ -646,7 +654,7 @@ class ZenGardenApp {
         width: 640,
         height: 480
       });
-      this.camera.start();
+      this.mpCamera.start();
       
     } catch (err) {
       console.error('Failed to start webcam:', err);
@@ -669,9 +677,9 @@ class ZenGardenApp {
       video.srcObject = null;
     }
     
-    if (this.camera) {
-      this.camera.stop();
-      this.camera = null;
+    if (this.mpCamera) {
+      this.mpCamera.stop();
+      this.mpCamera = null;
     }
     
     // End any active rake stroke
