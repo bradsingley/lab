@@ -15,7 +15,7 @@ const CONFIG = {
   rakeTeethSpacing: 6,
   rakeTeethRadius: 2,
   rakeDepth: 2,
-  voxelSize: 0.025,
+  voxelSize: 0.012,
   sandColor: 0xe8dcc4,
   gardenWorldSize: 12.8,
   baseHeight: 6
@@ -311,16 +311,6 @@ class VoxelRenderer {
     scene.add(this.mesh);
     
     this.dummy = new THREE.Object3D();
-    this.colors = new Float32Array(this.maxVoxels * 3);
-    this.mesh.instanceColor = new THREE.InstancedBufferAttribute(this.colors, 3);
-    
-    const base = new THREE.Color(CONFIG.sandColor);
-    for (let i = 0; i < this.maxVoxels; i++) {
-      const v = 0.9 + Math.random() * 0.2;
-      this.colors[i * 3] = base.r * v;
-      this.colors[i * 3 + 1] = base.g * v;
-      this.colors[i * 3 + 2] = base.b * v;
-    }
     
     this.fullUpdate();
   }
