@@ -12,8 +12,8 @@ const CONFIG = {
   angleOfRepose: 3,
   stepsPerFrame: 1,
   rakeTeeth: 5,
-  rakeTeethSpacing: 6,
-  rakeTeethRadius: 2,
+  rakeTeethSpacing: 12,
+  rakeTeethRadius: 4,
   rakeDepth: 2,
   voxelSize: 0.0125,
   sandColor: 0xe8dcc4,
@@ -275,9 +275,9 @@ class RakeController {
     if (!this.isActive || !this.lastPos) return;
     const dx = wx - this.lastPos.x, dz = wz - this.lastPos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    if (dist > 0.005) {
-      // Interpolate for smoother lines - smaller steps for tight corners
-      const stepSize = 0.008;
+    if (dist > 0.001) {
+      // Interpolate for smoother lines - very small steps
+      const stepSize = 0.003;
       const steps = Math.max(1, Math.ceil(dist / stepSize));
       for (let i = 1; i <= steps; i++) {
         const t = i / steps;
