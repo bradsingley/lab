@@ -301,7 +301,7 @@ class VoxelRenderer {
     this.cm = cm;
     this.maxVoxels = grid.width * grid.depth;
     
-    const geo = new THREE.BoxGeometry(CONFIG.voxelSize * 0.95, CONFIG.voxelSize, CONFIG.voxelSize * 0.95);
+    const geo = new THREE.BoxGeometry(CONFIG.voxelSize, CONFIG.voxelSize, CONFIG.voxelSize);
     const mat = new THREE.MeshStandardMaterial({ color: CONFIG.sandColor, roughness: 0.9, flatShading: true });
     
     this.mesh = new THREE.InstancedMesh(geo, mat, this.maxVoxels);
