@@ -274,9 +274,10 @@ class RakeController {
 // VOXEL RENDERER
 // ============================================
 class VoxelRenderer {
-  constructor(scene, grid, cm) {
+  constructor(scene, grid, cm, container) {
     this.grid = grid;
     this.cm = cm;
+    this.container = container || scene;
     this.maxVoxels = grid.width * grid.depth;
     
     const geo = new THREE.BoxGeometry(CONFIG.voxelSize, CONFIG.voxelSize, CONFIG.voxelSize);
@@ -298,12 +299,8 @@ class VoxelRenderer {
       new Float32Array(this.maxVoxels * 3), 3
     );
     
-    // Add to garden container for rotation
-    if (window.gardenApp && window.gardenApp.gardenContainer) {
-      window.gardenApp.gardenContainer.add(this.mesh);
-    } else {
-      scene.add(this.mesh);
-    }
+    // Add to container (gardenContainer for rotation)
+    this.container.add(this.mesh);
     
     this.dummy = new THREE.Object3D();
     this.baseColor = new THREE.Color(CONFIG.sandColor);
@@ -781,7 +778,7 @@ class ZenGardenApp {
   }
   
   initVoxelRenderer() {
-    this.voxelRenderer = new VoxelRenderer(this.scene, this.grid, this.cm);
+    this.voxelRenderer = new VoxelRenderer(this.scene, this.grid, this.cm, this.gardenContainer);
     setTimeout(() => document.getElementById('loading').classList.add('hidden'), 500);
   }
   
