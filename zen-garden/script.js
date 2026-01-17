@@ -5,9 +5,9 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 // CONFIGURATION
 // ============================================
 const CONFIG = {
-  gridWidth: 512,
+  gridWidth: 1024,
   gridHeight: 16,
-  gridDepth: 512,
+  gridDepth: 1024,
   chunkSize: 16,
   angleOfRepose: 3,
   stepsPerFrame: 1,
@@ -15,7 +15,7 @@ const CONFIG = {
   rakeTeethSpacing: 6,
   rakeTeethRadius: 2,
   rakeDepth: 2,
-  voxelSize: 0.012,
+  voxelSize: 0.0125,
   sandColor: 0xe8dcc4,
   gardenWorldSize: 12.8,
   baseHeight: 6
@@ -381,15 +381,17 @@ class ZenGardenApp {
     this.orbit.maxPolarAngle = Math.PI / 2.1;
     
     // Lighting
-    this.scene.add(new THREE.AmbientLight(0xffeedd, 0.4));
-    const sun = new THREE.DirectionalLight(0xfff5e6, 1.5);
+    this.scene.add(new THREE.AmbientLight(0xffeedd, 0.7));
+    const sun = new THREE.DirectionalLight(0xfff5e6, 1.0);
     sun.position.set(8, 15, 5);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
     sun.shadow.camera.left = sun.shadow.camera.bottom = -10;
     sun.shadow.camera.right = sun.shadow.camera.top = 10;
+    sun.shadow.bias = -0.0001;
+    sun.shadow.normalBias = 0.02;
     this.scene.add(sun);
-    this.scene.add(new THREE.DirectionalLight(0xaaccff, 0.3).translateX(-5).translateY(8));
+    this.scene.add(new THREE.DirectionalLight(0xaaccff, 0.4).translateX(-5).translateY(8));
     
     // Garden bed
     const frame = new THREE.Mesh(
