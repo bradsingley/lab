@@ -11,6 +11,12 @@ let gameScreen, videoPlayer, captionLetter, captionSentence, hintText, splashIma
 
 // State
 let isPlaying = false;
+let hasStarted = false;
+
+// Check if device is mobile/touch
+function isMobile() {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+}
 
 // Frame dimensions
 const FRAME_WIDTH = 1280;
@@ -53,6 +59,9 @@ function setupKeyboardListeners() {
     // Focus when user taps anywhere
     document.addEventListener('click', focusInput);
     document.addEventListener('touchstart', focusInput);
+    
+    // When input gets focus, update hint text on mobile
+    hiddenInput.addEventListener('focus', onKeyboardFocus);
     
     // Listen to keyboard events
     document.addEventListener('keydown', (e) => {
@@ -133,12 +142,25 @@ function playVideo(letter) {
 
 // Show hint text on page load
 function showHintText() {
-    if (captionSentence && captions.hint) {
-        captionSentence.innerHTML = captions.hint;
+    if (captionSentence) {
+        // Show mobile hint on touch devices, regular hint on desktop
+        if (isMobile() && captions.hintMobile) {
+            captionSentence.innerHTML = captions.hintMobile;
+        } else if (captions.hint) {
+            captionSentence.innerHTML = captions.hint;
+        }
     }
     // Also show in the separate hint text element if it exists
     if (hintText) {
         hintText.classList.remove('hidden');
+    }
+}
+
+// Update hint text after keyboard focus (mobile)
+function onKeyboardFocus() {
+    if (!hasStarted && isMobile() && captionSentence && captions.hint) {
+        hasStarted = true;
+        captionSentence.innerHTML = captions.hint;
     }
 }
 
