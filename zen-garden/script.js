@@ -280,15 +280,29 @@ class VoxelRenderer {
     this.maxVoxels = grid.width * grid.depth;
     
     const geo = new THREE.BoxGeometry(CONFIG.voxelSize, CONFIG.voxelSize, CONFIG.voxelSize);
-    const mat = new THREE.MeshStandardMaterial({ color: CONFIG.sandColor, roughness: 0.9, flatShading: true });
+    const mat = new THREE.MeshStandardMaterial({ 
+      color: CONFIG.sandColor, 
+      roughness: 0.85,
+      metalness: 0.02,
+      flatShading: false,
+      envMapIntensity: 0.3
+    });
     
     this.mesh = new THREE.InstancedMesh(geo, mat, this.maxVoxels);
     this.mesh.castShadow = true;
     this.mesh.receiveShadow = true;
     this.mesh.frustumCulled = false;
+    
+    // Enable per-instance color for subtle variation
+    this.mesh.instanceColor = new THREE.InstancedBufferAttribute(
+      new Float32Array(this.maxVoxels * 3), 3
+    );
+    
     scene.add(this.mesh);
     
     this.dummy = new THREE.Object3D();
+    this.baseColor = new THREE.Color(CONFIG.sandColor);
+    this.tempColor = new THREE.Color();
     
     this.fullUpdate();
   }
@@ -306,13 +320,22 @@ class VoxelRenderer {
           const wz = (z / this.grid.depth) * CONFIG.gardenWorldSize - half;
           this.dummy.position.set(wx, wy, wz);
           this.dummy.updateMatrix();
-          this.mesh.setMatrixAt(count++, this.dummy.matrix);
+          this.mesh.setMatrixAt(count, this.dummy.matrix);
+          
+          // Subtle color variation based on height - darker in grooves, lighter on ridges
+          const heightNorm = h / this.grid.height;
+          const variation = 0.92 + heightNorm * 0.16; // 0.92 to 1.08 range
+          this.tempColor.copy(this.baseColor).multiplyScalar(variation);
+          this.mesh.setColorAt(count, this.tempColor);
+          
+          count++;
         }
       }
     }
     
     this.mesh.count = count;
     this.mesh.instanceMatrix.needsUpdate = true;
+    this.mesh.instanceColor.needsUpdate = true;
   }
   
   update() {
