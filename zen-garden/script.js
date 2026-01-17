@@ -9,9 +9,9 @@ const CONFIG = {
   gridHeight: 16,
   gridDepth: 1024,
   chunkSize: 16,
-  angleOfRepose: 3,
+  angleOfRepose: 1,
   stepsPerFrame: 1,
-  rakeTeeth: 5,
+  rakeTeeth: 4,
   rakeTeethSpacing: 12,
   rakeTeethRadius: 4,
   rakeDepth: 2,
@@ -136,7 +136,7 @@ class ChunkManager {
 }
 
 // ============================================
-// SAND SIMULATOR
+// SAND SIMULATOR (45 degree angle of repose)
 // ============================================
 class SandSimulator {
   constructor(grid, chunkManager) {
@@ -275,9 +275,9 @@ class RakeController {
     if (!this.isActive || !this.lastPos) return;
     const dx = wx - this.lastPos.x, dz = wz - this.lastPos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    if (dist > 0.001) {
-      // Interpolate for smoother lines - very small steps
-      const stepSize = 0.003;
+    if (dist > 0.0005) {
+      // Interpolate for smoother lines - very fine steps
+      const stepSize = 0.001;
       const steps = Math.max(1, Math.ceil(dist / stepSize));
       for (let i = 1; i <= steps; i++) {
         const t = i / steps;
