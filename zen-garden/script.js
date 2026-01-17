@@ -9,13 +9,12 @@ const CONFIG = {
   gridHeight: 16,
   gridDepth: 256,
   chunkSize: 16,
-  angleOfRepose: 1,
-  stepsPerFrame: 3,
+  angleOfRepose: 2,
+  stepsPerFrame: 1,
   rakeTeeth: 4,
-  rakeTeethSpacing: 4,
-  rakeTeethRadius: 2,
-  rakeDepth: 4,
-  rakeZigzagOffset: 3,
+  rakeTeethSpacing: 5,
+  rakeTeethRadius: 3,
+  rakeDepth: 3,
   voxelSize: 0.1,
   sandColor: 0xe8dcc4,
   gardenWorldSize: 12.8,
@@ -239,21 +238,8 @@ class RakeController {
         
         if (dig > 0 && h > 0) {
           const newH = Math.max(1, h - dig);
-          const removed = h - newH;
           this.grid.setHeight(x, z, newH);
           this.cm.markVoxelChanged(x, z);
-          
-          if (removed > 0) {
-            for (let side = -1; side <= 1; side += 2) {
-              const sx = Math.round(x + perpX * (r + 1) * side);
-              const sz = Math.round(z + perpZ * (r + 1) * side);
-              if (sx >= 0 && sx < this.grid.width && sz >= 0 && sz < this.grid.depth) {
-                const sh = this.grid.getHeight(sx, sz);
-                this.grid.setHeight(sx, sz, Math.min(this.grid.height - 1, sh + Math.ceil(removed / 2)));
-                this.cm.markVoxelChanged(sx, sz);
-              }
-            }
-          }
         }
       }
     }
@@ -264,8 +250,16 @@ class RakeController {
   update(wx, wz) {
     if (!this.isActive || !this.lastPos) return;
     const dx = wx - this.lastPos.x, dz = wz - this.lastPos.z;
-    if (Math.sqrt(dx * dx + dz * dz) > 0.05) {
-      this.rake(wx, wz, dx, dz);
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    if (dist > 0.02) {
+      // Interpolate for smoother lines
+      const steps = Math.ceil(dist / 0.02);
+      for (let i = 1; i <= steps; i++) {
+        const t = i / steps;
+        const ix = this.lastPos.x + dx * t;
+        const iz = this.lastPos.z + dz * t;
+        this.rake(ix, iz, dx, dz);
+      }
       this.lastPos = { x: wx, z: wz };
     }
   }
