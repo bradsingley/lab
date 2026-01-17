@@ -5,16 +5,17 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 // CONFIGURATION
 // ============================================
 const CONFIG = {
-  gridWidth: 128,
+  gridWidth: 256,
   gridHeight: 16,
-  gridDepth: 128,
+  gridDepth: 256,
   chunkSize: 16,
   angleOfRepose: 1,
-  stepsPerFrame: 2,
-  rakeTeeth: 5,
-  rakeTeethSpacing: 3,
+  stepsPerFrame: 3,
+  rakeTeeth: 4,
+  rakeTeethSpacing: 4,
   rakeTeethRadius: 2,
   rakeDepth: 4,
+  rakeZigzagOffset: 3,
   voxelSize: 0.1,
   sandColor: 0xe8dcc4,
   gardenWorldSize: 12.8,
@@ -207,12 +208,17 @@ class RakeController {
     const { x: cx, z: cz } = this.worldToGrid(wx, wz);
     const len = Math.sqrt(dx * dx + dz * dz);
     let perpX = 0, perpZ = 1;
-    if (len > 0.01) { perpX = -dz / len; perpZ = dx / len; }
+    if (len > 0.01) {
+      perpX = -dz / len; perpZ = dx / len;
+    }
     
-    const half = Math.floor(CONFIG.rakeTeeth / 2);
-    for (let t = -half; t <= half; t++) {
-      const tx = Math.round(cx + perpX * t * CONFIG.rakeTeethSpacing);
-      const tz = Math.round(cz + perpZ * t * CONFIG.rakeTeethSpacing);
+    // 4 teeth aligned perpendicular to movement direction
+    const spacing = CONFIG.rakeTeethSpacing;
+    const offsets = [-1.5, -0.5, 0.5, 1.5];
+    
+    for (const off of offsets) {
+      const tx = Math.round(cx + perpX * off * spacing);
+      const tz = Math.round(cz + perpZ * off * spacing);
       this.applyTooth(tx, tz, perpX, perpZ);
     }
   }
