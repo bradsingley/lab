@@ -42,6 +42,11 @@ function scaleFrame() {
     console.log('Scaling:', { availableWidth, availableHeight, scaleX, scaleY, scale });
     
     frameWrapper.style.transform = `scale(${scale})`;
+    
+    // Show the frame after scaling is applied
+    if (!frameWrapper.classList.contains('scaled')) {
+        frameWrapper.classList.add('scaled');
+    }
 }
 
 // Setup keyboard listeners

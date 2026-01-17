@@ -94,6 +94,11 @@ body {
     height: 1096px;
     flex-shrink: 0;
     transform-origin: center center;
+    visibility: hidden; /* Hidden until JS applies scaling */
+}
+
+.frame-wrapper.scaled {
+    visibility: visible;
 }
 
 .video-frame {
