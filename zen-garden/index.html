@@ -3,27 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Zen Garden</title>
+  <title>Zen Garden - Voxel Sand Simulation</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="canvas-container"></div>
   <div id="ui">
-    <h1>🪨 Zen Garden</h1>
-    <p>Click and drag to rake the sand</p>
-    <p>Scroll to zoom • Right-click drag to rotate</p>
+    <h1>Zen Garden</h1>
+    <p>Click and drag to rake patterns in the sand</p>
+    <p>Scroll to zoom - Right-click to rotate</p>
     <div class="controls">
       <button id="resetBtn">Reset Sand</button>
+      <button id="flattenBtn">Flatten</button>
+    </div>
+    <div class="stats">
+      <span id="activeChunks">Active: 0</span>
     </div>
   </div>
-  <div id="loading">Loading particles...</div>
+  <div id="loading">Initializing voxel grid...</div>
   
   <script type="importmap">
   {
     "imports": {
       "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-      "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
     }
   }
   </script>

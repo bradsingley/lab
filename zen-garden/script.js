@@ -1,431 +1,496 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import * as CANNON from 'cannon-es';
 
 // ============================================
 // CONFIGURATION
 // ============================================
 const CONFIG = {
-  particleCount: 2000,
-  particleRadius: 0.08,
-  gardenSize: 12,
-  gardenDepth: 0.5,
-  rakeRadius: 0.8,
-  rakeForce: 15,
-  gravity: -20,
-  damping: 0.4,
-  friction: 0.8,
-  restitution: 0.1
+  gridWidth: 128,
+  gridHeight: 16,
+  gridDepth: 128,
+  chunkSize: 16,
+  angleOfRepose: 1,
+  stepsPerFrame: 2,
+  rakeTeeth: 5,
+  rakeTeethSpacing: 3,
+  rakeTeethRadius: 2,
+  rakeDepth: 4,
+  voxelSize: 0.1,
+  sandColor: 0xe8dcc4,
+  gardenWorldSize: 12.8,
+  baseHeight: 6
 };
 
 // ============================================
-// SCENE SETUP
+// VOXEL GRID
 // ============================================
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1a1a1a);
-scene.fog = new THREE.Fog(0x1a1a1a, 20, 40);
-
-const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(0, 12, 12);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.2;
-document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-// Orbit Controls
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
-controls.minDistance = 5;
-controls.maxDistance = 25;
-controls.maxPolarAngle = Math.PI / 2.1;
-controls.target.set(0, 0, 0);
-
-// ============================================
-// LIGHTING
-// ============================================
-const ambientLight = new THREE.AmbientLight(0xffeedd, 0.3);
-scene.add(ambientLight);
-
-const mainLight = new THREE.DirectionalLight(0xfff5e6, 1.5);
-mainLight.position.set(8, 15, 5);
-mainLight.castShadow = true;
-mainLight.shadow.mapSize.width = 2048;
-mainLight.shadow.mapSize.height = 2048;
-mainLight.shadow.camera.left = -15;
-mainLight.shadow.camera.right = 15;
-mainLight.shadow.camera.top = 15;
-mainLight.shadow.camera.bottom = -15;
-mainLight.shadow.camera.near = 1;
-mainLight.shadow.camera.far = 30;
-mainLight.shadow.bias = -0.001;
-scene.add(mainLight);
-
-const fillLight = new THREE.DirectionalLight(0xaaccff, 0.4);
-fillLight.position.set(-5, 8, -5);
-scene.add(fillLight);
-
-// ============================================
-// PHYSICS WORLD
-// ============================================
-const world = new CANNON.World();
-world.gravity.set(0, CONFIG.gravity, 0);
-world.broadphase = new CANNON.SAPBroadphase(world);
-world.solver.iterations = 5;
-
-// Physics materials
-const sandMaterial = new CANNON.Material('sand');
-const groundMaterial = new CANNON.Material('ground');
-const rakeMaterial = new CANNON.Material('rake');
-
-const sandGroundContact = new CANNON.ContactMaterial(sandMaterial, groundMaterial, {
-  friction: CONFIG.friction,
-  restitution: CONFIG.restitution
-});
-const sandSandContact = new CANNON.ContactMaterial(sandMaterial, sandMaterial, {
-  friction: CONFIG.friction * 0.8,
-  restitution: CONFIG.restitution * 0.5
-});
-const sandRakeContact = new CANNON.ContactMaterial(sandMaterial, rakeMaterial, {
-  friction: 0.1,
-  restitution: 0.0
-});
-
-world.addContactMaterial(sandGroundContact);
-world.addContactMaterial(sandSandContact);
-world.addContactMaterial(sandRakeContact);
-
-// ============================================
-// GARDEN BED (Visual + Physics)
-// ============================================
-// Visual garden bed
-const bedGeometry = new THREE.BoxGeometry(CONFIG.gardenSize + 1, CONFIG.gardenDepth + 0.3, CONFIG.gardenSize + 1);
-const bedMaterial = new THREE.MeshStandardMaterial({ 
-  color: 0x3d2817,
-  roughness: 0.9,
-  metalness: 0.0
-});
-const gardenBed = new THREE.Mesh(bedGeometry, bedMaterial);
-gardenBed.position.y = -CONFIG.gardenDepth / 2 - 0.15;
-gardenBed.receiveShadow = true;
-scene.add(gardenBed);
-
-// Physics ground plane
-const groundShape = new CANNON.Plane();
-const groundBody = new CANNON.Body({ 
-  mass: 0,
-  material: groundMaterial
-});
-groundBody.addShape(groundShape);
-groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-groundBody.position.y = -CONFIG.gardenDepth;
-world.addBody(groundBody);
-
-// Invisible walls to contain particles
-const wallHeight = 2;
-const wallPositions = [
-  { pos: [CONFIG.gardenSize / 2, 0, 0], rot: [0, -Math.PI / 2, 0] },
-  { pos: [-CONFIG.gardenSize / 2, 0, 0], rot: [0, Math.PI / 2, 0] },
-  { pos: [0, 0, CONFIG.gardenSize / 2], rot: [0, Math.PI, 0] },
-  { pos: [0, 0, -CONFIG.gardenSize / 2], rot: [0, 0, 0] }
-];
-
-wallPositions.forEach(({ pos, rot }) => {
-  const wallBody = new CANNON.Body({ mass: 0, material: groundMaterial });
-  wallBody.addShape(new CANNON.Plane());
-  wallBody.position.set(...pos);
-  wallBody.quaternion.setFromEuler(...rot);
-  world.addBody(wallBody);
-});
-
-// ============================================
-// SAND PARTICLES
-// ============================================
-const particles = [];
-const particleBodies = [];
-
-// Instanced mesh for efficient rendering
-const particleGeometry = new THREE.SphereGeometry(CONFIG.particleRadius, 8, 6);
-const particleMaterial = new THREE.MeshStandardMaterial({
-  color: 0xd4b896,
-  roughness: 0.9,
-  metalness: 0.0
-});
-const instancedMesh = new THREE.InstancedMesh(particleGeometry, particleMaterial, CONFIG.particleCount);
-instancedMesh.castShadow = true;
-instancedMesh.receiveShadow = true;
-scene.add(instancedMesh);
-
-const dummy = new THREE.Object3D();
-const colors = [];
-
-function createParticles() {
-  const halfSize = CONFIG.gardenSize / 2 - 0.5;
-  
-  for (let i = 0; i < CONFIG.particleCount; i++) {
-    // Random position within garden bounds
-    const x = (Math.random() - 0.5) * (CONFIG.gardenSize - 1);
-    const z = (Math.random() - 0.5) * (CONFIG.gardenSize - 1);
-    const y = Math.random() * 0.5;
-    
-    // Physics body
-    const shape = new CANNON.Sphere(CONFIG.particleRadius);
-    const body = new CANNON.Body({
-      mass: 0.1,
-      material: sandMaterial,
-      linearDamping: CONFIG.damping,
-      angularDamping: CONFIG.damping
-    });
-    body.addShape(shape);
-    body.position.set(x, y, z);
-    world.addBody(body);
-    particleBodies.push(body);
-    
-    // Slight color variation
-    const colorVariation = 0.9 + Math.random() * 0.2;
-    const color = new THREE.Color(0xd4b896).multiplyScalar(colorVariation);
-    colors.push(color.r, color.g, color.b);
+class VoxelGrid {
+  constructor(width, height, depth) {
+    this.width = width;
+    this.height = height;
+    this.depth = depth;
+    this.data = new Uint8Array(width * height * depth);
   }
   
-  // Set instance colors
-  instancedMesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(colors), 3);
-}
-
-function updateParticleVisuals() {
-  for (let i = 0; i < particleBodies.length; i++) {
-    const body = particleBodies[i];
-    dummy.position.copy(body.position);
-    dummy.quaternion.copy(body.quaternion);
-    dummy.updateMatrix();
-    instancedMesh.setMatrixAt(i, dummy.matrix);
-  }
-  instancedMesh.instanceMatrix.needsUpdate = true;
-}
-
-function resetParticles() {
-  for (let i = 0; i < particleBodies.length; i++) {
-    const body = particleBodies[i];
-    const x = (Math.random() - 0.5) * (CONFIG.gardenSize - 1);
-    const z = (Math.random() - 0.5) * (CONFIG.gardenSize - 1);
-    const y = Math.random() * 0.5 + 0.5;
-    
-    body.position.set(x, y, z);
-    body.velocity.set(0, 0, 0);
-    body.angularVelocity.set(0, 0, 0);
-  }
-}
-
-// ============================================
-// ZEN ROCKS
-// ============================================
-const rocks = [];
-const rockBodies = [];
-
-function createRocks() {
-  const rockPositions = [
-    { x: -3, z: -2, scale: 1.2 },
-    { x: 2.5, z: 3, scale: 0.8 },
-    { x: 4, z: -3.5, scale: 1.0 },
-    { x: -2, z: 4, scale: 0.6 }
-  ];
-  
-  rockPositions.forEach(({ x, z, scale }) => {
-    // Visual rock
-    const rockGeometry = new THREE.DodecahedronGeometry(0.5 * scale, 1);
-    const vertices = rockGeometry.attributes.position;
-    for (let i = 0; i < vertices.count; i++) {
-      vertices.setXYZ(
-        i,
-        vertices.getX(i) + (Math.random() - 0.5) * 0.15 * scale,
-        vertices.getY(i) + (Math.random() - 0.5) * 0.15 * scale,
-        vertices.getZ(i) + (Math.random() - 0.5) * 0.15 * scale
-      );
+  getIndex(x, y, z) {
+    if (x < 0 || x >= this.width || y < 0 || y >= this.height || z < 0 || z >= this.depth) {
+      return -1;
     }
-    rockGeometry.computeVertexNormals();
-    
-    const rockMaterial = new THREE.MeshStandardMaterial({
-      color: 0x4a4a4a,
-      roughness: 0.85,
-      metalness: 0.1
-    });
-    
-    const rock = new THREE.Mesh(rockGeometry, rockMaterial);
-    rock.position.set(x, 0.3 * scale, z);
-    rock.rotation.set(Math.random() * 0.3, Math.random() * Math.PI * 2, Math.random() * 0.3);
-    rock.castShadow = true;
-    rock.receiveShadow = true;
-    scene.add(rock);
-    rocks.push(rock);
-    
-    // Physics body for rock (static)
-    const rockShape = new CANNON.Sphere(0.5 * scale);
-    const rockBody = new CANNON.Body({ 
-      mass: 0,
-      material: groundMaterial
-    });
-    rockBody.addShape(rockShape);
-    rockBody.position.set(x, 0.3 * scale, z);
-    world.addBody(rockBody);
-    rockBodies.push(rockBody);
-  });
-}
-
-// ============================================
-// RAKE INTERACTION
-// ============================================
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-const rakePosition = new THREE.Vector3();
-const prevRakePosition = new THREE.Vector3();
-let isRaking = false;
-
-// Rake indicator
-const rakeGeometry = new THREE.RingGeometry(CONFIG.rakeRadius - 0.1, CONFIG.rakeRadius, 32);
-const rakeMaterialVisual = new THREE.MeshBasicMaterial({ 
-  color: 0xffffff, 
-  opacity: 0.3, 
-  transparent: true,
-  side: THREE.DoubleSide
-});
-const rakeIndicator = new THREE.Mesh(rakeGeometry, rakeMaterialVisual);
-rakeIndicator.rotation.x = -Math.PI / 2;
-rakeIndicator.visible = false;
-scene.add(rakeIndicator);
-
-// Ground plane for raycasting
-const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-
-function updateRakePosition(event) {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    return x + y * this.width + z * this.width * this.height;
+  }
   
-  raycaster.setFromCamera(mouse, camera);
-  const intersectPoint = new THREE.Vector3();
-  raycaster.ray.intersectPlane(groundPlane, intersectPoint);
+  get(x, y, z) {
+    const idx = this.getIndex(x, y, z);
+    return idx >= 0 ? this.data[idx] : 0;
+  }
   
-  if (intersectPoint) {
-    prevRakePosition.copy(rakePosition);
-    rakePosition.copy(intersectPoint);
-    rakePosition.y = 0;
-    
-    rakeIndicator.position.copy(rakePosition);
-    rakeIndicator.position.y = 0.01;
-    rakeIndicator.visible = true;
-    
-    if (isRaking) {
-      applyRakeForce();
+  set(x, y, z, value) {
+    const idx = this.getIndex(x, y, z);
+    if (idx >= 0) {
+      this.data[idx] = value;
+      return true;
+    }
+    return false;
+  }
+  
+  getHeight(x, z) {
+    for (let y = this.height - 1; y >= 0; y--) {
+      if (this.get(x, y, z)) return y + 1;
+    }
+    return 0;
+  }
+  
+  setHeight(x, z, h) {
+    h = Math.max(0, Math.min(this.height, h));
+    for (let y = 0; y < this.height; y++) {
+      this.set(x, y, z, y < h ? 1 : 0);
+    }
+  }
+  
+  fillToHeight(h) {
+    for (let z = 0; z < this.depth; z++) {
+      for (let x = 0; x < this.width; x++) {
+        this.setHeight(x, z, h);
+      }
     }
   }
 }
 
-function applyRakeForce() {
-  const rakeVelocity = new THREE.Vector3().subVectors(rakePosition, prevRakePosition);
+// ============================================
+// CHUNK MANAGER
+// ============================================
+class ChunkManager {
+  constructor(grid, chunkSize) {
+    this.grid = grid;
+    this.chunkSize = chunkSize;
+    this.chunksX = Math.ceil(grid.width / chunkSize);
+    this.chunksZ = Math.ceil(grid.depth / chunkSize);
+    this.dirtyChunks = new Set();
+    this.activeChunks = new Set();
+    this.markAllDirty();
+  }
   
-  for (let i = 0; i < particleBodies.length; i++) {
-    const body = particleBodies[i];
-    const dx = body.position.x - rakePosition.x;
-    const dz = body.position.z - rakePosition.z;
-    const distance = Math.sqrt(dx * dx + dz * dz);
+  getChunkKey(cx, cz) { return cx + ',' + cz; }
+  
+  markDirty(cx, cz) {
+    if (cx >= 0 && cx < this.chunksX && cz >= 0 && cz < this.chunksZ) {
+      this.dirtyChunks.add(this.getChunkKey(cx, cz));
+    }
+  }
+  
+  markActive(cx, cz) {
+    if (cx >= 0 && cx < this.chunksX && cz >= 0 && cz < this.chunksZ) {
+      this.activeChunks.add(this.getChunkKey(cx, cz));
+    }
+  }
+  
+  markAllDirty() {
+    for (let cz = 0; cz < this.chunksZ; cz++) {
+      for (let cx = 0; cx < this.chunksX; cx++) {
+        this.markDirty(cx, cz);
+      }
+    }
+  }
+  
+  markAllActive() {
+    for (let cz = 0; cz < this.chunksZ; cz++) {
+      for (let cx = 0; cx < this.chunksX; cx++) {
+        this.markActive(cx, cz);
+      }
+    }
+  }
+  
+  clearDirty() { this.dirtyChunks.clear(); }
+  clearActive() { this.activeChunks.clear(); }
+  
+  markVoxelChanged(x, z) {
+    const cx = Math.floor(x / this.chunkSize);
+    const cz = Math.floor(z / this.chunkSize);
+    for (let dz = -1; dz <= 1; dz++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        this.markDirty(cx + dx, cz + dz);
+        this.markActive(cx + dx, cz + dz);
+      }
+    }
+  }
+}
+
+// ============================================
+// SAND SIMULATOR
+// ============================================
+class SandSimulator {
+  constructor(grid, chunkManager) {
+    this.grid = grid;
+    this.cm = chunkManager;
+  }
+  
+  step() {
+    const activeChunks = Array.from(this.cm.activeChunks);
+    this.cm.clearActive();
     
-    if (distance < CONFIG.rakeRadius && distance > 0.1) {
-      // Push particles away from rake center and in rake movement direction
-      const pushStrength = (1 - distance / CONFIG.rakeRadius) * CONFIG.rakeForce;
+    for (const key of activeChunks) {
+      const [cx, cz] = key.split(',').map(Number);
+      const startX = cx * this.cm.chunkSize;
+      const startZ = cz * this.cm.chunkSize;
+      const endX = Math.min(startX + this.cm.chunkSize, this.grid.width);
+      const endZ = Math.min(startZ + this.cm.chunkSize, this.grid.depth);
       
-      // Combine outward push with movement direction
-      const outwardX = dx / distance;
-      const outwardZ = dz / distance;
+      for (let z = startZ; z < endZ; z++) {
+        for (let x = startX; x < endX; x++) {
+          this.processColumn(x, z);
+        }
+      }
+    }
+  }
+  
+  processColumn(x, z) {
+    const h = this.grid.getHeight(x, z);
+    if (h === 0) return;
+    
+    const neighbors = [[1,0],[-1,0],[0,1],[0,-1]];
+    for (const [dx, dz] of neighbors) {
+      const nx = x + dx, nz = z + dz;
+      if (nx < 0 || nx >= this.grid.width || nz < 0 || nz >= this.grid.depth) continue;
       
-      body.velocity.x += (outwardX * 0.3 + rakeVelocity.x * 2) * pushStrength;
-      body.velocity.z += (outwardZ * 0.3 + rakeVelocity.z * 2) * pushStrength;
-      body.velocity.y += pushStrength * 0.5;
+      const nh = this.grid.getHeight(nx, nz);
+      if (h - nh > CONFIG.angleOfRepose) {
+        this.grid.setHeight(x, z, h - 1);
+        this.grid.setHeight(nx, nz, nh + 1);
+        this.cm.markVoxelChanged(x, z);
+        this.cm.markVoxelChanged(nx, nz);
+        return;
+      }
     }
   }
 }
 
-// Event listeners
-renderer.domElement.addEventListener('mousemove', updateRakePosition);
-renderer.domElement.addEventListener('mousedown', (e) => {
-  if (e.button === 0) {
-    isRaking = true;
-    controls.enabled = false;
+// ============================================
+// RAKE CONTROLLER
+// ============================================
+class RakeController {
+  constructor(grid, chunkManager) {
+    this.grid = grid;
+    this.cm = chunkManager;
+    this.lastPos = null;
+    this.isActive = false;
   }
-});
-renderer.domElement.addEventListener('mouseup', () => {
-  isRaking = false;
-  controls.enabled = true;
-});
-renderer.domElement.addEventListener('mouseleave', () => {
-  rakeIndicator.visible = false;
-  isRaking = false;
-  controls.enabled = true;
-});
-
-// Touch support
-renderer.domElement.addEventListener('touchstart', (e) => {
-  isRaking = true;
-  controls.enabled = false;
-  const touch = e.touches[0];
-  updateRakePosition({ clientX: touch.clientX, clientY: touch.clientY });
-});
-renderer.domElement.addEventListener('touchmove', (e) => {
-  const touch = e.touches[0];
-  updateRakePosition({ clientX: touch.clientX, clientY: touch.clientY });
-});
-renderer.domElement.addEventListener('touchend', () => {
-  isRaking = false;
-  controls.enabled = true;
-  rakeIndicator.visible = false;
-});
-
-// Reset button
-document.getElementById('resetBtn').addEventListener('click', resetParticles);
+  
+  worldToGrid(wx, wz) {
+    const half = CONFIG.gardenWorldSize / 2;
+    return {
+      x: Math.floor(((wx + half) / CONFIG.gardenWorldSize) * CONFIG.gridWidth),
+      z: Math.floor(((wz + half) / CONFIG.gardenWorldSize) * CONFIG.gridDepth)
+    };
+  }
+  
+  rake(wx, wz, dx, dz) {
+    const { x: cx, z: cz } = this.worldToGrid(wx, wz);
+    const len = Math.sqrt(dx * dx + dz * dz);
+    let perpX = 0, perpZ = 1;
+    if (len > 0.01) { perpX = -dz / len; perpZ = dx / len; }
+    
+    const half = Math.floor(CONFIG.rakeTeeth / 2);
+    for (let t = -half; t <= half; t++) {
+      const tx = Math.round(cx + perpX * t * CONFIG.rakeTeethSpacing);
+      const tz = Math.round(cz + perpZ * t * CONFIG.rakeTeethSpacing);
+      this.applyTooth(tx, tz, perpX, perpZ);
+    }
+  }
+  
+  applyTooth(cx, cz, perpX, perpZ) {
+    const r = CONFIG.rakeTeethRadius;
+    for (let dz = -r; dz <= r; dz++) {
+      for (let dx = -r; dx <= r; dx++) {
+        const x = cx + dx, z = cz + dz;
+        if (x < 0 || x >= this.grid.width || z < 0 || z >= this.grid.depth) continue;
+        
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        if (dist > r) continue;
+        
+        const h = this.grid.getHeight(x, z);
+        const factor = 1 - dist / r;
+        const dig = Math.floor(CONFIG.rakeDepth * factor);
+        
+        if (dig > 0 && h > 0) {
+          const newH = Math.max(1, h - dig);
+          const removed = h - newH;
+          this.grid.setHeight(x, z, newH);
+          this.cm.markVoxelChanged(x, z);
+          
+          if (removed > 0) {
+            for (let side = -1; side <= 1; side += 2) {
+              const sx = Math.round(x + perpX * (r + 1) * side);
+              const sz = Math.round(z + perpZ * (r + 1) * side);
+              if (sx >= 0 && sx < this.grid.width && sz >= 0 && sz < this.grid.depth) {
+                const sh = this.grid.getHeight(sx, sz);
+                this.grid.setHeight(sx, sz, Math.min(this.grid.height - 1, sh + Math.ceil(removed / 2)));
+                this.cm.markVoxelChanged(sx, sz);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  start(wx, wz) { this.isActive = true; this.lastPos = { x: wx, z: wz }; }
+  
+  update(wx, wz) {
+    if (!this.isActive || !this.lastPos) return;
+    const dx = wx - this.lastPos.x, dz = wz - this.lastPos.z;
+    if (Math.sqrt(dx * dx + dz * dz) > 0.05) {
+      this.rake(wx, wz, dx, dz);
+      this.lastPos = { x: wx, z: wz };
+    }
+  }
+  
+  end() { this.isActive = false; this.lastPos = null; }
+}
 
 // ============================================
-// WINDOW RESIZE
+// VOXEL RENDERER
 // ============================================
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
+class VoxelRenderer {
+  constructor(scene, grid, cm) {
+    this.grid = grid;
+    this.cm = cm;
+    this.maxVoxels = grid.width * grid.depth;
+    
+    const geo = new THREE.BoxGeometry(CONFIG.voxelSize * 0.95, CONFIG.voxelSize, CONFIG.voxelSize * 0.95);
+    const mat = new THREE.MeshStandardMaterial({ color: CONFIG.sandColor, roughness: 0.9, flatShading: true });
+    
+    this.mesh = new THREE.InstancedMesh(geo, mat, this.maxVoxels);
+    this.mesh.castShadow = true;
+    this.mesh.receiveShadow = true;
+    this.mesh.frustumCulled = false;
+    scene.add(this.mesh);
+    
+    this.dummy = new THREE.Object3D();
+    this.colors = new Float32Array(this.maxVoxels * 3);
+    this.mesh.instanceColor = new THREE.InstancedBufferAttribute(this.colors, 3);
+    
+    const base = new THREE.Color(CONFIG.sandColor);
+    for (let i = 0; i < this.maxVoxels; i++) {
+      const v = 0.9 + Math.random() * 0.2;
+      this.colors[i * 3] = base.r * v;
+      this.colors[i * 3 + 1] = base.g * v;
+      this.colors[i * 3 + 2] = base.b * v;
+    }
+    
+    this.fullUpdate();
+  }
+  
+  fullUpdate() {
+    const half = CONFIG.gardenWorldSize / 2;
+    let count = 0;
+    
+    for (let z = 0; z < this.grid.depth && count < this.maxVoxels; z++) {
+      for (let x = 0; x < this.grid.width && count < this.maxVoxels; x++) {
+        const h = this.grid.getHeight(x, z);
+        if (h > 0) {
+          const wx = (x / this.grid.width) * CONFIG.gardenWorldSize - half;
+          const wy = (h - 0.5) * CONFIG.voxelSize;
+          const wz = (z / this.grid.depth) * CONFIG.gardenWorldSize - half;
+          this.dummy.position.set(wx, wy, wz);
+          this.dummy.updateMatrix();
+          this.mesh.setMatrixAt(count++, this.dummy.matrix);
+        }
+      }
+    }
+    
+    this.mesh.count = count;
+    this.mesh.instanceMatrix.needsUpdate = true;
+  }
+  
+  update() {
+    if (this.cm.dirtyChunks.size > 0) {
+      this.fullUpdate();
+      this.cm.clearDirty();
+    }
+  }
+}
 
 // ============================================
-// ANIMATION LOOP
+// MAIN APPLICATION
 // ============================================
-const clock = new THREE.Clock();
-let lastTime = 0;
-
-function animate() {
-  requestAnimationFrame(animate);
+class ZenGardenApp {
+  constructor() {
+    this.initScene();
+    this.initGrid();
+    this.initVoxelRenderer();
+    this.initControls();
+    this.initUI();
+    this.animate();
+  }
   
-  const time = clock.getElapsedTime();
-  const deltaTime = Math.min(time - lastTime, 0.05);
-  lastTime = time;
+  initScene() {
+    this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color(0x1a1a1a);
+    this.scene.fog = new THREE.Fog(0x1a1a1a, 15, 35);
+    
+    this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+    this.camera.position.set(0, 10, 10);
+    
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    document.getElementById('canvas-container').appendChild(this.renderer.domElement);
+    
+    this.orbit = new OrbitControls(this.camera, this.renderer.domElement);
+    this.orbit.enableDamping = true;
+    this.orbit.minDistance = 5;
+    this.orbit.maxDistance = 25;
+    this.orbit.maxPolarAngle = Math.PI / 2.1;
+    
+    // Lighting
+    this.scene.add(new THREE.AmbientLight(0xffeedd, 0.4));
+    const sun = new THREE.DirectionalLight(0xfff5e6, 1.5);
+    sun.position.set(8, 15, 5);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.camera.left = sun.shadow.camera.bottom = -10;
+    sun.shadow.camera.right = sun.shadow.camera.top = 10;
+    this.scene.add(sun);
+    this.scene.add(new THREE.DirectionalLight(0xaaccff, 0.3).translateX(-5).translateY(8));
+    
+    // Garden bed
+    const frame = new THREE.Mesh(
+      new THREE.BoxGeometry(CONFIG.gardenWorldSize + 0.5, 0.5, CONFIG.gardenWorldSize + 0.5),
+      new THREE.MeshStandardMaterial({ color: 0x3d2817, roughness: 0.9 })
+    );
+    frame.position.y = -0.25;
+    frame.receiveShadow = true;
+    this.scene.add(frame);
+    
+    const bottom = new THREE.Mesh(
+      new THREE.PlaneGeometry(CONFIG.gardenWorldSize, CONFIG.gardenWorldSize),
+      new THREE.MeshStandardMaterial({ color: 0x2a1a0a, roughness: 1 })
+    );
+    bottom.rotation.x = -Math.PI / 2;
+    bottom.position.y = -0.01;
+    bottom.receiveShadow = true;
+    this.scene.add(bottom);
+    
+    window.addEventListener('resize', () => {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  }
   
-  // Step physics
-  world.step(1/60, deltaTime, 3);
+  initGrid() {
+    this.grid = new VoxelGrid(CONFIG.gridWidth, CONFIG.gridHeight, CONFIG.gridDepth);
+    this.grid.fillToHeight(CONFIG.baseHeight);
+    this.cm = new ChunkManager(this.grid, CONFIG.chunkSize);
+    this.sim = new SandSimulator(this.grid, this.cm);
+    this.rake = new RakeController(this.grid, this.cm);
+  }
   
-  // Update visuals
-  updateParticleVisuals();
-  controls.update();
+  initVoxelRenderer() {
+    this.voxelRenderer = new VoxelRenderer(this.scene, this.grid, this.cm);
+    setTimeout(() => document.getElementById('loading').classList.add('hidden'), 500);
+  }
   
-  renderer.render(scene, camera);
+  initControls() {
+    this.raycaster = new THREE.Raycaster();
+    this.mouse = new THREE.Vector2();
+    this.groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    
+    const indicator = new THREE.Mesh(
+      new THREE.RingGeometry(0.3, 0.4, 32),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.3, transparent: true, side: THREE.DoubleSide })
+    );
+    indicator.rotation.x = -Math.PI / 2;
+    indicator.visible = false;
+    this.scene.add(indicator);
+    this.indicator = indicator;
+    
+    const canvas = this.renderer.domElement;
+    canvas.addEventListener('mousemove', (e) => this.onMove(e.clientX, e.clientY));
+    canvas.addEventListener('mousedown', (e) => { if (e.button === 0) this.onDown(e.clientX, e.clientY); });
+    canvas.addEventListener('mouseup', () => this.onUp());
+    canvas.addEventListener('mouseleave', () => { this.indicator.visible = false; this.onUp(); });
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); this.onDown(e.touches[0].clientX, e.touches[0].clientY); });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); this.onMove(e.touches[0].clientX, e.touches[0].clientY); });
+    canvas.addEventListener('touchend', () => this.onUp());
+  }
+  
+  getWorldPos(cx, cy) {
+    this.mouse.set((cx / window.innerWidth) * 2 - 1, -(cy / window.innerHeight) * 2 + 1);
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    const pt = new THREE.Vector3();
+    this.raycaster.ray.intersectPlane(this.groundPlane, pt);
+    return pt;
+  }
+  
+  onMove(cx, cy) {
+    const pos = this.getWorldPos(cx, cy);
+    if (pos) {
+      this.indicator.position.set(pos.x, 0.1, pos.z);
+      this.indicator.visible = true;
+      if (this.rake.isActive) this.rake.update(pos.x, pos.z);
+    }
+  }
+  
+  onDown(cx, cy) {
+    const pos = this.getWorldPos(cx, cy);
+    if (pos) {
+      this.rake.start(pos.x, pos.z);
+      this.orbit.enabled = false;
+    }
+  }
+  
+  onUp() {
+    this.rake.end();
+    this.orbit.enabled = true;
+  }
+  
+  initUI() {
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      this.grid.fillToHeight(CONFIG.baseHeight);
+      this.cm.markAllDirty();
+      this.cm.markAllActive();
+    });
+    document.getElementById('flattenBtn').addEventListener('click', () => {
+      this.grid.fillToHeight(CONFIG.baseHeight);
+      this.cm.markAllDirty();
+      this.cm.markAllActive();
+    });
+  }
+  
+  animate() {
+    requestAnimationFrame(() => this.animate());
+    for (let i = 0; i < CONFIG.stepsPerFrame; i++) this.sim.step();
+    this.voxelRenderer.update();
+    this.orbit.update();
+    this.renderer.render(this.scene, this.camera);
+  }
 }
 
 // ============================================
 // INITIALIZE
 // ============================================
-createParticles();
-createRocks();
-
-// Hide loading after particles settle
-setTimeout(() => {
-  document.getElementById('loading').classList.add('hidden');
-}, 1500);
-
-animate();
+new ZenGardenApp();
