@@ -9,12 +9,12 @@ const CONFIG = {
   gridHeight: 16,
   gridDepth: 512,
   chunkSize: 16,
-  angleOfRepose: 2,
+  angleOfRepose: 3,
   stepsPerFrame: 1,
-  rakeTeeth: 4,
-  rakeTeethSpacing: 10,
-  rakeTeethRadius: 6,
-  rakeDepth: 3,
+  rakeTeeth: 6,
+  rakeTeethSpacing: 6,
+  rakeTeethRadius: 2,
+  rakeDepth: 2,
   voxelSize: 0.1,
   sandColor: 0xe8dcc4,
   gardenWorldSize: 12.8,
@@ -211,36 +211,31 @@ class RakeController {
       perpX = -dz / len; perpZ = dx / len;
     }
     
-    // 4 teeth aligned perpendicular to movement direction
+    // 6 teeth aligned perpendicular to movement direction
     const spacing = CONFIG.rakeTeethSpacing;
-    const toothOffsets = [-1.5, -0.5, 0.5, 1.5];
+    const numTeeth = CONFIG.rakeTeeth;
+    const halfSpan = (numTeeth - 1) / 2;
     
     // First dig the grooves and track removed sand per tooth
-    const removedPerTooth = [];
-    for (const off of toothOffsets) {
+    const teeth = [];
+    for (let i = 0; i < numTeeth; i++) {
+      const off = (i - halfSpan);
       const tx = Math.round(cx + perpX * off * spacing);
       const tz = Math.round(cz + perpZ * off * spacing);
-      removedPerTooth.push({ off, removed: this.applyTooth(tx, tz) });
+      const removed = this.applyTooth(tx, tz);
+      teeth.push({ off, removed, tx, tz });
     }
     
-    // Create ridges between teeth (3 ridges between 4 teeth, plus 2 outer ridges)
-    const ridgeOffsets = [-2, -1, 0, 1, 2];
-    for (let i = 0; i < ridgeOffsets.length; i++) {
-      const ridgeOff = ridgeOffsets[i];
-      const rx = Math.round(cx + perpX * ridgeOff * spacing);
-      const rz = Math.round(cz + perpZ * ridgeOff * spacing);
+    // Create ridges between each pair of teeth
+    for (let i = 0; i < numTeeth - 1; i++) {
+      const midOff = (teeth[i].off + teeth[i + 1].off) / 2;
+      const rx = Math.round(cx + perpX * midOff * spacing);
+      const rz = Math.round(cz + perpZ * midOff * spacing);
       if (rx >= 0 && rx < this.grid.width && rz >= 0 && rz < this.grid.depth) {
-        // Sum removed sand from adjacent teeth
-        let sandToAdd = 0;
-        for (const t of removedPerTooth) {
-          const dist = Math.abs(ridgeOff - t.off);
-          if (dist <= 1) {
-            sandToAdd += t.removed * (1 - dist * 0.5);
-          }
-        }
+        const sandToAdd = (teeth[i].removed + teeth[i + 1].removed) / 2;
         if (sandToAdd > 0) {
           const rh = this.grid.getHeight(rx, rz);
-          const add = Math.ceil(sandToAdd / 6);
+          const add = Math.ceil(sandToAdd / 4);
           this.grid.setHeight(rx, rz, Math.min(this.grid.height - 1, rh + add));
           this.cm.markVoxelChanged(rx, rz);
         }
