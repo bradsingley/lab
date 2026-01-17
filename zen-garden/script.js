@@ -785,7 +785,11 @@ class ZenGardenApp {
   initControls() {
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
-    this.groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    this.groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.3); // Adjusted for sand height
+    
+    // Inverse rotation matrix for converting world coords to garden local coords
+    this.gardenInverseMatrix = new THREE.Matrix4();
+    this.gardenInverseMatrix.copy(this.gardenContainer.matrixWorld).invert();
     
     const indicator = new THREE.Mesh(
       new THREE.RingGeometry(0.3, 0.4, 32),
@@ -793,7 +797,7 @@ class ZenGardenApp {
     );
     indicator.rotation.x = -Math.PI / 2;
     indicator.visible = false;
-    this.scene.add(indicator);
+    this.gardenContainer.add(indicator); // Add to garden container so it rotates with it
     this.indicator = indicator;
     
     const canvas = this.renderer.domElement;
@@ -814,19 +818,28 @@ class ZenGardenApp {
     return pt;
   }
   
+  // Convert world position to garden local coordinates
+  worldToLocal(worldPos) {
+    const local = worldPos.clone();
+    local.applyMatrix4(this.gardenInverseMatrix);
+    return local;
+  }
+  
   onMove(cx, cy) {
-    const pos = this.getWorldPos(cx, cy);
-    if (pos) {
-      this.indicator.position.set(pos.x, 0.1, pos.z);
+    const worldPos = this.getWorldPos(cx, cy);
+    if (worldPos) {
+      const localPos = this.worldToLocal(worldPos);
+      this.indicator.position.set(localPos.x, 0.4, localPos.z);
       this.indicator.visible = true;
-      if (this.rake.isActive) this.rake.update(pos.x, pos.z);
+      if (this.rake.isActive) this.rake.update(localPos.x, localPos.z);
     }
   }
   
   onDown(cx, cy) {
-    const pos = this.getWorldPos(cx, cy);
-    if (pos) {
-      this.rake.start(pos.x, pos.z);
+    const worldPos = this.getWorldPos(cx, cy);
+    if (worldPos) {
+      const localPos = this.worldToLocal(worldPos);
+      this.rake.start(localPos.x, localPos.z);
       this.orbit.enabled = false;
     }
   }
