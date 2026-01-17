@@ -7,10 +7,47 @@ const availableVideos = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 
 const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
 // DOM elements - will be set after DOM loads
-let gameScreen, videoPlayer, captionLetter, captionSentence, hintText, splashImage, infoIcon, infoModal, closeModal;
+let gameScreen, videoPlayer, captionLetter, captionSentence, hintText, splashImage, infoIcon, infoModal, closeModal, frameWrapper, videoContainer;
 
 // State
 let isPlaying = false;
+let hasStarted = false;
+
+// Check if device is mobile/touch
+function isMobile() {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+}
+
+// Frame dimensions
+const FRAME_WIDTH = 1280;
+const FRAME_HEIGHT = 1096;
+const PADDING = 20;
+
+// Scale the frame to fit the container
+function scaleFrame() {
+    if (!frameWrapper) {
+        console.error('frameWrapper not found!');
+        return;
+    }
+    
+    // Use window dimensions minus padding
+    const availableWidth = window.innerWidth - (PADDING * 2);
+    const availableHeight = window.innerHeight - (PADDING * 2);
+    
+    // Calculate scale to fit both dimensions, but never exceed 1
+    const scaleX = availableWidth / FRAME_WIDTH;
+    const scaleY = availableHeight / FRAME_HEIGHT;
+    const scale = Math.min(scaleX, scaleY, 1);
+    
+    console.log('Scaling:', { availableWidth, availableHeight, scaleX, scaleY, scale });
+    
+    frameWrapper.style.transform = `scale(${scale})`;
+    
+    // Show the frame after scaling is applied
+    if (!frameWrapper.classList.contains('scaled')) {
+        frameWrapper.classList.add('scaled');
+    }
+}
 
 // Setup keyboard listeners
 function setupKeyboardListeners() {
@@ -27,6 +64,9 @@ function setupKeyboardListeners() {
     // Focus when user taps anywhere
     document.addEventListener('click', focusInput);
     document.addEventListener('touchstart', focusInput);
+    
+    // When input gets focus, update hint text on mobile
+    hiddenInput.addEventListener('focus', onKeyboardFocus);
     
     // Listen to keyboard events
     document.addEventListener('keydown', (e) => {
@@ -107,12 +147,25 @@ function playVideo(letter) {
 
 // Show hint text on page load
 function showHintText() {
-    if (captionSentence && captions.hint) {
-        captionSentence.innerHTML = captions.hint;
+    if (captionSentence) {
+        // Show mobile hint on touch devices, regular hint on desktop
+        if (isMobile() && captions.hintMobile) {
+            captionSentence.innerHTML = captions.hintMobile;
+        } else if (captions.hint) {
+            captionSentence.innerHTML = captions.hint;
+        }
     }
     // Also show in the separate hint text element if it exists
     if (hintText) {
         hintText.classList.remove('hidden');
+    }
+}
+
+// Update hint text after keyboard focus (mobile)
+function onKeyboardFocus() {
+    if (!hasStarted && isMobile() && captionSentence && captions.hint) {
+        hasStarted = true;
+        captionSentence.innerHTML = captions.hint;
     }
 }
 
@@ -167,6 +220,12 @@ document.addEventListener('DOMContentLoaded', function() {
     infoIcon = document.getElementById('infoIcon');
     infoModal = document.getElementById('infoModal');
     closeModal = document.getElementById('closeModal');
+    frameWrapper = document.querySelector('.frame-wrapper');
+    videoContainer = document.querySelector('.video-container');
+    
+    // Initial scale and listen for resize
+    scaleFrame();
+    window.addEventListener('resize', scaleFrame);
     
     // Set up info modal
     if (infoIcon) {
