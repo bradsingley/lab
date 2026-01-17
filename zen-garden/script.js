@@ -321,7 +321,7 @@ class VoxelRenderer {
         const h = this.grid.getHeight(x, z);
         if (h > 0) {
           const wx = (x / this.grid.width) * CONFIG.gardenWorldSize - half;
-          const wy = (h - 0.5) * CONFIG.voxelSize;
+          const wy = 0.26 + (h - 0.5) * CONFIG.voxelSize; // Offset to sit on garden bottom
           const wz = (z / this.grid.depth) * CONFIG.gardenWorldSize - half;
           this.dummy.position.set(wx, wy, wz);
           this.dummy.updateMatrix();
@@ -405,13 +405,14 @@ class ZenGardenApp {
     this.gardenContainer.rotation.y = Math.PI / 4;
     this.scene.add(this.gardenContainer);
     
-    // Garden bed frame
+    // Garden bed frame - raised above grass to prevent z-fighting
     const frame = new THREE.Mesh(
       new THREE.BoxGeometry(CONFIG.gardenWorldSize + 0.5, 0.5, CONFIG.gardenWorldSize + 0.5),
       new THREE.MeshStandardMaterial({ color: 0x3d2817, roughness: 0.9 })
     );
-    frame.position.y = -0.25;
+    frame.position.y = 0;
     frame.receiveShadow = true;
+    frame.castShadow = true;
     this.gardenContainer.add(frame);
     
     const bottom = new THREE.Mesh(
@@ -419,7 +420,7 @@ class ZenGardenApp {
       new THREE.MeshStandardMaterial({ color: 0x2a1a0a, roughness: 1 })
     );
     bottom.rotation.x = -Math.PI / 2;
-    bottom.position.y = -0.01;
+    bottom.position.y = 0.26;
     bottom.receiveShadow = true;
     this.gardenContainer.add(bottom);
     
@@ -469,7 +470,7 @@ class ZenGardenApp {
       const height = worldRadius * rockConfig.heightRatio * 2;
       
       const rock = this.createIrregularRock(worldRadius, height);
-      rock.position.set(positions[i].x, height * 0.3, positions[i].z);
+      rock.position.set(positions[i].x, 0.26 + height * 0.3, positions[i].z); // Offset to match sand level
       rock.rotation.y = Math.random() * Math.PI * 2;
       rock.castShadow = true;
       rock.receiveShadow = true;
@@ -527,11 +528,11 @@ class ZenGardenApp {
   }
   
   createBackgroundElements() {
-    // Ground/grass platform extending around the garden - aligned with sand level
+    // Ground/grass platform extending around the garden - below the zen garden
     const grassGeo = new THREE.BoxGeometry(40, 0.5, 40);
     const grassMat = new THREE.MeshStandardMaterial({ color: 0x4a7c3f, roughness: 0.9 });
     const grass = new THREE.Mesh(grassGeo, grassMat);
-    grass.position.y = -0.25;
+    grass.position.y = -0.5;
     grass.receiveShadow = true;
     this.scene.add(grass);
     
