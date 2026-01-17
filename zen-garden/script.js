@@ -527,30 +527,28 @@ class ZenGardenApp {
   }
   
   createBackgroundElements() {
-    // Ground/grass platform extending around the garden
+    // Ground/grass platform extending around the garden - aligned with sand level
     const grassGeo = new THREE.BoxGeometry(40, 0.5, 40);
     const grassMat = new THREE.MeshStandardMaterial({ color: 0x4a7c3f, roughness: 0.9 });
     const grass = new THREE.Mesh(grassGeo, grassMat);
-    grass.position.y = -0.5;
+    grass.position.y = -0.25;
     grass.receiveShadow = true;
     this.scene.add(grass);
     
-    // Mountains in background
-    this.createMountain(-8, 12, 8, 0x3d6b59);
-    this.createMountain(-4, 14, 10, 0x2d5a4a);
-    this.createMountain(2, 10, 6, 0x4a7c69);
-    
     // Torii gate
-    this.createToriiGate(3, 0, -8);
+    this.createToriiGate(3, 0, -10);
+    
+    // Path from gate to zen garden
+    this.createPathToGarden();
     
     // Koi pond
     this.createKoiPond(10, -6);
     
-    // Japanese maple trees
-    this.createMapleTree(-9, -3, 0xcc4444);
-    this.createMapleTree(-10, 5, 0xdd5533);
-    this.createMapleTree(10, 8, 0xcc3333);
-    this.createMapleTree(12, -2, 0xdd4422);
+    // Japanese maple trees - natural autumn colors
+    this.createMapleTree(-9, -3, 0xa85d3a);
+    this.createMapleTree(-10, 5, 0xb86b42);
+    this.createMapleTree(10, 8, 0x9e5535);
+    this.createMapleTree(12, -2, 0xc47a4a);
     
     // Bushes/shrubs
     this.createBush(-7, -6, 0.8);
@@ -571,19 +569,44 @@ class ZenGardenApp {
     this.createCloud(-12, 16, 8);
     this.createCloud(8, 18, 12);
     this.createCloud(14, 15, 6);
-    
-    // Waterfall from mountain
-    this.createWaterfall(-5, 10);
   }
   
-  createMountain(x, z, height, color) {
-    const geo = new THREE.ConeGeometry(height * 0.8, height, 6);
-    const mat = new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.8 });
-    const mountain = new THREE.Mesh(geo, mat);
-    mountain.position.set(x, height / 2 - 0.5, z);
-    mountain.rotation.y = Math.random() * Math.PI;
-    mountain.castShadow = true;
-    this.scene.add(mountain);
+  createPathToGarden() {
+    // Gravel/stone path from torii gate to zen garden
+    const pathMat = new THREE.MeshStandardMaterial({ color: 0x888880, roughness: 0.95 });
+    
+    // Main path segments
+    const pathPoints = [
+      { x: 3, z: -9, w: 1.8, d: 2 },
+      { x: 2.5, z: -7, w: 1.6, d: 2 },
+      { x: 1.5, z: -5, w: 1.5, d: 2.5 },
+      { x: 0, z: -3, w: 1.4, d: 3 },
+      { x: -1, z: -0.5, w: 1.3, d: 3 }
+    ];
+    
+    pathPoints.forEach(pt => {
+      const pathGeo = new THREE.PlaneGeometry(pt.w, pt.d);
+      const pathSegment = new THREE.Mesh(pathGeo, pathMat);
+      pathSegment.rotation.x = -Math.PI / 2;
+      pathSegment.position.set(pt.x, 0.02, pt.z);
+      pathSegment.receiveShadow = true;
+      this.scene.add(pathSegment);
+    });
+    
+    // Add some decorative stones along the path
+    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9, flatShading: true });
+    const stonePositions = [
+      [3.8, -8], [2.2, -8.5], [3.5, -6], [1.8, -6.5],
+      [2.8, -4], [0.5, -4.5], [1.5, -2], [-0.8, -2.5]
+    ];
+    stonePositions.forEach(([x, z]) => {
+      const stoneGeo = new THREE.SphereGeometry(0.15 + Math.random() * 0.1, 6, 4);
+      const stone = new THREE.Mesh(stoneGeo, stoneMat);
+      stone.position.set(x, 0.08, z);
+      stone.scale.y = 0.4;
+      stone.receiveShadow = true;
+      this.scene.add(stone);
+    });
   }
   
   createToriiGate(x, y, z) {
@@ -746,30 +769,6 @@ class ZenGardenApp {
     
     cloud.position.set(x, y, z);
     this.scene.add(cloud);
-  }
-  
-  createWaterfall(x, z) {
-    // Waterfall stream
-    const waterMat = new THREE.MeshStandardMaterial({ 
-      color: 0x66ccff, 
-      roughness: 0.2, 
-      transparent: true, 
-      opacity: 0.7 
-    });
-    
-    const streamGeo = new THREE.BoxGeometry(0.8, 4, 0.3);
-    const stream = new THREE.Mesh(streamGeo, waterMat);
-    stream.position.set(x, 2, z);
-    this.scene.add(stream);
-    
-    // Pool at bottom
-    const poolShape = new THREE.Shape();
-    poolShape.ellipse(0, 0, 1.2, 0.8, 0, Math.PI * 2);
-    const poolGeo = new THREE.ShapeGeometry(poolShape);
-    const pool = new THREE.Mesh(poolGeo, waterMat);
-    pool.rotation.x = -Math.PI / 2;
-    pool.position.set(x, 0.05, z - 1);
-    this.scene.add(pool);
   }
   
   initGrid() {
