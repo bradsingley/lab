@@ -363,8 +363,8 @@ class ZenGardenApp {
   
   initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x2a3a4a);
-    this.scene.fog = new THREE.Fog(0x2a3a4a, 25, 60);
+    this.scene.background = new THREE.Color(0x87ceeb);
+    this.scene.fog = new THREE.Fog(0x87ceeb, 30, 80);
     
     this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
     this.camera.position.set(18, 14, 18);
@@ -384,10 +384,10 @@ class ZenGardenApp {
     this.orbit.maxDistance = 50;
     this.orbit.maxPolarAngle = Math.PI / 2.1;
     
-    // Lighting
-    this.scene.add(new THREE.AmbientLight(0xffeedd, 0.5));
-    const sun = new THREE.DirectionalLight(0xfff5e6, 1.2);
-    sun.position.set(10, 6, 5);
+    // Lighting - brighter for a sunny day
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const sun = new THREE.DirectionalLight(0xfff8e8, 1.5);
+    sun.position.set(10, 12, 8);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
     sun.shadow.camera.left = sun.shadow.camera.bottom = -25;
@@ -395,7 +395,7 @@ class ZenGardenApp {
     sun.shadow.bias = -0.0001;
     sun.shadow.normalBias = 0.02;
     this.scene.add(sun);
-    this.scene.add(new THREE.DirectionalLight(0xaaccff, 0.3).translateX(-5).translateY(4));
+    this.scene.add(new THREE.DirectionalLight(0xaaddff, 0.5).translateX(-5).translateY(8));
     
     // Garden container (no rotation - camera angle provides diagonal view)
     this.gardenContainer = new THREE.Group();
@@ -524,13 +524,8 @@ class ZenGardenApp {
   }
   
   createBackgroundElements() {
-    // Ground/grass platform extending around the garden - below the zen garden
-    const grassGeo = new THREE.BoxGeometry(40, 0.5, 40);
-    const grassMat = new THREE.MeshStandardMaterial({ color: 0x4a7c3f, roughness: 0.9 });
-    const grass = new THREE.Mesh(grassGeo, grassMat);
-    grass.position.y = -0.5;
-    grass.receiveShadow = true;
-    this.scene.add(grass);
+    // Create rolling hills terrain
+    this.createRollingHills();
     
     // Torii gate
     this.createToriiGate(3, 0, -10);
@@ -566,6 +561,68 @@ class ZenGardenApp {
     this.createCloud(-12, 16, 8);
     this.createCloud(8, 18, 12);
     this.createCloud(14, 15, 6);
+  }
+  
+  createRollingHills() {
+    // Create a large terrain with rolling hills using a plane with displaced vertices
+    const size = 80;
+    const segments = 60;
+    const terrainGeo = new THREE.PlaneGeometry(size, size, segments, segments);
+    
+    const posAttr = terrainGeo.attributes.position;
+    const vertex = new THREE.Vector3();
+    
+    // Displacement function for rolling hills
+    for (let i = 0; i < posAttr.count; i++) {
+      vertex.fromBufferAttribute(posAttr, i);
+      
+      // Skip the center area where the zen garden sits
+      const distFromCenter = Math.sqrt(vertex.x * vertex.x + vertex.y * vertex.y);
+      const gardenRadius = 10;
+      
+      if (distFromCenter < gardenRadius) {
+        // Flat area for garden
+        posAttr.setZ(i, -0.5);
+      } else {
+        // Rolling hills using multiple sine waves
+        const fadeIn = Math.min(1, (distFromCenter - gardenRadius) / 5);
+        const hill1 = Math.sin(vertex.x * 0.15) * Math.cos(vertex.y * 0.12) * 2;
+        const hill2 = Math.sin(vertex.x * 0.08 + 1) * Math.sin(vertex.y * 0.1 + 0.5) * 3;
+        const hill3 = Math.cos(vertex.x * 0.2 - 0.3) * Math.cos(vertex.y * 0.18) * 1.5;
+        const height = (hill1 + hill2 + hill3) * fadeIn - 0.5;
+        posAttr.setZ(i, height);
+      }
+    }
+    
+    terrainGeo.computeVertexNormals();
+    
+    const terrainMat = new THREE.MeshStandardMaterial({ 
+      color: 0x5a9a4a,
+      roughness: 0.9,
+      flatShading: false
+    });
+    
+    const terrain = new THREE.Mesh(terrainGeo, terrainMat);
+    terrain.rotation.x = -Math.PI / 2;
+    terrain.position.y = 0;
+    terrain.receiveShadow = true;
+    this.scene.add(terrain);
+    
+    // Add some distant hills for depth
+    this.createDistantHill(-25, -2, 25, 8, 0x4a8a3a);
+    this.createDistantHill(20, -1, 30, 6, 0x4a8a3a);
+    this.createDistantHill(-10, -1, 35, 10, 0x3a7a2a);
+    this.createDistantHill(30, -2, 20, 7, 0x5a9a4a);
+  }
+  
+  createDistantHill(x, y, z, size, color) {
+    const hillGeo = new THREE.SphereGeometry(size, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+    const hillMat = new THREE.MeshStandardMaterial({ color, roughness: 0.9 });
+    const hill = new THREE.Mesh(hillGeo, hillMat);
+    hill.position.set(x, y, z);
+    hill.scale.set(1.5, 0.6, 1);
+    hill.receiveShadow = true;
+    this.scene.add(hill);
   }
   
   createPathToGarden() {
