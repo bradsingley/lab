@@ -390,10 +390,10 @@ class ZenGardenApp {
     sun.position.set(20, 12, -8);
     sun.castShadow = true;
     sun.shadow.mapSize.set(4096, 4096);
-    sun.shadow.camera.left = sun.shadow.camera.bottom = -25;
-    sun.shadow.camera.right = sun.shadow.camera.top = 25;
-    sun.shadow.bias = -0.001;
-    sun.shadow.normalBias = 0.01;
+    sun.shadow.camera.left = sun.shadow.camera.bottom = -15;
+    sun.shadow.camera.right = sun.shadow.camera.top = 15;
+    sun.shadow.bias = 0;
+    sun.shadow.normalBias = 0.005;
     this.scene.add(sun);
     this.scene.add(new THREE.DirectionalLight(0x6688aa, 0.25).translateX(-5).translateY(4));
     
