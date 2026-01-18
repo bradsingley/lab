@@ -540,7 +540,6 @@ class ZenGardenApp {
     this.createMapleTree(-9, -3, 0xa85d3a);
     this.createMapleTree(-10, 5, 0xb86b42);
     this.createMapleTree(10, 8, 0x9e5535);
-    this.createMapleTree(12, -2, 0xc47a4a);
     
     // Bushes/shrubs
     this.createBush(-7, -6, 0.8);
@@ -586,9 +585,9 @@ class ZenGardenApp {
       } else {
         // Rolling hills using multiple sine waves
         const fadeIn = Math.min(1, (distFromCenter - gardenRadius) / 5);
-        const hill1 = Math.sin(vertex.x * 0.15) * Math.cos(vertex.y * 0.12) * 2;
-        const hill2 = Math.sin(vertex.x * 0.08 + 1) * Math.sin(vertex.y * 0.1 + 0.5) * 3;
-        const hill3 = Math.cos(vertex.x * 0.2 - 0.3) * Math.cos(vertex.y * 0.18) * 1.5;
+        const hill1 = Math.sin(vertex.x * 0.15) * Math.cos(vertex.y * 0.12) * 1;
+        const hill2 = Math.sin(vertex.x * 0.08 + 1) * Math.sin(vertex.y * 0.1 + 0.5) * 1.5;
+        const hill3 = Math.cos(vertex.x * 0.2 - 0.3) * Math.cos(vertex.y * 0.18) * 0.75;
         const height = (hill1 + hill2 + hill3) * fadeIn - 0.5;
         posAttr.setZ(i, height);
       }
@@ -609,10 +608,10 @@ class ZenGardenApp {
     this.scene.add(terrain);
     
     // Add some distant hills for depth
-    this.createDistantHill(-25, -2, 25, 8, 0x2a5a2a);
-    this.createDistantHill(20, -1, 30, 6, 0x2a5a2a);
-    this.createDistantHill(-10, -1, 35, 10, 0x1a4a1a);
-    this.createDistantHill(30, -2, 20, 7, 0x3a6a3a);
+    this.createDistantHill(-25, -2, 25, 4, 0x2a5a2a);
+    this.createDistantHill(20, -1, 30, 3, 0x2a5a2a);
+    this.createDistantHill(-10, -1, 35, 5, 0x1a4a1a);
+    this.createDistantHill(30, -2, 20, 3.5, 0x3a6a3a);
   }
   
   createDistantHill(x, y, z, size, color) {
