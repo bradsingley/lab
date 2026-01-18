@@ -580,15 +580,17 @@ class ZenGardenApp {
       const gardenRadius = 10;
       
       if (distFromCenter < gardenRadius) {
-        // Flat area for garden
-        posAttr.setZ(i, -0.5);
+        // Flat area for garden - lowest point
+        posAttr.setZ(i, 0);
       } else {
-        // Rolling hills using multiple sine waves
+        // Rolling hills rising above the garden
         const fadeIn = Math.min(1, (distFromCenter - gardenRadius) / 5);
         const hill1 = Math.sin(vertex.x * 0.15) * Math.cos(vertex.y * 0.12) * 1;
         const hill2 = Math.sin(vertex.x * 0.08 + 1) * Math.sin(vertex.y * 0.1 + 0.5) * 1.5;
         const hill3 = Math.cos(vertex.x * 0.2 - 0.3) * Math.cos(vertex.y * 0.18) * 0.75;
-        const height = (hill1 + hill2 + hill3) * fadeIn - 0.5;
+        // Use abs to ensure hills are always above garden level, plus base height
+        const hillHeight = Math.abs(hill1 + hill2 + hill3) + 0.5;
+        const height = hillHeight * fadeIn;
         posAttr.setZ(i, height);
       }
     }
@@ -607,11 +609,11 @@ class ZenGardenApp {
     terrain.receiveShadow = true;
     this.scene.add(terrain);
     
-    // Add some distant hills for depth
-    this.createDistantHill(-25, -2, 25, 4, 0x2a5a2a);
-    this.createDistantHill(20, -1, 30, 3, 0x2a5a2a);
-    this.createDistantHill(-10, -1, 35, 5, 0x1a4a1a);
-    this.createDistantHill(30, -2, 20, 3.5, 0x3a6a3a);
+    // Add some distant hills for depth (above garden level)
+    this.createDistantHill(-25, 1, 25, 4, 0x2a5a2a);
+    this.createDistantHill(20, 1, 30, 3, 0x2a5a2a);
+    this.createDistantHill(-10, 1, 35, 5, 0x1a4a1a);
+    this.createDistantHill(30, 1, 20, 3.5, 0x3a6a3a);
   }
   
   createDistantHill(x, y, z, size, color) {
