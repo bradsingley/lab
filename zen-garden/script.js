@@ -387,7 +387,7 @@ class ZenGardenApp {
     // Lighting - low sun for dramatic shadows (from right of camera)
     this.scene.add(new THREE.AmbientLight(0xffeedd, 0.35));
     const sun = new THREE.DirectionalLight(0xffddaa, 1.4);
-    sun.position.set(20, 4, -8);
+    sun.position.set(20, 8, -8);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
     sun.shadow.camera.left = sun.shadow.camera.bottom = -25;
