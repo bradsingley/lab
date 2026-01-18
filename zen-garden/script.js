@@ -367,7 +367,7 @@ class ZenGardenApp {
     this.scene.fog = new THREE.Fog(0x3a4a5a, 30, 80);
     
     this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
-    this.camera.position.set(18, 14, 18);
+    this.camera.position.set(12, 12, 12);
     
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
