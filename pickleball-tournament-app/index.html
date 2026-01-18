@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pickleball Tournament Planner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="hero">
+        <div class="hero-text">
+          <span class="badge">Tournament HQ</span>
+          <h1>Pickleball Tournament Planner</h1>
+          <p>
+            Build a round robin schedule, track scores, and keep your standings
+            updated in real time.
+          </p>
+          <div class="hero-actions">
+            <button class="primary" data-action="generate" type="button">
+              Generate schedule
+            </button>
+            <button class="ghost" data-action="reset-all" type="button">
+              Reset tournament
+            </button>
+          </div>
+          <p class="save-status" id="save-status">All changes saved locally.</p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-card">
+            <p class="stat-label">Players</p>
+            <p class="stat-value" id="summary-players">0</p>
+            <p class="stat-sub">Active roster</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Matches</p>
+            <p class="stat-value" id="summary-matches">0</p>
+            <p class="stat-sub" id="summary-scored">0 scored</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Rounds</p>
+            <p class="stat-value" id="summary-rounds">0</p>
+            <p class="stat-sub">Round robin</p>
+          </div>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="panel" id="setup">
+          <div class="panel-header">
+            <div>
+              <h2>Setup</h2>
+              <p>Capture the essentials and configure your courts.</p>
+            </div>
+            <span class="panel-tag">Auto-saved</span>
+          </div>
+          <div class="panel-body grid">
+            <label class="field">
+              <span>Tournament name</span>
+              <input
+                id="tournament-name"
+                data-field="name"
+                type="text"
+                placeholder="Spring Smash Open"
+              />
+            </label>
+            <label class="field">
+              <span>Location</span>
+              <input
+                id="tournament-location"
+                data-field="location"
+                type="text"
+                placeholder="City Rec Center"
+              />
+            </label>
+            <label class="field">
+              <span>Date</span>
+              <input id="tournament-date" data-field="date" type="date" />
+            </label>
+            <label class="field">
+              <span>Courts available</span>
+              <input
+                id="tournament-courts"
+                data-field="courts"
+                type="number"
+                min="1"
+                max="16"
+              />
+              <small>Used to label courts and match slots.</small>
+            </label>
+            <label class="field">
+              <span>Format</span>
+              <select id="tournament-format" data-field="format">
+                <option value="round-robin">Round robin</option>
+              </select>
+              <small>Everyone plays each other once.</small>
+            </label>
+            <label class="field">
+              <span>Points to win</span>
+              <input
+                id="tournament-points"
+                data-field="pointsToWin"
+                type="number"
+                min="1"
+                max="99"
+              />
+            </label>
+            <label class="field checkbox-field">
+              <span>Win by 2</span>
+              <input
+                id="tournament-winbytwo"
+                data-field="winByTwo"
+                type="checkbox"
+              />
+            </label>
+            <label class="field full-width">
+              <span>Notes</span>
+              <textarea
+                id="tournament-notes"
+                data-field="notes"
+                rows="3"
+                placeholder="Arrival time, check-in table, or other reminders."
+              ></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section class="panel" id="players">
+          <div class="panel-header">
+            <div>
+              <h2>Players</h2>
+              <p>Build the roster and set the order for scheduling.</p>
+            </div>
+            <span class="panel-tag" id="player-count">0 players</span>
+          </div>
+          <div class="panel-body">
+            <form class="player-form" id="player-form">
+              <input
+                id="player-name"
+                type="text"
+                placeholder="Add player name"
+                autocomplete="off"
+              />
+              <button class="primary" type="submit">Add player</button>
+            </form>
+            <p class="helper error" id="player-error" role="alert"></p>
+            <ul class="player-list" id="player-list"></ul>
+            <div class="player-actions">
+              <button class="ghost" data-action="shuffle" type="button">
+                Shuffle order
+              </button>
+              <button class="ghost" data-action="clear-players" type="button">
+                Clear players
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="schedule">
+          <div class="panel-header">
+            <div>
+              <h2>Schedule</h2>
+              <p>Generate matches and enter scores as games finish.</p>
+            </div>
+            <span class="panel-tag" id="schedule-progress">0 of 0</span>
+          </div>
+          <div class="panel-body">
+            <div class="schedule-actions">
+              <button class="primary" data-action="generate" type="button">
+                Generate schedule
+              </button>
+              <button class="ghost" data-action="clear-scores" type="button">
+                Clear scores
+              </button>
+              <button class="ghost" data-action="reset-schedule" type="button">
+                Reset schedule
+              </button>
+            </div>
+            <div class="schedule-summary" id="schedule-summary"></div>
+            <div class="schedule-list" id="schedule-list"></div>
+            <div class="empty-state" id="schedule-empty"></div>
+          </div>
+        </section>
+
+        <section class="panel" id="standings">
+          <div class="panel-header">
+            <div>
+              <h2>Standings</h2>
+              <p>Standings update as soon as scores are entered.</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table id="standings-table">
+                <thead>
+                  <tr>
+                    <th>Player</th>
+                    <th>Matches</th>
+                    <th>W</th>
+                    <th>L</th>
+                    <th>T</th>
+                    <th>PF</th>
+                    <th>PA</th>
+                    <th>Diff</th>
+                    <th>Win %</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="standings-empty"></div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>
+          Data is stored locally in your browser. Exporting or sharing is not
+          enabled yet.
+        </p>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
