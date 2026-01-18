@@ -363,8 +363,8 @@ class ZenGardenApp {
   
   initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x87ceeb);
-    this.scene.fog = new THREE.Fog(0x87ceeb, 30, 80);
+    this.scene.background = new THREE.Color(0x3a4a5a);
+    this.scene.fog = new THREE.Fog(0x3a4a5a, 30, 80);
     
     this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
     this.camera.position.set(18, 14, 18);
@@ -384,10 +384,10 @@ class ZenGardenApp {
     this.orbit.maxDistance = 50;
     this.orbit.maxPolarAngle = Math.PI / 2.1;
     
-    // Lighting - brighter for a sunny day
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-    const sun = new THREE.DirectionalLight(0xfff8e8, 1.5);
-    sun.position.set(10, 12, 8);
+    // Lighting - low sun for dramatic shadows
+    this.scene.add(new THREE.AmbientLight(0xffeedd, 0.35));
+    const sun = new THREE.DirectionalLight(0xffddaa, 1.4);
+    sun.position.set(12, 4, 6);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
     sun.shadow.camera.left = sun.shadow.camera.bottom = -25;
@@ -395,7 +395,7 @@ class ZenGardenApp {
     sun.shadow.bias = -0.0001;
     sun.shadow.normalBias = 0.02;
     this.scene.add(sun);
-    this.scene.add(new THREE.DirectionalLight(0xaaddff, 0.5).translateX(-5).translateY(8));
+    this.scene.add(new THREE.DirectionalLight(0x6688aa, 0.25).translateX(-5).translateY(4));
     
     // Garden container (no rotation - camera angle provides diagonal view)
     this.gardenContainer = new THREE.Group();
@@ -597,7 +597,7 @@ class ZenGardenApp {
     terrainGeo.computeVertexNormals();
     
     const terrainMat = new THREE.MeshStandardMaterial({ 
-      color: 0x5a9a4a,
+      color: 0x3a6a3a,
       roughness: 0.9,
       flatShading: false
     });
@@ -609,10 +609,10 @@ class ZenGardenApp {
     this.scene.add(terrain);
     
     // Add some distant hills for depth
-    this.createDistantHill(-25, -2, 25, 8, 0x4a8a3a);
-    this.createDistantHill(20, -1, 30, 6, 0x4a8a3a);
-    this.createDistantHill(-10, -1, 35, 10, 0x3a7a2a);
-    this.createDistantHill(30, -2, 20, 7, 0x5a9a4a);
+    this.createDistantHill(-25, -2, 25, 8, 0x2a5a2a);
+    this.createDistantHill(20, -1, 30, 6, 0x2a5a2a);
+    this.createDistantHill(-10, -1, 35, 10, 0x1a4a1a);
+    this.createDistantHill(30, -2, 20, 7, 0x3a6a3a);
   }
   
   createDistantHill(x, y, z, size, color) {
