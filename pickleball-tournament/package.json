@@ -1,0 +1,22 @@
+{
+  "name": "pickleball-tournament",
+  "version": "1.0.0",
+  "description": "A comprehensive pickleball tournament management application",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 3000 -o",
+    "test": "node tests/run-tests.js"
+  },
+  "keywords": [
+    "pickleball",
+    "tournament",
+    "bracket",
+    "sports",
+    "scheduling"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

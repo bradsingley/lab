@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pickleball Tournament Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div class="logo">
+          <span class="logo-icon">🏓</span>
+          <span class="logo-text">PicklePro Tournament</span>
+        </div>
+        <nav class="nav">
+          <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+          <button class="nav-btn" data-view="tournaments">Tournaments</button>
+          <button class="nav-btn" data-view="players">Players</button>
+          <button class="nav-btn" data-view="schedule">Schedule</button>
+        </nav>
+        <button class="btn btn-primary" id="new-tournament-btn">
+          + New Tournament
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Dashboard View -->
+      <section id="dashboard-view" class="view active">
+        <div class="view-header">
+          <h1>Dashboard</h1>
+          <p class="subtitle">Welcome back! Here's your tournament overview.</p>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-content">
+              <span class="stat-value" id="active-tournaments">0</span>
+              <span class="stat-label">Active Tournaments</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+              <span class="stat-value" id="total-players">0</span>
+              <span class="stat-label">Registered Players</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🎾</div>
+            <div class="stat-content">
+              <span class="stat-value" id="matches-today">0</span>
+              <span class="stat-label">Matches Today</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📍</div>
+            <div class="stat-content">
+              <span class="stat-value" id="courts-active">0</span>
+              <span class="stat-label">Courts Active</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-header">
+              <h2>Upcoming Matches</h2>
+              <a href="#" class="link">View All</a>
+            </div>
+            <div class="card-body">
+              <div id="upcoming-matches" class="match-list">
+                <p class="empty-state">No upcoming matches</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <h2>Recent Results</h2>
+              <a href="#" class="link">View All</a>
+            </div>
+            <div class="card-body">
+              <div id="recent-results" class="match-list">
+                <p class="empty-state">No recent results</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tournaments View -->
+      <section id="tournaments-view" class="view">
+        <div class="view-header">
+          <h1>Tournaments</h1>
+          <p class="subtitle">Manage your pickleball tournaments</p>
+        </div>
+
+        <div class="filters-bar">
+          <div class="search-box">
+            <input type="text" placeholder="Search tournaments..." id="tournament-search">
+          </div>
+          <div class="filter-group">
+            <select id="tournament-status-filter">
+              <option value="">All Status</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="active">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+            <select id="tournament-format-filter">
+              <option value="">All Formats</option>
+              <option value="single">Single Elimination</option>
+              <option value="double">Double Elimination</option>
+              <option value="roundrobin">Round Robin</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="tournaments-list" class="tournaments-grid">
+          <p class="empty-state">No tournaments yet. Create your first tournament!</p>
+        </div>
+      </section>
+
+      <!-- Players View -->
+      <section id="players-view" class="view">
+        <div class="view-header">
+          <div class="view-header-content">
+            <div>
+              <h1>Players</h1>
+              <p class="subtitle">Manage registered players and teams</p>
+            </div>
+            <button class="btn btn-primary" id="add-player-btn">+ Add Player</button>
+          </div>
+        </div>
+
+        <div class="filters-bar">
+          <div class="search-box">
+            <input type="text" placeholder="Search players..." id="player-search">
+          </div>
+          <div class="filter-group">
+            <select id="player-skill-filter">
+              <option value="">All Skill Levels</option>
+              <option value="2.5">2.5</option>
+              <option value="3.0">3.0</option>
+              <option value="3.5">3.5</option>
+              <option value="4.0">4.0</option>
+              <option value="4.5">4.5</option>
+              <option value="5.0">5.0+</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="players-list" class="players-grid">
+          <p class="empty-state">No players registered yet.</p>
+        </div>
+      </section>
+
+      <!-- Schedule View -->
+      <section id="schedule-view" class="view">
+        <div class="view-header">
+          <h1>Schedule</h1>
+          <p class="subtitle">View and manage match schedules across all courts</p>
+        </div>
+
+        <div class="schedule-controls">
+          <div class="date-picker">
+            <button class="btn btn-ghost" id="prev-day">←</button>
+            <span id="schedule-date">Today</span>
+            <button class="btn btn-ghost" id="next-day">→</button>
+          </div>
+          <select id="court-filter">
+            <option value="">All Courts</option>
+          </select>
+        </div>
+
+        <div id="schedule-grid" class="schedule-container">
+          <p class="empty-state">No matches scheduled for this date.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modals -->
+    <!-- New Tournament Modal -->
+    <div id="tournament-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create New Tournament</h2>
+          <button class="modal-close" data-close-modal>&times;</button>
+        </div>
+        <form id="tournament-form" class="modal-body">
+          <div class="form-group">
+            <label for="tournament-name">Tournament Name *</label>
+            <input type="text" id="tournament-name" required placeholder="e.g., Summer Smash 2025">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tournament-date">Start Date *</label>
+              <input type="date" id="tournament-date" required>
+            </div>
+            <div class="form-group">
+              <label for="tournament-end-date">End Date</label>
+              <input type="date" id="tournament-end-date">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tournament-format">Format *</label>
+              <select id="tournament-format" required>
+                <option value="">Select Format</option>
+                <option value="single">Single Elimination</option>
+                <option value="double">Double Elimination</option>
+                <option value="roundrobin">Round Robin</option>
+                <option value="pools">Pool Play + Playoffs</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="tournament-type">Event Type *</label>
+              <select id="tournament-type" required>
+                <option value="">Select Type</option>
+                <option value="singles">Singles</option>
+                <option value="doubles">Doubles</option>
+                <option value="mixed">Mixed Doubles</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tournament-skill">Skill Level</label>
+              <select id="tournament-skill">
+                <option value="">Open (All Levels)</option>
+                <option value="2.5-3.0">2.5 - 3.0</option>
+                <option value="3.0-3.5">3.0 - 3.5</option>
+                <option value="3.5-4.0">3.5 - 4.0</option>
+                <option value="4.0-4.5">4.0 - 4.5</option>
+                <option value="4.5+">4.5+</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="tournament-courts">Number of Courts *</label>
+              <input type="number" id="tournament-courts" min="1" max="20" value="4" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="tournament-location">Location</label>
+            <input type="text" id="tournament-location" placeholder="e.g., City Sports Complex">
+          </div>
+
+          <div class="form-group">
+            <label for="tournament-description">Description</label>
+            <textarea id="tournament-description" rows="3" placeholder="Additional tournament details..."></textarea>
+          </div>
+        </form>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" data-close-modal>Cancel</button>
+          <button class="btn btn-primary" id="save-tournament">Create Tournament</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Player Modal -->
+    <div id="player-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add New Player</h2>
+          <button class="modal-close" data-close-modal>&times;</button>
+        </div>
+        <form id="player-form" class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="player-first-name">First Name *</label>
+              <input type="text" id="player-first-name" required>
+            </div>
+            <div class="form-group">
+              <label for="player-last-name">Last Name *</label>
+              <input type="text" id="player-last-name" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="player-email">Email *</label>
+            <input type="email" id="player-email" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="player-phone">Phone</label>
+              <input type="tel" id="player-phone">
+            </div>
+            <div class="form-group">
+              <label for="player-skill">Skill Level (DUPR)</label>
+              <select id="player-skill">
+                <option value="2.5">2.5</option>
+                <option value="3.0">3.0</option>
+                <option value="3.5" selected>3.5</option>
+                <option value="4.0">4.0</option>
+                <option value="4.5">4.5</option>
+                <option value="5.0">5.0+</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Preferred Formats</label>
+            <div class="checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" name="player-formats" value="singles"> Singles
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="player-formats" value="doubles" checked> Doubles
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="player-formats" value="mixed" checked> Mixed Doubles
+              </label>
+            </div>
+          </div>
+        </form>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" data-close-modal>Cancel</button>
+          <button class="btn btn-primary" id="save-player">Add Player</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bracket Modal -->
+    <div id="bracket-modal" class="modal modal-large">
+      <div class="modal-content modal-content-large">
+        <div class="modal-header">
+          <h2 id="bracket-modal-title">Tournament Bracket</h2>
+          <button class="modal-close" data-close-modal>&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="bracket-container" class="bracket-container">
+            <!-- Bracket will be rendered here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Score Entry Modal -->
+    <div id="score-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Enter Match Score</h2>
+          <button class="modal-close" data-close-modal>&times;</button>
+        </div>
+        <div id="score-form" class="modal-body">
+          <div class="match-score-header">
+            <div class="team-name" id="score-team1">Team 1</div>
+            <div class="vs">vs</div>
+            <div class="team-name" id="score-team2">Team 2</div>
+          </div>
+          
+          <div class="games-container">
+            <div class="game-row">
+              <span class="game-label">Game 1</span>
+              <input type="number" class="score-input" id="g1-t1" min="0" max="15">
+              <span class="score-separator">-</span>
+              <input type="number" class="score-input" id="g1-t2" min="0" max="15">
+            </div>
+            <div class="game-row">
+              <span class="game-label">Game 2</span>
+              <input type="number" class="score-input" id="g2-t1" min="0" max="15">
+              <span class="score-separator">-</span>
+              <input type="number" class="score-input" id="g2-t2" min="0" max="15">
+            </div>
+            <div class="game-row" id="game-3-row">
+              <span class="game-label">Game 3</span>
+              <input type="number" class="score-input" id="g3-t1" min="0" max="15">
+              <span class="score-separator">-</span>
+              <input type="number" class="score-input" id="g3-t2" min="0" max="15">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" data-close-modal>Cancel</button>
+          <button class="btn btn-primary" id="save-score">Save Score</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/players.js"></script>
+  <script src="js/bracket.js"></script>
+  <script src="js/tournament.js"></script>
+  <script src="js/schedule.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
