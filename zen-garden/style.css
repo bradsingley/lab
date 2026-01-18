@@ -77,6 +77,41 @@ body {
   font-family: monospace;
 }
 
+.rake-size {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rake-size span {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.size-btn {
+  background: rgba(200, 180, 150, 0.2);
+  border: 1px solid rgba(200, 180, 150, 0.3);
+  color: #e8dcc8;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 36px;
+}
+
+.size-btn:hover {
+  background: rgba(200, 180, 150, 0.4);
+  border-color: rgba(200, 180, 150, 0.5);
+}
+
+.size-btn.active {
+  background: rgba(200, 180, 150, 0.5);
+  border-color: rgba(200, 180, 150, 0.7);
+}
+
 #loading {
   position: fixed;
   top: 50%;

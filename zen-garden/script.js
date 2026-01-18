@@ -899,10 +899,29 @@ class ZenGardenApp {
       this.cm.markAllDirty();
       this.cm.markAllActive();
     });
-    document.getElementById('flattenBtn').addEventListener('click', () => {
-      this.grid.fillToHeight(CONFIG.baseHeight);
-      this.cm.markAllDirty();
-      this.cm.markAllActive();
+    
+    // Rake size controls
+    const sizeButtons = document.querySelectorAll('.size-btn');
+    const updateRakeSize = (multiplier) => {
+      CONFIG.rakeTeeth = 4 * multiplier;
+      CONFIG.rakeTeethSpacing = 12;
+      CONFIG.rakeTeethRadius = 4;
+    };
+    
+    document.getElementById('rakeSizeS').addEventListener('click', () => {
+      sizeButtons.forEach(b => b.classList.remove('active'));
+      document.getElementById('rakeSizeS').classList.add('active');
+      updateRakeSize(1);
+    });
+    document.getElementById('rakeSizeM').addEventListener('click', () => {
+      sizeButtons.forEach(b => b.classList.remove('active'));
+      document.getElementById('rakeSizeM').classList.add('active');
+      updateRakeSize(2);
+    });
+    document.getElementById('rakeSizeL').addEventListener('click', () => {
+      sizeButtons.forEach(b => b.classList.remove('active'));
+      document.getElementById('rakeSizeL').classList.add('active');
+      updateRakeSize(3);
     });
   }
   
