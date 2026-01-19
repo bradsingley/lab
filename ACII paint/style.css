@@ -1,0 +1,272 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'MS Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+  background: #c0c0c0;
+  color: #000;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+}
+
+/* Windows 3.1 beveled border mixin via box-shadow */
+.win31-raised {
+  background: #c0c0c0;
+  border: none;
+  box-shadow: 
+    inset -1px -1px 0 #808080,
+    inset 1px 1px 0 #fff,
+    inset -2px -2px 0 #404040,
+    inset 2px 2px 0 #dfdfdf;
+}
+
+.win31-sunken {
+  background: #fff;
+  box-shadow: 
+    inset 1px 1px 0 #808080,
+    inset -1px -1px 0 #fff,
+    inset 2px 2px 0 #404040,
+    inset -2px -2px 0 #dfdfdf;
+}
+
+#toolbar {
+  width: 280px;
+  background: #c0c0c0;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 
+    inset -1px -1px 0 #808080,
+    inset 1px 1px 0 #fff,
+    inset -2px -2px 0 #404040,
+    inset 2px 2px 0 #dfdfdf;
+  overflow-y: auto;
+}
+
+#toolbar h1 {
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 3px 6px;
+  margin: -4px -4px 4px -4px;
+  letter-spacing: 0;
+}
+
+.tool-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  padding: 6px;
+  background: #c0c0c0;
+}
+
+.tool-group label {
+  width: 100%;
+  font-size: 11px;
+  margin-bottom: 2px;
+  font-weight: bold;
+}
+
+.tool-group input[type="number"] {
+  width: 50px;
+  padding: 2px 4px;
+  background: #fff;
+  border: none;
+  color: #000;
+  font-size: 12px;
+  font-family: 'MS Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+  box-shadow: 
+    inset 1px 1px 0 #808080,
+    inset -1px -1px 0 #fff,
+    inset 2px 2px 0 #404040,
+    inset -2px -2px 0 #dfdfdf;
+}
+
+.tool-group span {
+  font-size: 12px;
+}
+
+button {
+  background: #c0c0c0;
+  border: none;
+  color: #000;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: 'MS Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+  box-shadow: 
+    inset -1px -1px 0 #808080,
+    inset 1px 1px 0 #fff,
+    inset -2px -2px 0 #404040,
+    inset 2px 2px 0 #dfdfdf;
+}
+
+button:hover {
+  background: #d4d4d4;
+}
+
+button:active {
+  box-shadow: 
+    inset 1px 1px 0 #808080,
+    inset -1px -1px 0 #fff,
+    inset 2px 2px 0 #404040,
+    inset -2px -2px 0 #dfdfdf;
+}
+
+button.active {
+  box-shadow: 
+    inset 1px 1px 0 #808080,
+    inset -1px -1px 0 #fff,
+    inset 2px 2px 0 #404040,
+    inset -2px -2px 0 #dfdfdf;
+  background: #a0a0a0;
+}
+
+.palette-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+}
+
+.palette-section label {
+  font-size: 11px;
+  font-weight: bold;
+}
+
+#palette {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  background: #fff;
+  padding: 4px;
+  box-shadow: 
+    inset 1px 1px 0 #808080,
+    inset -1px -1px 0 #fff,
+    inset 2px 2px 0 #404040,
+    inset -2px -2px 0 #dfdfdf;
+}
+
+.palette-char {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #c0c0c0;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: #000;
+}
+
+.palette-char:hover {
+  background: #000080;
+  color: #fff;
+}
+
+.palette-char.selected {
+  background: #000080;
+  color: #fff;
+  border-color: #000080;
+}
+
+.current-char {
+  font-size: 11px;
+  padding: 6px;
+  background: #c0c0c0;
+  text-align: center;
+  box-shadow: 
+    inset 1px 1px 0 #808080,
+    inset -1px -1px 0 #fff,
+    inset 2px 2px 0 #404040,
+    inset -2px -2px 0 #dfdfdf;
+  margin: 0 6px;
+}
+
+.current-char span {
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  color: #000080;
+}
+
+.instructions {
+  margin-top: auto;
+  font-size: 10px;
+  line-height: 1.5;
+  padding: 6px;
+  background: #c0c0c0;
+}
+
+#canvas-wrapper {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  cursor: crosshair;
+  background: #fff;
+  margin: 4px;
+  box-shadow: 
+    inset 1px 1px 0 #808080,
+    inset -1px -1px 0 #fff,
+    inset 2px 2px 0 #404040,
+    inset -2px -2px 0 #dfdfdf;
+}
+
+#canvas-wrapper.panning {
+  cursor: grab;
+}
+
+#canvas-wrapper.panning:active {
+  cursor: grabbing;
+}
+
+#canvas-container {
+  position: absolute;
+  transform-origin: 0 0;
+}
+
+#canvas {
+  display: grid;
+  font-family: 'Courier New', Consolas, monospace;
+  font-size: 16px;
+  line-height: 1;
+  user-select: none;
+  background: #fff;
+  gap: 0;
+}
+
+.cell {
+  width: 10px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  padding: 0;
+  margin: 0;
+}
+
+.cell.show-grid {
+  border: 1px solid #c0c0c0;
+}
+
+.cell:hover {
+  background: #000080;
+  color: #fff;
+}
+
+.cell.empty {
+  color: transparent;
+}
+
+.cell.empty:hover {
+  color: transparent;
+}

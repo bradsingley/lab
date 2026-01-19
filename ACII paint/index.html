@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASCII Paint</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="toolbar">
+    <h1>ASCII Paint</h1>
+    <div class="tool-group">
+      <label>Canvas Size:</label>
+      <input type="number" id="canvasWidth" value="40" min="5" max="200">
+      <span>×</span>
+      <input type="number" id="canvasHeight" value="30" min="5" max="200">
+      <button id="resizeBtn">Resize</button>
+    </div>
+    <div class="tool-group">
+      <button id="toggleGrid">Hide Grid</button>
+      <button id="eraseBtn">Eraser</button>
+      <button id="clearBtn">Clear All</button>
+    </div>
+    <div class="palette-section">
+      <label>Character Palette:</label>
+      <div id="palette"></div>
+    </div>
+    <div class="current-char">
+      Selected: <span id="currentChar">█</span>
+    </div>
+    <div class="instructions">
+      <p>Click/drag to paint • Space+drag to pan • Scroll to zoom</p>
+    </div>
+  </div>
+  <div id="canvas-wrapper">
+    <div id="canvas-container">
+      <div id="canvas"></div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
