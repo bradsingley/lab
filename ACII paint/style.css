@@ -233,14 +233,40 @@ button.active {
   transform-origin: 0 0;
 }
 
+#reference-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
 #canvas {
+  position: relative;
   display: grid;
   font-family: 'Courier New', Consolas, monospace;
   font-size: 16px;
   line-height: 1;
   user-select: none;
-  background: #fff;
+  background: transparent;
   gap: 0;
+}
+
+input[type="file"] {
+  width: 100%;
+  font-size: 10px;
+  background: #fff;
+  padding: 2px;
+  box-shadow: 
+    inset 1px 1px 0 #808080,
+    inset -1px -1px 0 #fff,
+    inset 2px 2px 0 #404040,
+    inset -2px -2px 0 #dfdfdf;
+}
+
+input[type="range"] {
+  width: 100%;
+  margin: 4px 0;
 }
 
 .cell {

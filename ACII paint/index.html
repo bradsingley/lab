@@ -21,6 +21,16 @@
       <button id="eraseBtn">Eraser</button>
       <button id="clearBtn">Clear All</button>
     </div>
+    <div class="tool-group">
+      <label>Reference Image:</label>
+      <input type="file" id="imageUpload" accept="image/*">
+      <button id="removeImage">Remove</button>
+    </div>
+    <div class="tool-group" id="opacityGroup" style="display: none;">
+      <label>Image Opacity:</label>
+      <input type="range" id="imageOpacity" min="0" max="100" value="50">
+      <span id="opacityValue">50%</span>
+    </div>
     <div class="palette-section">
       <label>Character Palette:</label>
       <div id="palette"></div>

@@ -20,6 +20,7 @@ class ASCIIPaint {
     this.isPainting = false;
     this.isPanning = false;
     this.spaceHeld = false;
+    this.referenceImage = null;
     
     // Pan and zoom state
     this.panX = 50;
@@ -33,6 +34,12 @@ class ASCIIPaint {
     this.canvas = document.getElementById('canvas');
     this.container = document.getElementById('canvas-container');
     this.wrapper = document.getElementById('canvas-wrapper');
+    
+    // Create reference image element
+    this.refImageEl = document.createElement('img');
+    this.refImageEl.id = 'reference-image';
+    this.refImageEl.style.display = 'none';
+    this.container.insertBefore(this.refImageEl, this.canvas);
     
     this.buildPalette();
     this.buildCanvas();
@@ -167,6 +174,52 @@ class ASCIIPaint {
     });
   }
   
+  loadImage(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        // Calculate grid size based on image dimensions
+        // Using cell size of 10x16
+        const cellWidth = 10;
+        const cellHeight = 16;
+        
+        // Resize grid to match image aspect ratio
+        const newWidth = Math.ceil(img.width / cellWidth);
+        const newHeight = Math.ceil(img.height / cellHeight);
+        
+        // Update size inputs
+        document.getElementById('canvasWidth').value = newWidth;
+        document.getElementById('canvasHeight').value = newHeight;
+        
+        // Resize the canvas
+        this.resize(newWidth, newHeight);
+        
+        // Set up reference image
+        this.refImageEl.src = e.target.result;
+        this.refImageEl.style.display = 'block';
+        this.refImageEl.style.width = (newWidth * cellWidth) + 'px';
+        this.refImageEl.style.height = (newHeight * cellHeight) + 'px';
+        this.refImageEl.style.opacity = document.getElementById('imageOpacity').value / 100;
+        
+        this.referenceImage = img;
+        
+        // Show opacity controls
+        document.getElementById('opacityGroup').style.display = 'flex';
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  
+  removeImage() {
+    this.refImageEl.style.display = 'none';
+    this.refImageEl.src = '';
+    this.referenceImage = null;
+    document.getElementById('opacityGroup').style.display = 'none';
+    document.getElementById('imageUpload').value = '';
+  }
+  
   setupEventListeners() {
     // Palette and tools
     document.getElementById('toggleGrid').addEventListener('click', () => this.toggleGrid());
@@ -186,6 +239,23 @@ class ASCIIPaint {
       const w = parseInt(document.getElementById('canvasWidth').value) || 40;
       const h = parseInt(document.getElementById('canvasHeight').value) || 30;
       this.resize(w, h);
+    });
+    
+    // Image upload
+    document.getElementById('imageUpload').addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        this.loadImage(e.target.files[0]);
+      }
+    });
+    
+    document.getElementById('removeImage').addEventListener('click', () => {
+      this.removeImage();
+    });
+    
+    document.getElementById('imageOpacity').addEventListener('input', (e) => {
+      const opacity = e.target.value;
+      document.getElementById('opacityValue').textContent = opacity + '%';
+      this.refImageEl.style.opacity = opacity / 100;
     });
     
     // Painting
