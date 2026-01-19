@@ -140,8 +140,8 @@ class ASCIIPaint {
     const oldWidth = this.width;
     const oldHeight = this.height;
     
-    this.width = Math.max(5, Math.min(200, newWidth));
-    this.height = Math.max(5, Math.min(200, newHeight));
+    this.width = Math.max(5, Math.min(500, newWidth));
+    this.height = Math.max(5, Math.min(500, newHeight));
     
     this.buildCanvas();
     
