@@ -220,6 +220,38 @@ class ASCIIPaint {
     document.getElementById('imageUpload').value = '';
   }
   
+  copyAsText() {
+    let text = '';
+    for (let y = 0; y < this.height; y++) {
+      let row = '';
+      for (let x = 0; x < this.width; x++) {
+        const cell = this.getCell(x, y);
+        row += cell.empty ? ' ' : cell.char;
+      }
+      // Trim trailing spaces from each row
+      text += row.trimEnd() + '\n';
+    }
+    // Remove trailing empty lines
+    text = text.trimEnd();
+    
+    navigator.clipboard.writeText(text).then(() => {
+      // Visual feedback
+      const btn = document.getElementById('copyBtn');
+      const originalText = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.style.background = '#000080';
+      btn.style.color = '#fff';
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = '';
+        btn.style.color = '';
+      }, 1500);
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+      alert('Failed to copy to clipboard');
+    });
+  }
+  
   setupEventListeners() {
     // Palette and tools
     document.getElementById('toggleGrid').addEventListener('click', () => this.toggleGrid());
@@ -234,6 +266,8 @@ class ASCIIPaint {
     });
     
     document.getElementById('clearBtn').addEventListener('click', () => this.clear());
+    
+    document.getElementById('copyBtn').addEventListener('click', () => this.copyAsText());
     
     document.getElementById('resizeBtn').addEventListener('click', () => {
       const w = parseInt(document.getElementById('canvasWidth').value) || 40;
