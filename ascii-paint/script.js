@@ -401,6 +401,14 @@ class ASCIIPaint {
   }
   
   setupEventListeners() {
+    // Panel toggle
+    document.getElementById('panel-toggle').addEventListener('click', () => {
+      const panel = document.getElementById('control-panel');
+      const btn = document.getElementById('panel-toggle');
+      panel.classList.toggle('collapsed');
+      btn.title = panel.classList.contains('collapsed') ? 'Show Panel' : 'Hide Panel';
+    });
+
     // Palette and tools
     document.getElementById('toggleGrid').addEventListener('click', () => this.toggleGrid());
     
