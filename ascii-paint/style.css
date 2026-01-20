@@ -390,16 +390,16 @@ button.active {
 /* Canvas Cells */
 .cell {
   width: 8px;
-  height: 14px;
+  height: 15px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   color: var(--text-primary);
   background: transparent;
   padding: 0;
   margin: 0;
   transition: background 0.05s ease;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .cell.show-grid {
