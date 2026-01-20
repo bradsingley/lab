@@ -7,45 +7,91 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="toolbar">
-    <h1>ASCII Paint</h1>
-    <div class="tool-group">
-      <label>Canvas Size:</label>
-      <input type="number" id="canvasWidth" value="40" min="5" max="500">
-      <span>×</span>
-      <input type="number" id="canvasHeight" value="30" min="5" max="500">
-      <button id="resizeBtn">Resize</button>
+  <div id="app-window">
+    <!-- Title Bar -->
+    <div id="title-bar">
+      <div class="title-icon">A</div>
+      <span class="title-text">ASCII Paint</span>
+      <div class="window-controls">
+        <button class="window-btn">_</button>
+        <button class="window-btn">□</button>
+        <button class="window-btn">×</button>
+      </div>
     </div>
-    <div class="tool-group">
-      <button id="toggleGrid">Hide Grid</button>
-      <button id="eraseBtn">Eraser</button>
-      <button id="clearBtn">Clear All</button>
-      <button id="copyBtn">Copy as Text</button>
+    
+    <!-- Menu Bar -->
+    <div id="menu-bar">
+      <span class="menu-item">File</span>
+      <span class="menu-item">Edit</span>
+      <span class="menu-item">View</span>
+      <span class="menu-item">Image</span>
+      <span class="menu-item">Help</span>
     </div>
-    <div class="tool-group">
-      <label>Reference Image:</label>
-      <input type="file" id="imageUpload" accept="image/*">
-      <button id="removeImage">Remove</button>
+    
+    <!-- Main Content -->
+    <div id="main-content">
+      <!-- Left Tool Palette -->
+      <div id="tool-palette">
+        <button class="tool-btn active" id="modeBtn" title="Paint Mode">✏️</button>
+        <button class="tool-btn" id="eraseBtn" title="Eraser">🧹</button>
+        <div class="tool-separator"></div>
+        <button class="tool-btn" id="toggleGrid" title="Toggle Grid">▦</button>
+        <button class="tool-btn" id="clearBtn" title="Clear All">🗑️</button>
+        <button class="tool-btn" id="copyBtn" title="Copy as Text">📋</button>
+      </div>
+      
+      <!-- Canvas Area -->
+      <div id="canvas-wrapper">
+        <div id="canvas-container">
+          <div id="canvas"></div>
+        </div>
+      </div>
+      
+      <!-- Right Sidebar -->
+      <div id="toolbar">
+        <div class="tool-group">
+          <label>Canvas Size:</label>
+          <input type="number" id="canvasWidth" value="40" min="5" max="500">
+          <span>×</span>
+          <input type="number" id="canvasHeight" value="30" min="5" max="500">
+          <button id="resizeBtn">Resize</button>
+        </div>
+        
+        <div class="tool-group">
+          <label>Reference Image:</label>
+          <input type="file" id="imageUpload" accept="image/*">
+          <button id="removeImage">Remove</button>
+        </div>
+        
+        <div class="tool-group" id="opacityGroup" style="display: none;">
+          <label>Image Opacity:</label>
+          <input type="range" id="imageOpacity" min="0" max="100" value="50">
+          <span id="opacityValue">50%</span>
+        </div>
+        
+        <div class="palette-section">
+          <label>Character Palette:</label>
+          <div id="palette"></div>
+        </div>
+        
+        <div class="current-char">
+          Selected: <span id="currentChar">█</span>
+        </div>
+        
+        <div class="instructions">
+          <p><strong>Paint:</strong> Click/drag to paint</p>
+          <p><strong>Edit:</strong> Click to select, type or paste</p>
+          <p>Space+drag: pan • Scroll: zoom</p>
+          <p>Arrow keys: move cursor (Edit mode)</p>
+        </div>
+      </div>
     </div>
-    <div class="tool-group" id="opacityGroup" style="display: none;">
-      <label>Image Opacity:</label>
-      <input type="range" id="imageOpacity" min="0" max="100" value="50">
-      <span id="opacityValue">50%</span>
-    </div>
-    <div class="palette-section">
-      <label>Character Palette:</label>
-      <div id="palette"></div>
-    </div>
-    <div class="current-char">
-      Selected: <span id="currentChar">█</span>
-    </div>
-    <div class="instructions">
-      <p>Click/drag to paint • Space+drag to pan • Scroll to zoom</p>
-    </div>
-  </div>
-  <div id="canvas-wrapper">
-    <div id="canvas-container">
-      <div id="canvas"></div>
+    
+    <!-- Status Bar -->
+    <div id="status-bar">
+      <span class="status-section" id="statusMode">Paint Mode</span>
+      <span class="status-section" id="statusSize">40 × 30</span>
+      <span class="status-section" id="statusPos"></span>
     </div>
   </div>
   <script src="script.js"></script>

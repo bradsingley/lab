@@ -5,57 +5,164 @@
 }
 
 body {
-  font-family: 'MS Sans Serif', 'Segoe UI', Tahoma, sans-serif;
-  background: #c0c0c0;
+  font-family: 'MS Sans Serif', Arial, sans-serif;
+  font-size: 11px;
+  background: #008080;
   color: #000;
   overflow: hidden;
   height: 100vh;
   display: flex;
+  flex-direction: column;
 }
 
-/* Windows 3.1 beveled border mixin via box-shadow */
-.win31-raised {
+/* Windows 95 window container */
+#app-window {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin: 8px;
+  background: #c0c0c0;
+  border: 2px outset #dfdfdf;
+  box-shadow: 1px 1px 0 #000;
+}
+
+/* Windows 95 title bar */
+#title-bar {
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: #fff;
+  font-weight: bold;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+}
+
+#title-bar .title-icon {
+  width: 16px;
+  height: 16px;
+  background: #c0c0c0;
+  border: 1px solid #808080;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+#title-bar .title-text {
+  flex: 1;
+}
+
+#title-bar .window-controls {
+  display: flex;
+  gap: 2px;
+}
+
+#title-bar .window-btn {
+  width: 16px;
+  height: 14px;
   background: #c0c0c0;
   border: none;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-shadow: 
     inset -1px -1px 0 #808080,
-    inset 1px 1px 0 #fff,
-    inset -2px -2px 0 #404040,
-    inset 2px 2px 0 #dfdfdf;
+    inset 1px 1px 0 #fff;
 }
 
-.win31-sunken {
-  background: #fff;
+#title-bar .window-btn:active {
   box-shadow: 
     inset 1px 1px 0 #808080,
-    inset -1px -1px 0 #fff,
-    inset 2px 2px 0 #404040,
-    inset -2px -2px 0 #dfdfdf;
+    inset -1px -1px 0 #fff;
 }
 
+/* Windows 95 menu bar */
+#menu-bar {
+  background: #c0c0c0;
+  padding: 2px 0;
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #808080;
+}
+
+.menu-item {
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: #000080;
+  color: #fff;
+}
+
+/* Main content area */
+#main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Tool palette on left side (like Paint 95) */
+#tool-palette {
+  width: 52px;
+  background: #c0c0c0;
+  padding: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-right: 1px solid #808080;
+  box-shadow: inset -1px 0 0 #fff;
+}
+
+.tool-btn {
+  width: 24px;
+  height: 24px;
+  background: #c0c0c0;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: 
+    inset -1px -1px 0 #808080,
+    inset 1px 1px 0 #fff;
+}
+
+.tool-btn:hover {
+  background: #d4d4d4;
+}
+
+.tool-btn:active,
+.tool-btn.active {
+  box-shadow: 
+    inset 1px 1px 0 #808080,
+    inset -1px -1px 0 #fff;
+  background: #a0a0a0;
+}
+
+.tool-separator {
+  height: 1px;
+  background: #808080;
+  margin: 2px 0;
+  box-shadow: 0 1px 0 #fff;
+}
+
+/* Right sidebar for options */
 #toolbar {
-  width: 280px;
+  width: 200px;
   background: #c0c0c0;
   padding: 4px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  box-shadow: 
-    inset -1px -1px 0 #808080,
-    inset 1px 1px 0 #fff,
-    inset -2px -2px 0 #404040,
-    inset 2px 2px 0 #dfdfdf;
+  gap: 4px;
+  border-left: 1px solid #fff;
+  box-shadow: inset 1px 0 0 #808080;
   overflow-y: auto;
-}
-
-#toolbar h1 {
-  background: linear-gradient(90deg, #000080, #1084d0);
-  color: #fff;
-  font-size: 14px;
-  font-weight: bold;
-  padding: 3px 6px;
-  margin: -4px -4px 4px -4px;
-  letter-spacing: 0;
 }
 
 .tool-group {
@@ -63,49 +170,46 @@ body {
   flex-wrap: wrap;
   gap: 4px;
   align-items: center;
-  padding: 6px;
+  padding: 4px;
   background: #c0c0c0;
+  border: 1px solid #808080;
+  box-shadow: inset 1px 1px 0 #404040;
 }
 
 .tool-group label {
   width: 100%;
   font-size: 11px;
   margin-bottom: 2px;
-  font-weight: bold;
 }
 
 .tool-group input[type="number"] {
-  width: 50px;
+  width: 45px;
   padding: 2px 4px;
   background: #fff;
   border: none;
   color: #000;
-  font-size: 12px;
-  font-family: 'MS Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+  font-size: 11px;
+  font-family: 'MS Sans Serif', Arial, sans-serif;
   box-shadow: 
     inset 1px 1px 0 #808080,
-    inset -1px -1px 0 #fff,
-    inset 2px 2px 0 #404040,
-    inset -2px -2px 0 #dfdfdf;
+    inset -1px -1px 0 #fff;
 }
 
 .tool-group span {
-  font-size: 12px;
+  font-size: 11px;
 }
 
 button {
   background: #c0c0c0;
   border: none;
   color: #000;
-  padding: 4px 12px;
+  padding: 3px 8px;
   cursor: pointer;
   font-size: 11px;
-  font-family: 'MS Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+  font-family: 'MS Sans Serif', Arial, sans-serif;
   box-shadow: 
     inset -1px -1px 0 #808080,
-    inset 1px 1px 0 #fff,
-    inset -2px -2px 0 #404040,
-    inset 2px 2px 0 #dfdfdf;
+    inset 1px 1px 0 #fff;
 }
 
 button:hover {
@@ -115,17 +219,13 @@ button:hover {
 button:active {
   box-shadow: 
     inset 1px 1px 0 #808080,
-    inset -1px -1px 0 #fff,
-    inset 2px 2px 0 #404040,
-    inset -2px -2px 0 #dfdfdf;
+    inset -1px -1px 0 #fff;
 }
 
 button.active {
   box-shadow: 
     inset 1px 1px 0 #808080,
-    inset -1px -1px 0 #fff,
-    inset 2px 2px 0 #404040,
-    inset -2px -2px 0 #dfdfdf;
+    inset -1px -1px 0 #fff;
   background: #a0a0a0;
 }
 
@@ -133,91 +233,78 @@ button.active {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 6px;
+  padding: 4px;
+  border: 1px solid #808080;
+  box-shadow: inset 1px 1px 0 #404040;
 }
 
 .palette-section label {
   font-size: 11px;
-  font-weight: bold;
 }
 
 #palette {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 2px;
-  background: #fff;
-  padding: 4px;
-  box-shadow: 
-    inset 1px 1px 0 #808080,
-    inset -1px -1px 0 #fff,
-    inset 2px 2px 0 #404040,
-    inset -2px -2px 0 #dfdfdf;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1px;
+  background: #808080;
+  padding: 1px;
 }
 
 .palette-char {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #fff;
-  border: 1px solid #c0c0c0;
+  border: none;
   cursor: pointer;
   font-family: 'Courier New', monospace;
-  font-size: 14px;
+  font-size: 12px;
   color: #000;
 }
 
 .palette-char:hover {
-  background: #000080;
-  color: #fff;
+  background: #c0c0ff;
 }
 
 .palette-char.selected {
   background: #000080;
   color: #fff;
-  border-color: #000080;
+  box-shadow: inset 2px 2px 0 #000040;
 }
 
 .current-char {
   font-size: 11px;
-  padding: 6px;
-  background: #c0c0c0;
+  padding: 4px;
+  background: #fff;
   text-align: center;
-  box-shadow: 
-    inset 1px 1px 0 #808080,
-    inset -1px -1px 0 #fff,
-    inset 2px 2px 0 #404040,
-    inset -2px -2px 0 #dfdfdf;
-  margin: 0 6px;
+  border: 1px solid #808080;
+  box-shadow: inset 1px 1px 0 #404040;
 }
 
 .current-char span {
   font-family: 'Courier New', monospace;
-  font-size: 20px;
-  color: #000080;
+  font-size: 18px;
+  color: #000;
 }
 
 .instructions {
   margin-top: auto;
   font-size: 10px;
-  line-height: 1.5;
-  padding: 6px;
-  background: #c0c0c0;
+  line-height: 1.4;
+  padding: 4px;
+  color: #404040;
 }
 
+/* Canvas area */
 #canvas-wrapper {
   flex: 1;
   overflow: hidden;
   position: relative;
   cursor: crosshair;
-  background: #fff;
-  margin: 4px;
-  box-shadow: 
-    inset 1px 1px 0 #808080,
-    inset -1px -1px 0 #fff,
-    inset 2px 2px 0 #404040,
-    inset -2px -2px 0 #dfdfdf;
+  background: #808080;
+  border: 2px inset #c0c0c0;
 }
 
 #canvas-wrapper.panning {
@@ -231,6 +318,8 @@ button.active {
 #canvas-container {
   position: absolute;
   transform-origin: 0 0;
+  background: #fff;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 #reference-image {
@@ -248,7 +337,7 @@ button.active {
   font-size: 16px;
   line-height: 1;
   user-select: none;
-  background: transparent;
+  background: #fff;
   gap: 0;
 }
 
@@ -257,11 +346,10 @@ input[type="file"] {
   font-size: 10px;
   background: #fff;
   padding: 2px;
+  border: none;
   box-shadow: 
     inset 1px 1px 0 #808080,
-    inset -1px -1px 0 #fff,
-    inset 2px 2px 0 #404040,
-    inset -2px -2px 0 #dfdfdf;
+    inset -1px -1px 0 #fff;
 }
 
 input[type="range"] {
@@ -281,7 +369,7 @@ input[type="range"] {
 }
 
 .cell.show-grid {
-  border: 1px solid #c0c0c0;
+  outline: 1px solid #c0c0c0;
 }
 
 .cell:hover {
@@ -294,5 +382,58 @@ input[type="range"] {
 }
 
 .cell.empty:hover {
+  color: transparent;
+}
+
+/* Status bar at bottom */
+#status-bar {
+  height: 20px;
+  background: #c0c0c0;
+  border-top: 1px solid #fff;
+  box-shadow: inset 0 1px 0 #808080;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  gap: 4px;
+}
+
+.status-section {
+  padding: 1px 4px;
+  background: #c0c0c0;
+  border: 1px solid #808080;
+  box-shadow: inset 1px 1px 0 #404040;
+  font-size: 11px;
+}
+
+.status-section:first-child {
+  flex: 1;
+}
+
+/* Cursor for edit mode */
+.cell.cursor {
+  background: #000080;
+  animation: cursor-blink 0.8s infinite;
+}
+
+.cell.cursor:not(.empty) {
+  color: #fff;
+}
+
+@keyframes cursor-blink {
+  0%, 50% { background: #000080; }
+  51%, 100% { background: #4040c0; }
+}
+
+/* Edit mode canvas styling */
+#canvas.edit-mode {
+  cursor: text;
+}
+
+#canvas.edit-mode .cell:hover:not(.cursor) {
+  background: #e0e0ff;
+  color: #000;
+}
+
+#canvas.edit-mode .cell.empty:hover:not(.cursor) {
   color: transparent;
 }

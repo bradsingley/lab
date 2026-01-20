@@ -22,6 +22,13 @@ class ASCIIPaint {
     this.spaceHeld = false;
     this.referenceImage = null;
     
+    // Mode: 'paint' or 'edit'
+    this.mode = 'paint';
+    
+    // Cursor position for edit mode
+    this.cursorX = 0;
+    this.cursorY = 0;
+    
     // Pan and zoom state
     this.panX = 50;
     this.panY = 50;
@@ -45,6 +52,9 @@ class ASCIIPaint {
     this.buildCanvas();
     this.setupEventListeners();
     this.updateTransform();
+    
+    // Initialize grid button as active
+    document.getElementById('toggleGrid').classList.add('active');
   }
   
   buildPalette() {
@@ -128,7 +138,8 @@ class ASCIIPaint {
   
   toggleGrid() {
     this.showGrid = !this.showGrid;
-    document.getElementById('toggleGrid').textContent = this.showGrid ? 'Hide Grid' : 'Show Grid';
+    const btn = document.getElementById('toggleGrid');
+    btn.classList.toggle('active', this.showGrid);
     this.cells.forEach(cell => {
       cell.el.classList.toggle('show-grid', this.showGrid);
     });
@@ -154,6 +165,9 @@ class ASCIIPaint {
         }
       }
     }
+    
+    // Update status bar
+    document.getElementById('statusSize').textContent = `${this.width} × ${this.height}`;
   }
   
   paintCellDirect(x, y, char) {
@@ -252,6 +266,140 @@ class ASCIIPaint {
     });
   }
   
+  toggleMode() {
+    this.mode = this.mode === 'paint' ? 'edit' : 'paint';
+    const btn = document.getElementById('modeBtn');
+    btn.textContent = this.mode === 'paint' ? '✏️' : '✍️';
+    btn.title = this.mode === 'paint' ? 'Paint Mode' : 'Edit Mode';
+    btn.classList.toggle('active', this.mode === 'paint');
+    
+    // Update status bar
+    document.getElementById('statusMode').textContent = this.mode === 'paint' ? 'Paint Mode' : 'Edit Mode';
+    
+    // Update canvas cursor style
+    this.canvas.classList.toggle('edit-mode', this.mode === 'edit');
+    
+    if (this.mode === 'edit') {
+      this.updateCursor();
+    } else {
+      this.clearCursor();
+    }
+  }
+  
+  updateCursor() {
+    // Clear previous cursor
+    this.clearCursor();
+    
+    // Clamp cursor position
+    this.cursorX = Math.max(0, Math.min(this.width - 1, this.cursorX));
+    this.cursorY = Math.max(0, Math.min(this.height - 1, this.cursorY));
+    
+    // Add cursor class to current cell
+    const cell = this.getCell(this.cursorX, this.cursorY);
+    if (cell) {
+      cell.el.classList.add('cursor');
+    }
+  }
+  
+  clearCursor() {
+    this.cells.forEach(cell => cell.el.classList.remove('cursor'));
+  }
+  
+  moveCursor(dx, dy) {
+    this.cursorX = Math.max(0, Math.min(this.width - 1, this.cursorX + dx));
+    this.cursorY = Math.max(0, Math.min(this.height - 1, this.cursorY + dy));
+    this.updateCursor();
+  }
+  
+  typeCharacter(char) {
+    if (this.mode !== 'edit') return;
+    
+    // Paint the character at cursor position
+    if (char === ' ') {
+      const cell = this.getCell(this.cursorX, this.cursorY);
+      if (cell) {
+        cell.char = ' ';
+        cell.empty = true;
+        cell.el.textContent = ' ';
+        cell.el.classList.add('empty');
+      }
+    } else {
+      this.paintCellDirect(this.cursorX, this.cursorY, char);
+    }
+    
+    // Move cursor right, wrap to next line if at end
+    this.cursorX++;
+    if (this.cursorX >= this.width) {
+      this.cursorX = 0;
+      this.cursorY++;
+      if (this.cursorY >= this.height) {
+        this.cursorY = this.height - 1;
+        this.cursorX = this.width - 1;
+      }
+    }
+    this.updateCursor();
+  }
+  
+  pasteText(text) {
+    if (this.mode !== 'edit') return;
+    
+    const lines = text.split('\n');
+    let startX = this.cursorX;
+    let y = this.cursorY;
+    
+    for (const line of lines) {
+      let x = startX;
+      for (const char of line) {
+        if (x < this.width && y < this.height) {
+          if (char === ' ') {
+            const cell = this.getCell(x, y);
+            if (cell) {
+              cell.char = ' ';
+              cell.empty = true;
+              cell.el.textContent = ' ';
+              cell.el.classList.add('empty');
+            }
+          } else if (char !== '\r') {
+            this.paintCellDirect(x, y, char);
+          }
+          x++;
+        }
+      }
+      y++;
+      startX = 0; // Subsequent lines start at column 0
+    }
+    
+    // Update cursor to end of pasted content
+    this.cursorY = Math.min(this.height - 1, y - 1);
+    this.updateCursor();
+  }
+  
+  handleBackspace() {
+    if (this.mode !== 'edit') return;
+    
+    // Move cursor back
+    this.cursorX--;
+    if (this.cursorX < 0) {
+      this.cursorX = this.width - 1;
+      this.cursorY--;
+      if (this.cursorY < 0) {
+        this.cursorY = 0;
+        this.cursorX = 0;
+      }
+    }
+    
+    // Erase character at new position
+    const cell = this.getCell(this.cursorX, this.cursorY);
+    if (cell) {
+      cell.char = ' ';
+      cell.empty = true;
+      cell.el.textContent = ' ';
+      cell.el.classList.add('empty');
+    }
+    
+    this.updateCursor();
+  }
+  
   setupEventListeners() {
     // Palette and tools
     document.getElementById('toggleGrid').addEventListener('click', () => this.toggleGrid());
@@ -268,6 +416,8 @@ class ASCIIPaint {
     document.getElementById('clearBtn').addEventListener('click', () => this.clear());
     
     document.getElementById('copyBtn').addEventListener('click', () => this.copyAsText());
+    
+    document.getElementById('modeBtn').addEventListener('click', () => this.toggleMode());
     
     document.getElementById('resizeBtn').addEventListener('click', () => {
       const w = parseInt(document.getElementById('canvasWidth').value) || 40;
@@ -292,30 +442,102 @@ class ASCIIPaint {
       this.refImageEl.style.opacity = opacity / 100;
     });
     
-    // Painting
+    // Painting and Edit mode
     this.canvas.addEventListener('mousedown', (e) => {
       if (this.spaceHeld) return;
-      this.isPainting = true;
       const { x, y } = this.getCellFromEvent(e);
-      this.paintCell(x, y);
+      
+      if (this.mode === 'edit') {
+        // In edit mode, clicking sets the cursor position
+        this.cursorX = Math.max(0, Math.min(this.width - 1, x));
+        this.cursorY = Math.max(0, Math.min(this.height - 1, y));
+        this.updateCursor();
+      } else {
+        // In paint mode, start painting
+        this.isPainting = true;
+        this.paintCell(x, y);
+      }
     });
     
     this.canvas.addEventListener('mousemove', (e) => {
-      if (!this.isPainting || this.spaceHeld) return;
       const { x, y } = this.getCellFromEvent(e);
+      
+      // Update status bar position
+      if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
+        document.getElementById('statusPos').textContent = `${x}, ${y}`;
+      }
+      
+      if (!this.isPainting || this.spaceHeld || this.mode === 'edit') return;
       this.paintCell(x, y);
+    });
+    
+    this.canvas.addEventListener('mouseleave', () => {
+      document.getElementById('statusPos').textContent = '';
     });
     
     document.addEventListener('mouseup', () => {
       this.isPainting = false;
     });
     
-    // Panning with space bar
+    // Panning with space bar and edit mode keyboard handling
     document.addEventListener('keydown', (e) => {
+      // Don't handle if focus is on an input
+      if (e.target.tagName === 'INPUT') return;
+      
       if (e.code === 'Space' && !this.spaceHeld) {
         e.preventDefault();
         this.spaceHeld = true;
         this.wrapper.classList.add('panning');
+        return;
+      }
+      
+      // Edit mode keyboard handling
+      if (this.mode === 'edit') {
+        // Arrow keys for cursor movement
+        if (e.code === 'ArrowLeft') {
+          e.preventDefault();
+          this.moveCursor(-1, 0);
+        } else if (e.code === 'ArrowRight') {
+          e.preventDefault();
+          this.moveCursor(1, 0);
+        } else if (e.code === 'ArrowUp') {
+          e.preventDefault();
+          this.moveCursor(0, -1);
+        } else if (e.code === 'ArrowDown') {
+          e.preventDefault();
+          this.moveCursor(0, 1);
+        } else if (e.code === 'Backspace') {
+          e.preventDefault();
+          this.handleBackspace();
+        } else if (e.code === 'Delete') {
+          e.preventDefault();
+          // Delete character at cursor without moving
+          const cell = this.getCell(this.cursorX, this.cursorY);
+          if (cell) {
+            cell.char = ' ';
+            cell.empty = true;
+            cell.el.textContent = ' ';
+            cell.el.classList.add('empty');
+          }
+        } else if (e.code === 'Enter') {
+          e.preventDefault();
+          // Move to start of next line
+          this.cursorX = 0;
+          this.cursorY = Math.min(this.height - 1, this.cursorY + 1);
+          this.updateCursor();
+        } else if (e.code === 'Home') {
+          e.preventDefault();
+          this.cursorX = 0;
+          this.updateCursor();
+        } else if (e.code === 'End') {
+          e.preventDefault();
+          this.cursorX = this.width - 1;
+          this.updateCursor();
+        } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+          // Single character typed
+          e.preventDefault();
+          this.typeCharacter(e.key);
+        }
       }
     });
     
@@ -324,6 +546,17 @@ class ASCIIPaint {
         this.spaceHeld = false;
         this.isPanning = false;
         this.wrapper.classList.remove('panning');
+      }
+    });
+    
+    // Paste event handler
+    document.addEventListener('paste', (e) => {
+      if (this.mode === 'edit' && e.target.tagName !== 'INPUT') {
+        e.preventDefault();
+        const text = e.clipboardData.getData('text');
+        if (text) {
+          this.pasteText(text);
+        }
       }
     });
     
