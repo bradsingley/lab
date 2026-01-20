@@ -59,8 +59,8 @@ class ASCIIPaint {
   
   centerCanvas() {
     const wrapperRect = this.wrapper.getBoundingClientRect();
-    const canvasWidth = this.width * 10;
-    const canvasHeight = this.height * 16;
+    const canvasWidth = this.width * 8;
+    const canvasHeight = this.height * 14;
     
     this.panX = (wrapperRect.width - canvasWidth * this.zoom) / 2;
     this.panY = (wrapperRect.height - canvasHeight * this.zoom) / 2;
@@ -96,8 +96,8 @@ class ASCIIPaint {
   
   buildCanvas() {
     this.canvas.innerHTML = '';
-    this.canvas.style.gridTemplateColumns = `repeat(${this.width}, 10px)`;
-    this.canvas.style.gridTemplateRows = `repeat(${this.height}, 16px)`;
+    this.canvas.style.gridTemplateColumns = `repeat(${this.width}, 8px)`;
+    this.canvas.style.gridTemplateRows = `repeat(${this.height}, 14px)`;
     this.cells = [];
     
     for (let y = 0; y < this.height; y++) {
@@ -137,8 +137,8 @@ class ASCIIPaint {
   
   getCellFromEvent(e) {
     const rect = this.canvas.getBoundingClientRect();
-    const x = Math.floor((e.clientX - rect.left) / (10 * this.zoom));
-    const y = Math.floor((e.clientY - rect.top) / (16 * this.zoom));
+    const x = Math.floor((e.clientX - rect.left) / (8 * this.zoom));
+    const y = Math.floor((e.clientY - rect.top) / (14 * this.zoom));
     return { x, y };
   }
   
@@ -204,9 +204,9 @@ class ASCIIPaint {
       const img = new Image();
       img.onload = () => {
         // Calculate grid size based on image dimensions
-        // Using cell size of 10x16
-        const cellWidth = 10;
-        const cellHeight = 16;
+        // Using cell size of 8x14
+        const cellWidth = 8;
+        const cellHeight = 14;
         
         // Resize grid to match image aspect ratio
         const newWidth = Math.ceil(img.width / cellWidth);
