@@ -218,8 +218,9 @@ class ASCIIPaint {
         
         this.referenceImage = img;
         
-        // Show opacity controls
+        // Show opacity controls and remove button
         document.getElementById('opacityGroup').style.display = 'flex';
+        document.getElementById('removeImage').style.display = 'flex';
       };
       img.src = e.target.result;
     };
@@ -231,6 +232,7 @@ class ASCIIPaint {
     this.refImageEl.src = '';
     this.referenceImage = null;
     document.getElementById('opacityGroup').style.display = 'none';
+    document.getElementById('removeImage').style.display = 'none';
     document.getElementById('imageUpload').value = '';
   }
   
@@ -271,8 +273,8 @@ class ASCIIPaint {
     btn.title = this.mode === 'paint' ? 'Paint Mode' : 'Edit Mode';
     btn.classList.toggle('active', this.mode === 'paint');
     
-    // Update status bar
-    document.getElementById('statusMode').textContent = this.mode === 'paint' ? 'Paint Mode' : 'Edit Mode';
+    // Update status indicator
+    document.getElementById('statusMode').textContent = this.mode === 'paint' ? 'Paint' : 'Edit';
     
     // Update canvas cursor style
     this.canvas.classList.toggle('edit-mode', this.mode === 'edit');

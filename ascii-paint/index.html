@@ -3,97 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASCII Paint — Create Beautiful Text Art</title>
+  <title>ASCII Paint</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="app-window">
-    <!-- Header -->
-    <div id="title-bar">
-      <div class="title-icon">✦</div>
-      <span class="title-text">ASCII Paint</span>
-      <div class="window-controls"></div>
-    </div>
-    
-    <!-- Navigation -->
-    <div id="menu-bar">
-      <span class="menu-item">File</span>
-      <span class="menu-item">Edit</span>
-      <span class="menu-item">View</span>
-      <span class="menu-item">Image</span>
-      <span class="menu-item">Help</span>
-    </div>
-    
-    <!-- Main Content -->
-    <div id="main-content">
-      <!-- Left Tool Palette -->
-      <div id="tool-palette">
-        <button class="tool-btn active" id="modeBtn" title="Paint Mode">✏️</button>
-        <button class="tool-btn" id="eraseBtn" title="Eraser">🧽</button>
-        <div class="tool-separator"></div>
-        <button class="tool-btn" id="toggleGrid" title="Toggle Grid">⊞</button>
-        <button class="tool-btn" id="clearBtn" title="Clear Canvas">🗑️</button>
-        <button class="tool-btn" id="copyBtn" title="Copy to Clipboard">📋</button>
-      </div>
-      
-      <!-- Canvas Area -->
-      <div id="canvas-wrapper">
-        <div id="canvas-container">
-          <div id="canvas"></div>
-        </div>
-      </div>
-      
-      <!-- Right Sidebar -->
-      <div id="toolbar">
-        <div class="tool-group">
-          <label>Canvas Size</label>
-          <input type="number" id="canvasWidth" value="40" min="5" max="500">
-          <span>×</span>
-          <input type="number" id="canvasHeight" value="30" min="5" max="500">
-          <button id="resizeBtn">Apply</button>
-        </div>
-        
-        <div class="tool-group">
-          <label>Reference Image</label>
-          <input type="file" id="imageUpload" accept="image/*">
-          <button id="removeImage">Remove</button>
-        </div>
-        
-        <div class="tool-group" id="opacityGroup" style="display: none;">
-          <label>Image Opacity</label>
-          <input type="range" id="imageOpacity" min="0" max="100" value="50">
-          <span id="opacityValue">50%</span>
-        </div>
-        
-        <div class="palette-section">
-          <label>Character Palette</label>
-          <div id="palette"></div>
-        </div>
-        
-        <div class="current-char">
-          Selected Character
-          <span id="currentChar">█</span>
-        </div>
-        
-        <div class="instructions">
-          <p><strong>Paint Mode:</strong> Click or drag to paint</p>
-          <p><strong>Edit Mode:</strong> Click to place cursor, then type</p>
-          <p><strong>Navigate:</strong> Space + drag to pan, scroll to zoom</p>
-          <p><strong>Keyboard:</strong> Arrow keys move cursor in Edit mode</p>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Status Bar -->
-    <div id="status-bar">
-      <span class="status-section" id="statusMode">Paint Mode</span>
-      <span class="status-section" id="statusSize">40 × 30</span>
-      <span class="status-section" id="statusPos"></span>
+  <!-- Full-screen Canvas -->
+  <div id="canvas-wrapper">
+    <div id="canvas-container">
+      <div id="canvas"></div>
     </div>
   </div>
+
+  <!-- Floating Toolbar -->
+  <div id="floating-toolbar">
+    <div class="toolbar-section">
+      <button class="tool-btn active" id="modeBtn" title="Paint Mode">✏️</button>
+      <button class="tool-btn" id="eraseBtn" title="Eraser">🧽</button>
+      <div class="tool-divider"></div>
+      <button class="tool-btn" id="toggleGrid" title="Toggle Grid">⊞</button>
+      <button class="tool-btn" id="clearBtn" title="Clear Canvas">🗑️</button>
+      <button class="tool-btn" id="copyBtn" title="Copy to Clipboard">📋</button>
+    </div>
+
+    <div class="toolbar-section">
+      <div id="palette"></div>
+    </div>
+
+    <div class="toolbar-section current-char-section">
+      <span class="label">Selected:</span>
+      <span id="currentChar">█</span>
+    </div>
+
+    <div class="toolbar-section">
+      <input type="number" id="canvasWidth" value="40" min="5" max="500" title="Width">
+      <span class="size-x">×</span>
+      <input type="number" id="canvasHeight" value="30" min="5" max="500" title="Height">
+      <button id="resizeBtn" title="Resize Canvas">Resize</button>
+    </div>
+
+    <div class="toolbar-section">
+      <label class="file-upload" title="Load Reference Image">
+        📷
+        <input type="file" id="imageUpload" accept="image/*">
+      </label>
+      <button id="removeImage" title="Remove Image" style="display: none;">✕</button>
+    </div>
+
+    <div class="toolbar-section" id="opacityGroup" style="display: none;">
+      <input type="range" id="imageOpacity" min="0" max="100" value="50" title="Image Opacity">
+      <span id="opacityValue">50%</span>
+    </div>
+  </div>
+
+  <!-- Status Indicator -->
+  <div id="status-indicator">
+    <span id="statusMode">Paint</span>
+    <span id="statusSize">40 × 30</span>
+    <span id="statusPos"></span>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
