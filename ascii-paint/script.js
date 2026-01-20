@@ -252,13 +252,11 @@ class ASCIIPaint {
       // Visual feedback
       const btn = document.getElementById('copyBtn');
       const originalText = btn.textContent;
-      btn.textContent = 'Copied!';
-      btn.style.background = '#000080';
-      btn.style.color = '#fff';
+      btn.textContent = '✓';
+      btn.classList.add('active');
       setTimeout(() => {
         btn.textContent = originalText;
-        btn.style.background = '';
-        btn.style.color = '';
+        btn.classList.remove('active');
       }, 1500);
     }).catch(err => {
       console.error('Failed to copy:', err);

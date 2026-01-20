@@ -3,23 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASCII Paint</title>
+  <title>ASCII Paint — Create Beautiful Text Art</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="app-window">
-    <!-- Title Bar -->
+    <!-- Header -->
     <div id="title-bar">
-      <div class="title-icon">A</div>
+      <div class="title-icon">✦</div>
       <span class="title-text">ASCII Paint</span>
-      <div class="window-controls">
-        <button class="window-btn">_</button>
-        <button class="window-btn">□</button>
-        <button class="window-btn">×</button>
-      </div>
+      <div class="window-controls"></div>
     </div>
     
-    <!-- Menu Bar -->
+    <!-- Navigation -->
     <div id="menu-bar">
       <span class="menu-item">File</span>
       <span class="menu-item">Edit</span>
@@ -33,11 +32,11 @@
       <!-- Left Tool Palette -->
       <div id="tool-palette">
         <button class="tool-btn active" id="modeBtn" title="Paint Mode">✏️</button>
-        <button class="tool-btn" id="eraseBtn" title="Eraser">🧹</button>
+        <button class="tool-btn" id="eraseBtn" title="Eraser">🧽</button>
         <div class="tool-separator"></div>
-        <button class="tool-btn" id="toggleGrid" title="Toggle Grid">▦</button>
-        <button class="tool-btn" id="clearBtn" title="Clear All">🗑️</button>
-        <button class="tool-btn" id="copyBtn" title="Copy as Text">📋</button>
+        <button class="tool-btn" id="toggleGrid" title="Toggle Grid">⊞</button>
+        <button class="tool-btn" id="clearBtn" title="Clear Canvas">🗑️</button>
+        <button class="tool-btn" id="copyBtn" title="Copy to Clipboard">📋</button>
       </div>
       
       <!-- Canvas Area -->
@@ -50,39 +49,40 @@
       <!-- Right Sidebar -->
       <div id="toolbar">
         <div class="tool-group">
-          <label>Canvas Size:</label>
+          <label>Canvas Size</label>
           <input type="number" id="canvasWidth" value="40" min="5" max="500">
           <span>×</span>
           <input type="number" id="canvasHeight" value="30" min="5" max="500">
-          <button id="resizeBtn">Resize</button>
+          <button id="resizeBtn">Apply</button>
         </div>
         
         <div class="tool-group">
-          <label>Reference Image:</label>
+          <label>Reference Image</label>
           <input type="file" id="imageUpload" accept="image/*">
           <button id="removeImage">Remove</button>
         </div>
         
         <div class="tool-group" id="opacityGroup" style="display: none;">
-          <label>Image Opacity:</label>
+          <label>Image Opacity</label>
           <input type="range" id="imageOpacity" min="0" max="100" value="50">
           <span id="opacityValue">50%</span>
         </div>
         
         <div class="palette-section">
-          <label>Character Palette:</label>
+          <label>Character Palette</label>
           <div id="palette"></div>
         </div>
         
         <div class="current-char">
-          Selected: <span id="currentChar">█</span>
+          Selected Character
+          <span id="currentChar">█</span>
         </div>
         
         <div class="instructions">
-          <p><strong>Paint:</strong> Click/drag to paint</p>
-          <p><strong>Edit:</strong> Click to select, type or paste</p>
-          <p>Space+drag: pan • Scroll: zoom</p>
-          <p>Arrow keys: move cursor (Edit mode)</p>
+          <p><strong>Paint Mode:</strong> Click or drag to paint</p>
+          <p><strong>Edit Mode:</strong> Click to place cursor, then type</p>
+          <p><strong>Navigate:</strong> Space + drag to pan, scroll to zoom</p>
+          <p><strong>Keyboard:</strong> Arrow keys move cursor in Edit mode</p>
         </div>
       </div>
     </div>
