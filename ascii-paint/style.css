@@ -59,7 +59,7 @@ body {
 #canvas-container {
   position: absolute;
   transform-origin: 0 0;
-  background: var(--bg-secondary);
+  background: transparent;
   box-shadow: var(--shadow-xl);
   border-radius: var(--radius-md);
 }
@@ -80,7 +80,7 @@ body {
   font-size: 16px;
   line-height: 1;
   user-select: none;
-  background: var(--bg-secondary);
+  background: transparent;
   border-radius: var(--radius-md);
   gap: 0;
 }
@@ -395,13 +395,14 @@ button.active {
   align-items: center;
   justify-content: center;
   color: var(--text-primary);
+  background: transparent;
   padding: 0;
   margin: 0;
   transition: background 0.05s ease;
 }
 
 .cell.show-grid {
-  outline: 1px solid var(--border-color);
+  outline: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .cell:hover {

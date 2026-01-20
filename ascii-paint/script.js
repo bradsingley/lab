@@ -51,10 +51,20 @@ class ASCIIPaint {
     this.buildPalette();
     this.buildCanvas();
     this.setupEventListeners();
-    this.updateTransform();
+    this.centerCanvas();
     
     // Initialize grid button as active
     document.getElementById('toggleGrid').classList.add('active');
+  }
+  
+  centerCanvas() {
+    const wrapperRect = this.wrapper.getBoundingClientRect();
+    const canvasWidth = this.width * 10;
+    const canvasHeight = this.height * 16;
+    
+    this.panX = (wrapperRect.width - canvasWidth * this.zoom) / 2;
+    this.panY = (wrapperRect.height - canvasHeight * this.zoom) / 2;
+    this.updateTransform();
   }
   
   buildPalette() {
@@ -594,22 +604,36 @@ class ASCIIPaint {
       this.isPanning = false;
     });
     
-    // Zooming with scroll
+    // Zooming with pinch / panning with two-finger scroll
     this.wrapper.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      const newZoom = Math.max(0.25, Math.min(4, this.zoom * delta));
       
-      // Zoom towards mouse position
-      const rect = this.wrapper.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
+      // Pinch to zoom (ctrlKey is set for pinch gestures on trackpad)
+      // or mouse wheel (deltaMode 1 = line mode, or large discrete Y-only deltas)
+      const isPinchZoom = e.ctrlKey;
+      const isMouseWheel = e.deltaMode === 1 || (Math.abs(e.deltaY) >= 50 && e.deltaX === 0);
       
-      const zoomRatio = newZoom / this.zoom;
-      this.panX = mouseX - (mouseX - this.panX) * zoomRatio;
-      this.panY = mouseY - (mouseY - this.panY) * zoomRatio;
+      if (isPinchZoom || isMouseWheel) {
+        // Zoom
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        const newZoom = Math.max(0.25, Math.min(4, this.zoom * delta));
+        
+        // Zoom towards mouse position
+        const rect = this.wrapper.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        const zoomRatio = newZoom / this.zoom;
+        this.panX = mouseX - (mouseX - this.panX) * zoomRatio;
+        this.panY = mouseY - (mouseY - this.panY) * zoomRatio;
+        
+        this.zoom = newZoom;
+      } else {
+        // Two-finger trackpad scroll = pan
+        this.panX -= e.deltaX;
+        this.panY -= e.deltaY;
+      }
       
-      this.zoom = newZoom;
       this.updateTransform();
     }, { passive: false });
   }
