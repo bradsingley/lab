@@ -1,0 +1,933 @@
+/*
+ * MAI UI Design System - CSS Implementation
+ * Following mai-theme-copilot design language
+ * 
+ * Token Hierarchy:
+ * - Static colors: Neutral, Stone, Cocoa, Caramel, Slate, Midnight, Pink, Red
+ * - Theme colors: Accent, Background, Foreground, Stroke, Overlay
+ * - Spacing: 4px base unit
+ * - Corner radius: 4px base unit with squircle smoothing
+ * - Elevation: XS, Sm, Md, Lg, XL
+ */
+
+/* ============================================
+   CSS Custom Properties (Design Tokens)
+   ============================================ */
+:root {
+    /* Static Colors - Neutral */
+    --static-neutral-100: #ffffff;
+    --static-neutral-200: #fafafa;
+    --static-neutral-300: #f5f5f5;
+    --static-neutral-400: #e8e8e8;
+    --static-neutral-500: #d1d1d1;
+    --static-neutral-600: #737373;
+    --static-neutral-700: #525252;
+    --static-neutral-800: #292929;
+    --static-neutral-900: #1a1a1a;
+    
+    /* Static Colors - Stone (warm backgrounds) */
+    --static-stone-100: #faf9f7;
+    --static-stone-200: #f5f3f0;
+    --static-stone-300: #e8e4de;
+    --static-stone-400: #d6cfc4;
+    --static-stone-500: #b8ad9e;
+    
+    /* Static Colors - Cocoa (rich browns) */
+    --static-cocoa-100: #f7f3ef;
+    --static-cocoa-200: #e8ddd0;
+    --static-cocoa-300: #c9b69c;
+    --static-cocoa-400: #a08060;
+    --static-cocoa-500: #6b4f3a;
+    
+    /* Static Colors - Caramel (warm amber) */
+    --static-caramel-100: #fff8e6;
+    --static-caramel-200: #ffe9b3;
+    --static-caramel-300: #ffd666;
+    --static-caramel-400: #ffb900;
+    --static-caramel-500: #d49a00;
+    
+    /* Static Colors - Midnight (deep blues) */
+    --static-midnight-100: #e6eef5;
+    --static-midnight-200: #c2d4e8;
+    --static-midnight-300: #7aa3c7;
+    --static-midnight-400: #3d6a8f;
+    --static-midnight-500: #1b3a52;
+    --static-midnight-600: #0d2137;
+    --static-midnight-700: #0a1929;
+    --static-midnight-800: #06111c;
+    --static-midnight-900: #030a10;
+    
+    /* Theme Colors - Accent (brand) */
+    --accent-primary: #0078d4;
+    --accent-primary-hover: #106ebe;
+    --accent-primary-pressed: #005a9e;
+    --accent-secondary: #50a0dc;
+    --accent-tertiary: #00bcf2;
+    
+    /* Theme Colors - Background */
+    --background-primary: var(--static-neutral-100);
+    --background-secondary: var(--static-stone-100);
+    --background-tertiary: var(--static-stone-200);
+    --background-inverse: var(--static-midnight-800);
+    
+    /* Theme Colors - Foreground */
+    --foreground-primary: var(--static-neutral-900);
+    --foreground-secondary: var(--static-neutral-600);
+    --foreground-tertiary: var(--static-neutral-500);
+    --foreground-inverse: var(--static-neutral-100);
+    --foreground-accent: var(--accent-primary);
+    
+    /* Theme Colors - Stroke */
+    --stroke-default: var(--static-neutral-400);
+    --stroke-subtle: var(--static-neutral-300);
+    --stroke-strong: var(--static-neutral-600);
+    
+    /* Spacing (4px base unit) */
+    --spacing-0: 0;
+    --spacing-1: 4px;    /* 1 base */
+    --spacing-2: 8px;    /* 2 base */
+    --spacing-3: 12px;   /* 3 base */
+    --spacing-4: 16px;   /* 4 base */
+    --spacing-5: 20px;   /* 5 base */
+    --spacing-6: 24px;   /* 6 base */
+    --spacing-8: 32px;   /* 8 base */
+    --spacing-10: 40px;  /* 10 base */
+    --spacing-12: 48px;  /* 12 base */
+    --spacing-16: 64px;  /* 16 base */
+    --spacing-20: 80px;  /* 20 base */
+    --spacing-24: 96px;  /* 24 base */
+    --spacing-32: 128px; /* 32 base */
+    
+    /* Corner Radius (4px base unit with squircle smoothing) */
+    --corner-none: 0;
+    --corner-xs: 4px;    /* 1 base */
+    --corner-sm: 8px;    /* 2 base */
+    --corner-md: 12px;   /* 3 base */
+    --corner-lg: 16px;   /* 4 base */
+    --corner-xl: 20px;   /* 5 base */
+    --corner-2xl: 24px;  /* 6 base */
+    --corner-full: 9999px;
+    
+    /* Elevation (shadows) */
+    --elevation-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --elevation-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --elevation-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+    --elevation-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --elevation-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
+    
+    /* Typography */
+    --font-family-base: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-family-display: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-family-mono: 'Cascadia Code', 'Consolas', monospace;
+    
+    /* Font Sizes (following MAI text size ramp) */
+    --text-100: 0.625rem;  /* 10px - Caption */
+    --text-200: 0.75rem;   /* 12px - Caption */
+    --text-300: 0.875rem;  /* 14px - Body Small */
+    --text-400: 1rem;      /* 16px - Body */
+    --text-500: 1.125rem;  /* 18px - Body Large */
+    --text-600: 1.25rem;   /* 20px - Title */
+    --text-700: 1.5rem;    /* 24px - Title Large */
+    --text-800: 1.75rem;   /* 28px - Heading */
+    --text-900: 2.25rem;   /* 36px - Display */
+    --text-1000: 3rem;     /* 48px - Display Large */
+    
+    /* Line Heights */
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.6;
+    
+    /* Font Weights */
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+    
+    /* Motion (easing and durations) */
+    --duration-fast: 100ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
+    --easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+    --easing-decelerate: cubic-bezier(0, 0, 0.2, 1);
+    --easing-accelerate: cubic-bezier(0.4, 0, 1, 1);
+    
+    /* Z-index layers */
+    --z-base: 0;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-fixed: 300;
+    --z-modal: 400;
+    --z-popover: 500;
+    --z-tooltip: 600;
+}
+
+/* ============================================
+   Base Styles & Reset
+   ============================================ */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-family-base);
+    font-size: var(--text-400);
+    line-height: var(--line-height-normal);
+    color: var(--foreground-primary);
+    background-color: var(--background-primary);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ============================================
+   Typography Classes (MAI Text Component)
+   ============================================ */
+.mai-text-100 { font-size: var(--text-100); }
+.mai-text-200 { font-size: var(--text-200); }
+.mai-text-300 { font-size: var(--text-300); }
+.mai-text-400 { font-size: var(--text-400); }
+.mai-text-500 { font-size: var(--text-500); }
+.mai-text-600 { font-size: var(--text-600); }
+.mai-text-700 { font-size: var(--text-700); }
+.mai-text-800 { font-size: var(--text-800); }
+.mai-text-900 { font-size: var(--text-900); }
+.mai-text-1000 { font-size: var(--text-1000); }
+
+.mai-weight-regular { font-weight: var(--weight-regular); }
+.mai-weight-medium { font-weight: var(--weight-medium); }
+.mai-weight-semibold { font-weight: var(--weight-semibold); }
+.mai-weight-bold { font-weight: var(--weight-bold); }
+
+.mai-align-start { text-align: start; }
+.mai-align-center { text-align: center; }
+.mai-align-end { text-align: end; }
+
+.mai-text-light { color: var(--foreground-inverse); }
+.mai-text-secondary { color: var(--foreground-secondary); }
+.mai-text-accent { color: var(--foreground-accent); }
+
+/* ============================================
+   Elevation Classes
+   ============================================ */
+.mai-elevation-xs { box-shadow: var(--elevation-xs); }
+.mai-elevation-sm { box-shadow: var(--elevation-sm); }
+.mai-elevation-md { box-shadow: var(--elevation-md); }
+.mai-elevation-lg { box-shadow: var(--elevation-lg); }
+.mai-elevation-xl { box-shadow: var(--elevation-xl); }
+
+/* ============================================
+   Container & Layout
+   ============================================ */
+.mai-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-5);
+}
+
+.mai-section {
+    padding: var(--spacing-24) 0;
+}
+
+.mai-section-stone {
+    background-color: var(--background-secondary);
+}
+
+.mai-section-midnight {
+    background-color: var(--static-midnight-800);
+}
+
+.mai-section-title {
+    margin-bottom: var(--spacing-4);
+    line-height: var(--line-height-tight);
+}
+
+.mai-section-description {
+    max-width: 700px;
+    margin: 0 auto var(--spacing-12);
+    color: var(--foreground-secondary);
+}
+
+/* ============================================
+   Navbar (MAI Navigation Pattern)
+   ============================================ */
+.mai-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(60px); /* MAI blur treatment */
+    -webkit-backdrop-filter: blur(60px);
+    z-index: var(--z-fixed);
+    border-bottom: 1px solid var(--stroke-subtle);
+}
+
+.mai-nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-3) var(--spacing-5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mai-logo {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    color: var(--foreground-primary);
+}
+
+.mai-logo svg {
+    color: var(--accent-primary);
+}
+
+.mai-nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+/* ============================================
+   Button Component (MAI Button)
+   ============================================ */
+.mai-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
+    font-family: var(--font-family-base);
+    font-size: var(--text-300);
+    font-weight: var(--weight-semibold);
+    line-height: 1;
+    text-decoration: none;
+    border: none;
+    border-radius: var(--corner-sm);
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--easing-default);
+    min-height: 36px;
+}
+
+.mai-button:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
+/* Primary Button */
+.mai-button-primary {
+    background: var(--accent-primary);
+    color: var(--static-neutral-100);
+    box-shadow: var(--elevation-xs);
+}
+
+.mai-button-primary:hover {
+    background: var(--accent-primary-hover);
+    box-shadow: var(--elevation-sm);
+}
+
+.mai-button-primary:active {
+    background: var(--accent-primary-pressed);
+}
+
+/* Subtle Button */
+.mai-button-subtle {
+    background: transparent;
+    color: var(--foreground-primary);
+}
+
+.mai-button-subtle:hover {
+    background: var(--static-neutral-200);
+}
+
+.mai-button-subtle:active {
+    background: var(--static-neutral-300);
+}
+
+/* Outline Button */
+.mai-button-outline {
+    background: transparent;
+    color: var(--foreground-primary);
+    border: 1px solid var(--stroke-default);
+}
+
+.mai-button-outline:hover {
+    background: var(--static-neutral-100);
+    border-color: var(--stroke-strong);
+}
+
+/* Button Sizes */
+.mai-button-large {
+    padding: var(--spacing-4) var(--spacing-8);
+    font-size: var(--text-400);
+    min-height: 48px;
+    border-radius: var(--corner-md);
+}
+
+.mai-button-full {
+    width: 100%;
+}
+
+/* ============================================
+   Badge Component (MAI Badge)
+   ============================================ */
+.mai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-1);
+    padding: var(--spacing-1) var(--spacing-3);
+    font-size: var(--text-200);
+    font-weight: var(--weight-medium);
+    line-height: 1.4;
+    border-radius: var(--corner-full);
+    width: fit-content;
+}
+
+.mai-badge-outline {
+    background: transparent;
+    border: 1px solid var(--stroke-default);
+    color: var(--foreground-primary);
+}
+
+.mai-badge-accent {
+    background: var(--static-midnight-100);
+    color: var(--static-midnight-500);
+}
+
+.mai-badge-caramel {
+    background: var(--static-caramel-400);
+    color: var(--static-neutral-900);
+}
+
+/* ============================================
+   Hero Section
+   ============================================ */
+.mai-hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 50%, var(--accent-tertiary) 100%);
+    padding: var(--spacing-32) var(--spacing-5) var(--spacing-16);
+    position: relative;
+    overflow: hidden;
+}
+
+.mai-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.mai-hero-content {
+    text-align: center;
+    color: var(--static-neutral-100);
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+}
+
+.mai-hero .mai-badge-outline {
+    border-color: rgba(255, 255, 255, 0.4);
+    color: var(--static-neutral-100);
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-6);
+}
+
+.mai-hero-title {
+    line-height: var(--line-height-tight);
+    margin-bottom: var(--spacing-5);
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+}
+
+.mai-hero-tagline {
+    margin-bottom: var(--spacing-10);
+    opacity: 0.95;
+}
+
+.mai-hero-buttons {
+    display: flex;
+    gap: var(--spacing-5);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.mai-hero .mai-button-primary {
+    background: var(--static-neutral-100);
+    color: var(--accent-primary);
+}
+
+.mai-hero .mai-button-primary:hover {
+    background: var(--static-neutral-200);
+    transform: translateY(-2px);
+    box-shadow: var(--elevation-lg);
+}
+
+.mai-hero .mai-button-outline {
+    border-color: var(--static-neutral-100);
+    color: var(--static-neutral-100);
+}
+
+.mai-hero .mai-button-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Floating Icons */
+.mai-hero-visual {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.mai-floating-icon {
+    position: absolute;
+    font-size: 3rem;
+    opacity: 0.3;
+    animation: mai-float 6s ease-in-out infinite;
+}
+
+.mai-icon-1 { top: 20%; left: 10%; animation-delay: 0s; }
+.mai-icon-2 { top: 30%; right: 15%; animation-delay: 1s; }
+.mai-icon-3 { bottom: 30%; left: 20%; animation-delay: 2s; }
+.mai-icon-4 { bottom: 20%; right: 10%; animation-delay: 3s; }
+
+@keyframes mai-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+/* ============================================
+   Stats Grid
+   ============================================ */
+.mai-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-6);
+    margin-top: var(--spacing-12);
+}
+
+.mai-stat-card {
+    background: var(--background-primary);
+    padding: var(--spacing-8);
+    border-radius: var(--corner-lg);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.mai-stat-number {
+    color: var(--accent-primary);
+    line-height: 1;
+}
+
+.mai-stat-label {
+    color: var(--foreground-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ============================================
+   Tracks Grid (Content Cards)
+   ============================================ */
+.mai-tracks-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-6);
+    margin-top: var(--spacing-12);
+}
+
+.mai-content-card {
+    background: var(--background-primary);
+    padding: var(--spacing-8) var(--spacing-6);
+    border-radius: var(--corner-lg);
+    text-align: center;
+    transition: transform var(--duration-normal) var(--easing-default),
+                box-shadow var(--duration-normal) var(--easing-default);
+}
+
+.mai-content-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--elevation-lg);
+}
+
+.mai-card-icon {
+    font-size: 3rem;
+    margin-bottom: var(--spacing-5);
+}
+
+.mai-content-card h3 {
+    margin-bottom: var(--spacing-3);
+}
+
+.mai-card-description {
+    color: var(--foreground-secondary);
+}
+
+/* ============================================
+   Speakers Grid
+   ============================================ */
+.mai-speakers-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-6);
+    margin-top: var(--spacing-12);
+}
+
+.mai-speaker-card {
+    background: var(--background-primary);
+    padding: var(--spacing-8) var(--spacing-6);
+    border-radius: var(--corner-lg);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.mai-avatar {
+    border-radius: var(--corner-full);
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary));
+}
+
+.mai-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mai-avatar-lg {
+    width: 100px;
+    height: 100px;
+    margin-bottom: var(--spacing-4);
+}
+
+.mai-speaker-name {
+    margin-bottom: 0;
+}
+
+.mai-speaker-title {
+    color: var(--accent-primary);
+    margin-bottom: var(--spacing-3);
+}
+
+.mai-speaker-card .mai-badge {
+    margin-top: var(--spacing-2);
+}
+
+/* ============================================
+   Tablist Component (MAI Tablist)
+   ============================================ */
+.mai-tablist {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-8);
+}
+
+.mai-tab {
+    padding: var(--spacing-3) var(--spacing-6);
+    font-family: var(--font-family-base);
+    font-size: var(--text-300);
+    font-weight: var(--weight-semibold);
+    color: var(--accent-primary);
+    background: transparent;
+    border: 2px solid var(--accent-primary);
+    border-radius: var(--corner-sm);
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--easing-default);
+}
+
+.mai-tab:hover,
+.mai-tab.active {
+    background: var(--accent-primary);
+    color: var(--static-neutral-100);
+}
+
+.mai-tab:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
+/* Schedule Panel */
+.mai-schedule-panel {
+    max-width: 800px;
+    margin: 0 auto;
+    display: none;
+}
+
+.mai-schedule-panel.active {
+    display: block;
+}
+
+.mai-schedule-item {
+    display: flex;
+    gap: var(--spacing-6);
+    padding: var(--spacing-5) 0;
+    align-items: flex-start;
+}
+
+.mai-schedule-time {
+    min-width: 100px;
+    background: var(--accent-primary);
+    color: var(--static-neutral-100);
+}
+
+.mai-schedule-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.mai-schedule-details .mai-text-200 {
+    color: var(--foreground-secondary);
+}
+
+.mai-divider {
+    height: 1px;
+    background: var(--stroke-subtle);
+}
+
+/* ============================================
+   Pricing Grid
+   ============================================ */
+.mai-pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-6);
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.mai-pricing-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: var(--spacing-8);
+    border-radius: var(--corner-lg);
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+}
+
+.mai-pricing-card-featured {
+    background: var(--accent-primary);
+    transform: scale(1.05);
+    z-index: 1;
+}
+
+.mai-featured-badge {
+    position: absolute;
+    top: calc(-1 * var(--spacing-3));
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.mai-pricing-tier {
+    color: var(--static-neutral-100);
+}
+
+.mai-pricing-amount {
+    color: var(--static-neutral-100);
+    line-height: 1;
+}
+
+.mai-pricing-features {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    text-align: left;
+}
+
+.mai-feature-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding-bottom: var(--spacing-3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mai-feature-item .mai-text-300 {
+    color: var(--static-neutral-100);
+}
+
+.mai-feature-check {
+    color: var(--static-caramel-400);
+    font-weight: var(--weight-bold);
+}
+
+.mai-pricing-card .mai-button-outline {
+    border-color: var(--static-neutral-100);
+    color: var(--static-neutral-100);
+}
+
+.mai-pricing-card .mai-button-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mai-pricing-card-featured .mai-button-primary {
+    background: var(--static-neutral-100);
+    color: var(--accent-primary);
+}
+
+.mai-pricing-note {
+    color: var(--foreground-secondary);
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+.mai-footer {
+    background: var(--static-midnight-900);
+    color: var(--foreground-secondary);
+    padding: var(--spacing-10) 0;
+}
+
+.mai-footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-5);
+}
+
+.mai-footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.mai-footer-brand .mai-logo {
+    color: var(--foreground-inverse);
+}
+
+.mai-copyright {
+    color: var(--foreground-secondary);
+}
+
+.mai-footer-links {
+    display: flex;
+    gap: var(--spacing-6);
+}
+
+.mai-link {
+    color: var(--foreground-secondary);
+    text-decoration: none;
+    font-size: var(--text-300);
+    transition: color var(--duration-fast) var(--easing-default);
+}
+
+.mai-link:hover {
+    color: var(--foreground-inverse);
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+@media (max-width: 1024px) {
+    .mai-tracks-grid,
+    .mai-speakers-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .mai-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --text-1000: 2.25rem;
+        --text-900: 1.75rem;
+        --text-800: 1.5rem;
+    }
+    
+    .mai-nav-links {
+        display: none;
+    }
+    
+    .mai-hero {
+        padding-top: var(--spacing-24);
+    }
+    
+    .mai-tracks-grid,
+    .mai-speakers-grid,
+    .mai-pricing-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .mai-pricing-card-featured {
+        transform: none;
+    }
+    
+    .mai-tablist {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .mai-tab {
+        width: 100%;
+        max-width: 280px;
+    }
+    
+    .mai-footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .mai-schedule-item {
+        flex-direction: column;
+        gap: var(--spacing-3);
+    }
+    
+    .mai-schedule-time {
+        min-width: auto;
+    }
+}
+
+/* ============================================
+   Reduced Motion Support
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================
+   High Contrast / Forced Colors Support
+   ============================================ */
+@media (forced-colors: active) {
+    .mai-button-primary {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
+    
+    .mai-button:focus-visible {
+        outline: 2px solid Highlight;
+    }
+    
+    .mai-tab.active {
+        background: Highlight;
+        color: HighlightText;
+    }
+}
