@@ -109,31 +109,13 @@
             }
         }
 
-        // Update action buttons based on auth
+        // Update action buttons
         function updateActions() {
-            const user = getCurrentUser();
-            if (user) {
-                boardActions.innerHTML = `
-                    <span class="user-info" style="color: #888; font-size: 0.875rem;">
-                        ${user.name}
-                    </span>
-                    <button class="btn btn-primary btn-small" onclick="openUploadModal()">
-                        + Add Images
-                    </button>
-                    <button class="btn btn-secondary btn-small" onclick="signOut()">
-                        Sign Out
-                    </button>
-                `;
-            } else {
-                boardActions.innerHTML = `
-                    <span style="color: #888; font-size: 0.875rem;">
-                        View only - 
-                    </span>
-                    <a href="login.html" class="btn btn-primary btn-small">
-                        Sign in to contribute
-                    </a>
-                `;
-            }
+            boardActions.innerHTML = `
+                <button class="btn btn-primary btn-small" onclick="openUploadModal()">
+                    + Add Images
+                </button>
+            `;
         }
 
         // Render images on canvas
@@ -161,11 +143,9 @@
                 <div class="resize-handle"></div>
             `;
 
-            // Only enable drag/resize if logged in
-            if (isLoggedIn()) {
-                setupDraggable(div, imgData);
-                setupResizable(div, imgData);
-            }
+            // Enable drag/resize for everyone
+            setupDraggable(div, imgData);
+            setupResizable(div, imgData);
 
             canvas.appendChild(div);
         }
@@ -309,15 +289,6 @@
 
         // Upload modal functions
         function openUploadModal() {
-            if (!isLoggedIn()) {
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            // Pre-fill name from user
-            const user = getCurrentUser();
-            document.getElementById('contributor-name').value = user.name;
-            
             uploadModal.classList.add('active');
         }
 
@@ -418,7 +389,6 @@
         canvasContainer.addEventListener('dragenter', (e) => {
             e.preventDefault();
             dragCounter++;
-            if (!isLoggedIn()) return;
             dropOverlay.classList.add('active');
         });
 
@@ -439,18 +409,11 @@
             dragCounter = 0;
             dropOverlay.classList.remove('active');
 
-            if (!isLoggedIn()) {
-                alert('Please sign in to add images');
-                window.location.href = 'login.html';
-                return;
-            }
-
             const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
             if (files.length === 0) return;
 
             // Prompt for contributor name
-            const user = getCurrentUser();
-            const contributorName = prompt('Your name for attribution:', user.name);
+            const contributorName = prompt('Your name for attribution:', '');
             if (!contributorName) return;
 
             // Get drop position relative to canvas

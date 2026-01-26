@@ -3,7 +3,9 @@ const SUPABASE_URL = 'https://wocjfeyhzrofrqhoppbr.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_JEgRKgVLXWvtioEqKyxhow_ngcsav1E';
 
 // Initialize Supabase client
+console.log('Initializing Supabase client...');
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+console.log('Supabase client initialized:', supabase);
 
 // ============================================
 // AUTH HELPERS (Database-based simple auth)
@@ -97,10 +99,13 @@ function isLoggedIn() {
 
 // Get all boards with a random thumbnail image
 async function getBoards() {
+    console.log('Fetching boards from Supabase...');
     const { data: boards, error } = await supabase
         .from('moodboard_boards')
         .select('*, moodboard_images(image_url)')
         .order('created_at', { ascending: false });
+    
+    console.log('Supabase response - data:', boards, 'error:', error);
     
     if (error) throw error;
     
@@ -128,11 +133,10 @@ async function getBoard(boardId) {
 // Create a new board
 async function createBoard(name) {
     const user = getCurrentUser();
-    if (!user) throw new Error('Must be logged in to create a board');
     
     const { data, error } = await supabase
         .from('moodboard_boards')
-        .insert({ name, created_by: user.id })
+        .insert({ name, created_by: user?.id || null })
         .select()
         .single();
     

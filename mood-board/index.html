@@ -73,11 +73,13 @@
         // Load and render boards
         async function loadBoards() {
             try {
+                console.log('Loading boards...');
                 const boards = await getBoards();
+                console.log('Boards loaded:', boards);
                 renderBoards(boards);
             } catch (error) {
                 console.error('Error loading boards:', error);
-                boardsContainer.innerHTML = '<div class="empty-state">Error loading boards. Please refresh.</div>';
+                boardsContainer.innerHTML = `<div class="empty-state">Error: ${error.message || 'Failed to load boards'}</div>`;
             }
         }
 
@@ -86,20 +88,18 @@
             
             let html = '';
             
-            // Add "Create New" card if logged in
-            if (user) {
-                html += `
-                    <div class="board-card create-new" onclick="openCreateModal()">
-                        <div class="create-new-content">
-                            <div class="icon">+</div>
-                            <p>Create New Board</p>
-                        </div>
+            // Add "Create New" card - anyone can create
+            html += `
+                <div class="board-card create-new" onclick="openCreateModal()">
+                    <div class="create-new-content">
+                        <div class="icon">+</div>
+                        <p>Create New Board</p>
                     </div>
-                `;
-            }
+                </div>
+            `;
             
-            if (boards.length === 0 && !user) {
-                html += '<div class="empty-state">No boards yet. Sign in to create the first one!</div>';
+            if (boards.length === 0) {
+                html += '<div class="empty-state">No boards yet. Create the first one!</div>';
             }
             
             boards.forEach(board => {
@@ -133,10 +133,6 @@
 
         // Modal functions
         function openCreateModal() {
-            if (!isLoggedIn()) {
-                window.location.href = 'login.html';
-                return;
-            }
             createModal.classList.add('active');
             document.getElementById('board-name').focus();
         }
