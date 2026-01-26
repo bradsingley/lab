@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moodboard - Collaborative Image Boards</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="/" class="logo">✦ Moodboard</a>
+            <nav id="nav-area">
+                <!-- Populated by JS based on auth state -->
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Collaborative Moodboards</h1>
+            <p>Create visual boards and share them with anyone. Drag, drop, and arrange images together in real-time.</p>
+        </section>
+
+        <div class="container">
+            <div id="boards-container" class="boards-grid">
+                <div class="loading">Loading boards</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Board Modal -->
+    <div id="create-modal" class="modal-overlay">
+        <div class="modal">
+            <h2>Create New Board</h2>
+            <form id="create-board-form">
+                <div class="form-group">
+                    <label for="board-name">Board Name</label>
+                    <input type="text" id="board-name" name="board-name" required placeholder="My Inspiration Board">
+                </div>
+                <div id="create-error" class="form-error" style="display: none;"></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Board</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script>
+        const navArea = document.getElementById('nav-area');
+        const boardsContainer = document.getElementById('boards-container');
+        const createModal = document.getElementById('create-modal');
+
+        // Update navigation based on auth state
+        function updateNav() {
+            const user = getCurrentUser();
+            if (user) {
+                navArea.innerHTML = `
+                    <span class="user-info">Hello, ${user.name}</span>
+                    <button class="btn btn-secondary btn-small" onclick="signOut()">Sign Out</button>
+                `;
+            } else {
+                navArea.innerHTML = `
+                    <a href="login.html" class="btn btn-secondary btn-small">Sign In</a>
+                    <a href="signup.html" class="btn btn-primary btn-small">Sign Up</a>
+                `;
+            }
+        }
+
+        // Load and render boards
+        async function loadBoards() {
+            try {
+                const boards = await getBoards();
+                renderBoards(boards);
+            } catch (error) {
+                console.error('Error loading boards:', error);
+                boardsContainer.innerHTML = '<div class="empty-state">Error loading boards. Please refresh.</div>';
+            }
+        }
+
+        function renderBoards(boards) {
+            const user = getCurrentUser();
+            
+            let html = '';
+            
+            // Add "Create New" card if logged in
+            if (user) {
+                html += `
+                    <div class="board-card create-new" onclick="openCreateModal()">
+                        <div class="create-new-content">
+                            <div class="icon">+</div>
+                            <p>Create New Board</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (boards.length === 0 && !user) {
+                html += '<div class="empty-state">No boards yet. Sign in to create the first one!</div>';
+            }
+            
+            boards.forEach(board => {
+                const date = new Date(board.created_at).toLocaleDateString();
+                const imageCount = board.moodboard_images?.length || 0;
+                
+                html += `
+                    <div class="board-card" onclick="window.location.href='board.html?id=${board.id}'">
+                        <div class="board-thumbnail">
+                            ${board.thumbnail 
+                                ? `<img src="${board.thumbnail}" alt="${board.name}">`
+                                : '<span class="placeholder">🖼</span>'
+                            }
+                        </div>
+                        <div class="board-info">
+                            <h3>${escapeHtml(board.name)}</h3>
+                            <span>${imageCount} image${imageCount !== 1 ? 's' : ''} • ${date}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            boardsContainer.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Modal functions
+        function openCreateModal() {
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            createModal.classList.add('active');
+            document.getElementById('board-name').focus();
+        }
+
+        function closeCreateModal() {
+            createModal.classList.remove('active');
+            document.getElementById('create-board-form').reset();
+            document.getElementById('create-error').style.display = 'none';
+        }
+
+        // Close modal on overlay click
+        createModal.addEventListener('click', (e) => {
+            if (e.target === createModal) closeCreateModal();
+        });
+
+        // Create board form
+        document.getElementById('create-board-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('board-name').value.trim();
+            const errorDiv = document.getElementById('create-error');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+            errorDiv.style.display = 'none';
+            
+            try {
+                const board = await createBoard(name);
+                window.location.href = `board.html?id=${board.id}`;
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Board';
+            }
+        });
+
+        // Initialize
+        updateNav();
+        loadBoards();
+    </script>
+</body>
+</html>

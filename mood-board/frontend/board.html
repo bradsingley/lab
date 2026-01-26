@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board - Moodboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="board-header">
+        <a href="/" class="logo">✦ Moodboard</a>
+        <h1 id="board-title" class="board-title">Loading...</h1>
+        <div class="board-actions" id="board-actions">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <div class="canvas-container" id="canvas-container">
+        <div class="canvas" id="canvas">
+            <!-- Images rendered here -->
+        </div>
+        
+        <!-- Drop zone overlay -->
+        <div id="drop-overlay" class="drop-overlay">
+            <div class="drop-message">
+                <div class="icon">📷</div>
+                <p>Drop images to add to board</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="modal-overlay">
+        <div class="modal">
+            <h2>Add Images</h2>
+            <form id="upload-form">
+                <div class="form-group">
+                    <label for="contributor-name">Your Name</label>
+                    <input type="text" id="contributor-name" name="contributor-name" required 
+                           placeholder="How should we credit you?">
+                </div>
+                
+                <div class="upload-area" id="upload-area">
+                    <input type="file" id="file-input" accept="image/*" multiple>
+                    <div class="icon">📷</div>
+                    <p>Click or drag images here</p>
+                    <div class="upload-preview" id="upload-preview"></div>
+                </div>
+                
+                <div id="upload-error" class="form-error" style="display: none;"></div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="upload-btn" disabled>Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script>
+        // Get board ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const boardId = urlParams.get('id');
+
+        if (!boardId) {
+            window.location.href = '/';
+        }
+
+        const canvas = document.getElementById('canvas');
+        const boardTitle = document.getElementById('board-title');
+        const boardActions = document.getElementById('board-actions');
+        const uploadModal = document.getElementById('upload-modal');
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const uploadPreview = document.getElementById('upload-preview');
+        const uploadBtn = document.getElementById('upload-btn');
+
+        let board = null;
+        let selectedFiles = [];
+        let maxZIndex = 1;
+        let subscription = null;
+
+        // Initialize
+        async function init() {
+            await loadBoard();
+            updateActions();
+            setupRealtime();
+        }
+
+        // Load board data
+        async function loadBoard() {
+            try {
+                board = await getBoard(boardId);
+                document.title = `${board.name} - Moodboard`;
+                boardTitle.textContent = board.name;
+                
+                // Find max z-index
+                board.moodboard_images.forEach(img => {
+                    if (img.z_index > maxZIndex) maxZIndex = img.z_index;
+                });
+                
+                renderImages();
+            } catch (error) {
+                console.error('Error loading board:', error);
+                alert('Board not found');
+                window.location.href = '/';
+            }
+        }
+
+        // Update action buttons based on auth
+        function updateActions() {
+            const user = getCurrentUser();
+            if (user) {
+                boardActions.innerHTML = `
+                    <span class="user-info" style="color: #888; font-size: 0.875rem;">
+                        ${user.name}
+                    </span>
+                    <button class="btn btn-primary btn-small" onclick="openUploadModal()">
+                        + Add Images
+                    </button>
+                    <button class="btn btn-secondary btn-small" onclick="signOut()">
+                        Sign Out
+                    </button>
+                `;
+            } else {
+                boardActions.innerHTML = `
+                    <span style="color: #888; font-size: 0.875rem;">
+                        View only - 
+                    </span>
+                    <a href="login.html" class="btn btn-primary btn-small">
+                        Sign in to contribute
+                    </a>
+                `;
+            }
+        }
+
+        // Render images on canvas
+        function renderImages() {
+            canvas.innerHTML = '';
+            
+            board.moodboard_images.forEach(img => {
+                createImageElement(img);
+            });
+        }
+
+        function createImageElement(imgData) {
+            const div = document.createElement('div');
+            div.className = 'canvas-image';
+            div.dataset.id = imgData.id;
+            div.style.left = `${imgData.position_x}px`;
+            div.style.top = `${imgData.position_y}px`;
+            div.style.width = `${imgData.width}px`;
+            div.style.height = `${imgData.height}px`;
+            div.style.zIndex = imgData.z_index;
+            
+            div.innerHTML = `
+                <img src="${imgData.image_url}" alt="Image by ${imgData.contributor_name}" draggable="false">
+                <div class="contributor">by ${escapeHtml(imgData.contributor_name)}</div>
+                <div class="resize-handle"></div>
+            `;
+
+            // Only enable drag/resize if logged in
+            if (isLoggedIn()) {
+                setupDraggable(div, imgData);
+                setupResizable(div, imgData);
+            }
+
+            canvas.appendChild(div);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Drag functionality
+        function setupDraggable(element, imgData) {
+            let isDragging = false;
+            let startX, startY, origX, origY;
+
+            element.addEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('resize-handle')) return;
+
+                isDragging = true;
+                element.classList.add('dragging');
+                
+                // Bring to front
+                maxZIndex++;
+                element.style.zIndex = maxZIndex;
+                
+                startX = e.clientX;
+                startY = e.clientY;
+                origX = element.offsetLeft;
+                origY = element.offsetTop;
+                
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                
+                element.style.left = `${origX + dx}px`;
+                element.style.top = `${origY + dy}px`;
+            });
+
+            document.addEventListener('mouseup', async () => {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                element.classList.remove('dragging');
+                
+                // Save new position
+                const newX = element.offsetLeft;
+                const newY = element.offsetTop;
+                
+                try {
+                    await updateImagePosition(imgData.id, newX, newY, maxZIndex);
+                    imgData.position_x = newX;
+                    imgData.position_y = newY;
+                    imgData.z_index = maxZIndex;
+                } catch (error) {
+                    console.error('Error saving position:', error);
+                }
+            });
+        }
+
+        // Resize functionality
+        function setupResizable(element, imgData) {
+            const handle = element.querySelector('.resize-handle');
+            let isResizing = false;
+            let startX, startY, origW, origH;
+
+            handle.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                
+                startX = e.clientX;
+                startY = e.clientY;
+                origW = element.offsetWidth;
+                origH = element.offsetHeight;
+                
+                e.stopPropagation();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                
+                // Maintain aspect ratio optionally, or free resize
+                const newW = Math.max(50, origW + dx);
+                const newH = Math.max(50, origH + dy);
+                
+                element.style.width = `${newW}px`;
+                element.style.height = `${newH}px`;
+            });
+
+            document.addEventListener('mouseup', async () => {
+                if (!isResizing) return;
+                
+                isResizing = false;
+                
+                const newW = element.offsetWidth;
+                const newH = element.offsetHeight;
+                
+                try {
+                    await updateImageSize(imgData.id, newW, newH);
+                    imgData.width = newW;
+                    imgData.height = newH;
+                } catch (error) {
+                    console.error('Error saving size:', error);
+                }
+            });
+        }
+
+        // Realtime updates
+        function setupRealtime() {
+            subscription = subscribeToBoardChanges(boardId, (payload) => {
+                console.log('Realtime update:', payload);
+                
+                if (payload.eventType === 'INSERT') {
+                    // Check if we already have this image
+                    if (!board.moodboard_images.find(img => img.id === payload.new.id)) {
+                        board.moodboard_images.push(payload.new);
+                        createImageElement(payload.new);
+                    }
+                } else if (payload.eventType === 'UPDATE') {
+                    const el = document.querySelector(`[data-id="${payload.new.id}"]`);
+                    if (el && !el.classList.contains('dragging')) {
+                        el.style.left = `${payload.new.position_x}px`;
+                        el.style.top = `${payload.new.position_y}px`;
+                        el.style.width = `${payload.new.width}px`;
+                        el.style.height = `${payload.new.height}px`;
+                        el.style.zIndex = payload.new.z_index;
+                    }
+                } else if (payload.eventType === 'DELETE') {
+                    const el = document.querySelector(`[data-id="${payload.old.id}"]`);
+                    if (el) el.remove();
+                }
+            });
+        }
+
+        // Upload modal functions
+        function openUploadModal() {
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Pre-fill name from user
+            const user = getCurrentUser();
+            document.getElementById('contributor-name').value = user.name;
+            
+            uploadModal.classList.add('active');
+        }
+
+        function closeUploadModal() {
+            uploadModal.classList.remove('active');
+            document.getElementById('upload-form').reset();
+            uploadPreview.innerHTML = '';
+            selectedFiles = [];
+            uploadBtn.disabled = true;
+            document.getElementById('upload-error').style.display = 'none';
+        }
+
+        uploadModal.addEventListener('click', (e) => {
+            if (e.target === uploadModal) closeUploadModal();
+        });
+
+        // File selection
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            selectedFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+            
+            uploadPreview.innerHTML = '';
+            selectedFiles.forEach(file => {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                uploadPreview.appendChild(img);
+            });
+            
+            uploadBtn.disabled = selectedFiles.length === 0;
+        }
+
+        // Upload form
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const contributorName = document.getElementById('contributor-name').value.trim();
+            const errorDiv = document.getElementById('upload-error');
+            
+            if (selectedFiles.length === 0) {
+                errorDiv.textContent = 'Please select at least one image';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = `Uploading (0/${selectedFiles.length})...`;
+            errorDiv.style.display = 'none';
+            
+            try {
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    uploadBtn.textContent = `Uploading (${i + 1}/${selectedFiles.length})...`;
+                    const imgData = await uploadImage(boardId, selectedFiles[i], contributorName);
+                    
+                    // Add to local state and render
+                    board.moodboard_images.push(imgData);
+                    createImageElement(imgData);
+                }
+                
+                closeUploadModal();
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Upload failed. Please try again.';
+                errorDiv.style.display = 'block';
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload';
+            }
+        });
+
+        // Start
+        init();
+
+        // ============================================
+        // Direct Drag & Drop onto Canvas
+        // ============================================
+        const dropOverlay = document.getElementById('drop-overlay');
+        const canvasContainer = document.getElementById('canvas-container');
+        let dragCounter = 0;
+
+        canvasContainer.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            dragCounter++;
+            if (!isLoggedIn()) return;
+            dropOverlay.classList.add('active');
+        });
+
+        canvasContainer.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dragCounter--;
+            if (dragCounter === 0) {
+                dropOverlay.classList.remove('active');
+            }
+        });
+
+        canvasContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        canvasContainer.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dragCounter = 0;
+            dropOverlay.classList.remove('active');
+
+            if (!isLoggedIn()) {
+                alert('Please sign in to add images');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (files.length === 0) return;
+
+            // Prompt for contributor name
+            const user = getCurrentUser();
+            const contributorName = prompt('Your name for attribution:', user.name);
+            if (!contributorName) return;
+
+            // Get drop position relative to canvas
+            const rect = canvas.getBoundingClientRect();
+            const dropX = e.clientX - rect.left + canvasContainer.scrollLeft;
+            const dropY = e.clientY - rect.top + canvasContainer.scrollTop;
+
+            // Upload each file
+            for (let i = 0; i < files.length; i++) {
+                try {
+                    const imgData = await uploadImageAtPosition(boardId, files[i], contributorName, dropX + (i * 20), dropY + (i * 20));
+                    board.moodboard_images.push(imgData);
+                    createImageElement(imgData);
+                } catch (error) {
+                    console.error('Error uploading:', error);
+                    alert('Failed to upload: ' + error.message);
+                }
+            }
+        });
+
+        // Helper to upload at specific position
+        async function uploadImageAtPosition(boardId, file, contributorName, x, y) {
+            const ext = file.name.split('.').pop();
+            const fileName = `${boardId}/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`;
+
+            const { data: uploadData, error: uploadError } = await supabase
+                .storage
+                .from('moodboard_images')
+                .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase
+                .storage
+                .from('moodboard_images')
+                .getPublicUrl(fileName);
+
+            const { data, error } = await supabase
+                .from('moodboard_images')
+                .insert({
+                    board_id: boardId,
+                    image_url: publicUrl,
+                    contributor_name: contributorName,
+                    position_x: x,
+                    position_y: y
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        }
+    </script>
+</body>
+</html>
