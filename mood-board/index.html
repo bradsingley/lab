@@ -48,7 +48,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase.js"></script>
+    <script src="js/supabase.js?v=3"></script>
     <script>
         const navArea = document.getElementById('nav-area');
         const boardsContainer = document.getElementById('boards-container');
@@ -74,14 +74,21 @@
         async function loadBoards() {
             try {
                 console.log('Loading boards...');
+                console.log('supabase object:', typeof supabase, supabase);
                 const boards = await getBoards();
                 console.log('Boards loaded:', boards);
                 renderBoards(boards);
             } catch (error) {
                 console.error('Error loading boards:', error);
-                boardsContainer.innerHTML = `<div class="empty-state">Error: ${error.message || 'Failed to load boards'}</div>`;
+                boardsContainer.innerHTML = `<div class="empty-state">Error: ${error.message || error || 'Unknown error'}<br><pre>${JSON.stringify(error, null, 2)}</pre></div>`;
             }
         }
+
+        // Add global error handler
+        window.onerror = function(msg, url, line, col, error) {
+            console.error('Global error:', msg, error);
+            boardsContainer.innerHTML = `<div class="empty-state">JS Error: ${msg}</div>`;
+        };
 
         function renderBoards(boards) {
             const user = getCurrentUser();
