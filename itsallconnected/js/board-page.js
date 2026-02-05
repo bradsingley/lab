@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Setup upload functionality if logged in
     if (currentUser) {
         setupUpload(boardId);
+        setupAddNote(boardId);
     }
 });
 
@@ -73,21 +74,20 @@ async function loadBoard(boardId) {
     
     // Update title
     titleEl.textContent = currentBoard.name;
-    document.title = `${currentBoard.name} - Mūdbord`;
+    document.title = `${currentBoard.name} - It's All Connected`;
     
     // Show add button if logged in
     if (currentUser) {
         addImageBtn.hidden = false;
         
+        // Show add note button
+        const addNoteBtn = document.getElementById('addNoteBtn');
+        if (addNoteBtn) addNoteBtn.hidden = false;
+        
         // Show edit controls (arrange buttons)
         document.querySelectorAll('.canvas-controls__edit-only').forEach(el => {
             el.hidden = false;
         });
-        
-        // Setup AI image generation
-        if (typeof setupImageGeneration === 'function') {
-            setupImageGeneration(boardId, currentBoard.name);
-        }
     }
     
     // Load images
@@ -122,7 +122,31 @@ async function loadBoard(boardId) {
     
     // After all images are added, fit view to show all content
     // Use setTimeout to allow images to load and get their sizes
-    setTimeout(() => fitContentToView(), 100);
+    setTimeout(async () => {
+        // Load notes
+        const notes = await getBoardNotes(boardId);
+        renderNotes(notes, !!currentUser);
+        
+        // Load existing connections
+        const connections = await getBoardConnections(boardId);
+        
+        // Auto-connect images that aren't connected yet (max 10 per image)
+        if (currentUser) {
+            await autoConnectImages(boardId, connections);
+            // Reload connections after auto-connect
+            const updatedConnections = await getBoardConnections(boardId);
+            renderConnections(updatedConnections);
+        } else {
+            renderConnections(connections);
+        }
+        
+        // Setup connection mode if logged in
+        if (currentUser) {
+            setupConnectionMode(boardId);
+        }
+        
+        fitContentToView();
+    }, 100);
 }
 
 /**
@@ -256,6 +280,42 @@ function setupUpload(boardId) {
             uploadIndicator.hidden = true;
         }
     }
+}
+
+/**
+ * Setup add note button functionality
+ * @param {string} boardId - Board UUID
+ */
+function setupAddNote(boardId) {
+    const addNoteBtn = document.getElementById('addNoteBtn');
+    const boardEl = document.getElementById('board');
+    const viewport = document.getElementById('boardViewport');
+    
+    addNoteBtn?.addEventListener('click', async () => {
+        // Calculate position in center of current view
+        const viewportRect = viewport.getBoundingClientRect();
+        const centerX = (viewportRect.width / 2 - panX) / canvasScale;
+        const centerY = (viewportRect.height / 2 - panY) / canvasScale;
+        
+        // Add slight randomness so multiple notes don't stack exactly
+        const x = centerX + (Math.random() - 0.5) * 100;
+        const y = centerY + (Math.random() - 0.5) * 100;
+        
+        const { data, error } = await createNote(boardId, x, y);
+        
+        if (error) {
+            console.error('Error creating note:', error);
+            return;
+        }
+        
+        // Render the new note
+        const noteEl = renderNote(data, true);
+        boardEl.appendChild(noteEl);
+        
+        // Focus the textarea
+        const textarea = noteEl.querySelector('textarea');
+        textarea?.focus();
+    });
 }
 
 /**

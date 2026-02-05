@@ -131,7 +131,6 @@ function setupBoardActions() {
         const actionBtn = e.target.closest('.board-card__action');
         if (!actionBtn) return;
         
-        // Prevent the link navigation
         e.preventDefault();
         e.stopPropagation();
         

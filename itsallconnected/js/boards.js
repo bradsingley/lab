@@ -205,11 +205,14 @@ function renderBoardsGrid(container, boards, currentUserId = null) {
     }
     
     boards.forEach(board => {
-        const card = document.createElement('a');
+        const card = document.createElement('div');
         card.className = 'board-card';
-        card.href = `board.html?id=${board.id}`;
         card.dataset.boardId = board.id;
         card.dataset.boardName = board.name;
+        
+        const link = document.createElement('a');
+        link.href = `board.html?id=${board.id}`;
+        link.className = 'board-card__link';
         
         const imageContainer = document.createElement('div');
         imageContainer.className = 'board-card__image';
@@ -229,11 +232,7 @@ function renderBoardsGrid(container, boards, currentUserId = null) {
         
         const titleRow = document.createElement('div');
         titleRow.className = 'board-card__title-row';
-        
-        const title = document.createElement('h3');
-        title.className = 'board-card__title';
-        title.textContent = board.name;
-        titleRow.appendChild(title);
+        titleRow.innerHTML = `<h3 class="board-card__title">${escapeHtml(board.name)}</h3>`;
         
         // Add edit/delete buttons if user owns this board
         if (currentUserId && board.created_by === currentUserId) {
@@ -257,13 +256,10 @@ function renderBoardsGrid(container, boards, currentUserId = null) {
         }
         
         content.appendChild(titleRow);
+        content.innerHTML += `<p class="board-card__meta">Created ${formatDate(board.created_at)}</p>`;
         
-        const meta = document.createElement('p');
-        meta.className = 'board-card__meta';
-        meta.textContent = `Created ${formatDate(board.created_at)}`;
-        content.appendChild(meta);
-        
-        card.appendChild(imageContainer);
+        link.appendChild(imageContainer);
+        card.appendChild(link);
         card.appendChild(content);
         container.appendChild(card);
     });
