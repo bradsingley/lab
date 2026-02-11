@@ -1,13 +1,80 @@
 // ASCII Paint Application
 
-// Character palette - extracted from ASCII art block
-const PALETTE_CHARS = [
-  '░', ':', '(', ')', "'", '.', '-', '_',
-  '~', '"', '`', '/', '\\', '|', '^', '=',
-  '?', 'T', 'L', 'n', 'o', 'v', 'V', 'i',
-  'I', '7', '8', 'l', ';', '!', ',', '<',
-  '>', 'J', 'Y', ' '
-];
+// Character palettes organized by category
+const PALETTES = {
+  basic: {
+    name: 'Basic',
+    chars: [
+      '░', ':', '(', ')', "'", '.', '-', '_',
+      '~', '"', '`', '/', '\\', '|', '^', '=',
+      '?', 'T', 'L', 'n', 'o', 'v', 'V', 'i',
+      'I', '7', '8', 'l', ';', '!', ',', ' '
+    ]
+  },
+  blocks: {
+    name: 'Blocks',
+    chars: [
+      '█', '▓', '▒', '░', '▄', '▀', '▐', '▌',
+      '■', '□', '▪', '▫', '◼', '◻', '◾', '◽',
+      '▖', '▗', '▘', '▝', '▚', '▞', '▛', '▜',
+      '▙', '▟', '⬛', '⬜', '🔲', '🔳', '▰', '▱'
+    ]
+  },
+  lines: {
+    name: 'Lines',
+    chars: [
+      '─', '│', '┌', '┐', '└', '┘', '├', '┤',
+      '┬', '┴', '┼', '═', '║', '╔', '╗', '╚',
+      '╝', '╠', '╣', '╦', '╩', '╬', '╭', '╮',
+      '╯', '╰', '╱', '╲', '╳', '▁', '▏', '▕'
+    ]
+  },
+  arrows: {
+    name: 'Arrows',
+    chars: [
+      '←', '→', '↑', '↓', '↖', '↗', '↘', '↙',
+      '⇐', '⇒', '⇑', '⇓', '⇔', '⇕', '↔', '↕',
+      '➤', '➜', '➡', '⬅', '⬆', '⬇', '▲', '▼',
+      '◀', '▶', '◁', '▷', '△', '▽', '⊳', '⊲'
+    ]
+  },
+  symbols: {
+    name: 'Symbols',
+    chars: [
+      '★', '☆', '●', '○', '◆', '◇', '◈', '◉',
+      '♠', '♣', '♥', '♦', '♤', '♧', '♡', '♢',
+      '✓', '✗', '✕', '✖', '✚', '✜', '✢', '✣',
+      '⚡', '☀', '☁', '☂', '☃', '☄', '♪', '♫'
+    ]
+  },
+  math: {
+    name: 'Math',
+    chars: [
+      '+', '-', '×', '÷', '±', '∓', '=', '≠',
+      '<', '>', '≤', '≥', '≈', '≡', '∞', '∝',
+      '∑', '∏', '√', '∛', '∫', '∬', '∂', '∇',
+      '∈', '∉', '∩', '∪', '⊂', '⊃', '∀', '∃'
+    ]
+  },
+  punctuation: {
+    name: 'Punctuation',
+    chars: [
+      '.', ',', ';', ':', '!', '?', "'", '"',
+      '`', '´', '~', '^', '-', '_', '/', '\\',
+      '(', ')', '[', ']', '{', '}', '<', '>',
+      '@', '#', '$', '%', '&', '*', '+', '='
+    ]
+  },
+  letters: {
+    name: 'Letters',
+    chars: [
+      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+      'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+      'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+      'Y', 'Z', '0', '1', '2', '3', '4', '5'
+    ]
+  }
+};
 
 class ASCIIPaint {
   constructor() {
@@ -21,6 +88,10 @@ class ASCIIPaint {
     this.isPanning = false;
     this.spaceHeld = false;
     this.referenceImage = null;
+    
+    // Palette state
+    this.currentPalette = 'basic';
+    this.customChars = [];
     
     // Mode: 'paint' or 'edit'
     this.mode = 'paint';
@@ -48,6 +119,7 @@ class ASCIIPaint {
     this.refImageEl.style.display = 'none';
     this.container.insertBefore(this.refImageEl, this.canvas);
     
+    this.buildPaletteSelector();
     this.buildPalette();
     this.buildCanvas();
     this.setupEventListeners();
@@ -71,7 +143,10 @@ class ASCIIPaint {
     const palette = document.getElementById('palette');
     palette.innerHTML = '';
     
-    PALETTE_CHARS.forEach(char => {
+    // Get current palette characters
+    const chars = PALETTES[this.currentPalette]?.chars || PALETTES.basic.chars;
+    
+    chars.forEach(char => {
       const el = document.createElement('div');
       el.className = 'palette-char';
       el.textContent = char;
@@ -81,6 +156,36 @@ class ASCIIPaint {
       el.addEventListener('click', () => this.selectChar(char));
       palette.appendChild(el);
     });
+  }
+  
+  buildPaletteSelector() {
+    const selector = document.getElementById('paletteSelector');
+    if (!selector) return;
+    
+    selector.innerHTML = '';
+    
+    Object.entries(PALETTES).forEach(([key, palette]) => {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = palette.name;
+      if (key === this.currentPalette) {
+        option.selected = true;
+      }
+      selector.appendChild(option);
+    });
+  }
+  
+  switchPalette(paletteKey) {
+    if (PALETTES[paletteKey]) {
+      this.currentPalette = paletteKey;
+      this.buildPalette();
+    }
+  }
+  
+  addCustomChar(char) {
+    if (char && char.length === 1) {
+      this.selectChar(char);
+    }
   }
   
   selectChar(char) {
@@ -419,6 +524,25 @@ class ASCIIPaint {
       btn.title = panel.classList.contains('collapsed') ? 'Show Panel' : 'Hide Panel';
     });
 
+    // Palette selector
+    document.getElementById('paletteSelector')?.addEventListener('change', (e) => {
+      this.switchPalette(e.target.value);
+    });
+    
+    // Custom character input
+    const customCharInput = document.getElementById('customCharInput');
+    customCharInput?.addEventListener('input', (e) => {
+      const char = e.target.value.slice(-1); // Get last character typed
+      if (char) {
+        this.addCustomChar(char);
+        e.target.value = char; // Keep only the last character
+      }
+    });
+    
+    customCharInput?.addEventListener('focus', () => {
+      customCharInput.select();
+    });
+
     // Palette and tools
     document.getElementById('toggleGrid').addEventListener('click', () => this.toggleGrid());
     
@@ -500,7 +624,7 @@ class ASCIIPaint {
     // Panning with space bar and edit mode keyboard handling
     document.addEventListener('keydown', (e) => {
       // Don't handle if focus is on an input
-      if (e.target.tagName === 'INPUT') return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
       
       if (e.code === 'Space' && !this.spaceHeld) {
         e.preventDefault();

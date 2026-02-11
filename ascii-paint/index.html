@@ -47,10 +47,16 @@
 
       <div class="panel-section">
         <div class="section-label">Character</div>
+        <select id="paletteSelector" class="palette-select"></select>
         <div id="palette"></div>
-        <div class="current-char-display">
-          <span class="label">Selected:</span>
-          <span id="currentChar">█</span>
+        <div class="current-char-row">
+          <div class="current-char-display">
+            <span class="label">Selected:</span>
+            <span id="currentChar">█</span>
+          </div>
+          <div class="custom-char-input">
+            <input type="text" id="customCharInput" maxlength="2" placeholder="Any" title="Type any character">
+          </div>
         </div>
       </div>
 

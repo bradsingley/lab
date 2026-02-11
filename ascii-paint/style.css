@@ -239,11 +239,37 @@ body {
 }
 
 /* Character Palette */
+.palette-select {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: all 0.15s ease;
+}
+
+.palette-select:hover {
+  background: var(--border-color);
+}
+
+.palette-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg-secondary);
+}
+
 #palette {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 4px;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 3px;
   margin-bottom: 10px;
+  max-height: 140px;
+  overflow-y: auto;
 }
 
 .palette-char {
@@ -256,9 +282,10 @@ body {
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-primary);
   transition: all 0.1s ease;
+  min-width: 0;
 }
 
 .palette-char:hover {
@@ -272,7 +299,13 @@ body {
   border-color: var(--accent);
 }
 
+.current-char-row {
+  display: flex;
+  gap: 8px;
+}
+
 .current-char-display {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -290,6 +323,37 @@ body {
   font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
   font-size: 18px;
   color: var(--text-primary);
+}
+
+.custom-char-input {
+  display: flex;
+  align-items: center;
+}
+
+.custom-char-input input {
+  width: 44px;
+  height: 100%;
+  padding: 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 16px;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.custom-char-input input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg-secondary);
+}
+
+.custom-char-input input::placeholder {
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 /* Image Section */
