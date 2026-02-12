@@ -1,0 +1,66 @@
+[submodule "ascii-paint"]
+	path = ascii-paint
+	url = https://github.com/bradsingley/ascii-paint.git
+[submodule "excel tetris"]
+	path = excel tetris
+	url = https://github.com/bradsingley/excel-tetris.git
+[submodule "head-tracker"]
+	path = head-tracker
+	url = https://github.com/bradsingley/head-tracker.git
+[submodule "oscilloscope"]
+	path = oscilloscope
+	url = https://github.com/bradsingley/oscilloscope.git
+[submodule "theremin"]
+	path = theremin
+	url = https://github.com/bradsingley/theremin.git
+[submodule "theremin2"]
+	path = theremin2
+	url = https://github.com/bradsingley/theremin2.git
+[submodule "tilt-shifter"]
+	path = tilt-shifter
+	url = https://github.com/bradsingley/tilt-shifter.git
+[submodule "yearbook-page"]
+	path = yearbook-page
+	url = https://github.com/bradsingley/yearbook-page.git
+[submodule "party\\ planner"]
+	path = party\\ planner
+	url = https://github.com/bradsingley/party-planner-roblox.git
+[submodule "browser hacking"]
+	path = browser hacking
+	url = https://github.com/bradsingley/browser-hacking.git
+[submodule "creepy-baby"]
+	path = creepy-baby
+	url = https://github.com/bradsingley/creepy-baby.git
+[submodule "Excel animator"]
+	path = Excel animator
+	url = https://github.com/bradsingley/excel-animator.git
+[submodule "excel-animator-2"]
+	path = excel-animator-2
+	url = https://github.com/bradsingley/excel-animator-2.git
+[submodule "excelfie"]
+	path = excelfie
+	url = https://github.com/bradsingley/excelfie.git
+[submodule "itsallconnected"]
+	path = itsallconnected
+	url = https://github.com/bradsingley/itsallconnected.git
+[submodule "mudbord"]
+	path = mudbord
+	url = https://github.com/bradsingley/mudbord.git
+[submodule "othello-game"]
+	path = othello-game
+	url = https://github.com/bradsingley/othello-game.git
+[submodule "party planner"]
+	path = party planner
+	url = https://github.com/bradsingley/party-planner.git
+[submodule "robot"]
+	path = robot
+	url = https://github.com/bradsingley/robot-game.git
+[submodule "robot-test"]
+	path = robot-test
+	url = https://github.com/bradsingley/robot-game-test.git
+[submodule "sticky-baby"]
+	path = sticky-baby
+	url = https://github.com/bradsingley/sticky-baby.git
+[submodule "zen-garden"]
+	path = zen-garden
+	url = https://github.com/bradsingley/zen-garden.git
