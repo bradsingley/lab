@@ -22,9 +22,6 @@
 [submodule "yearbook-page"]
 	path = yearbook-page
 	url = https://github.com/bradsingley/yearbook-page.git
-[submodule "party\\ planner"]
-	path = party\\ planner
-	url = https://github.com/bradsingley/party-planner-roblox.git
 [submodule "browser hacking"]
 	path = browser hacking
 	url = https://github.com/bradsingley/browser-hacking.git
@@ -49,9 +46,6 @@
 [submodule "othello-game"]
 	path = othello-game
 	url = https://github.com/bradsingley/othello-game.git
-[submodule "party planner"]
-	path = party planner
-	url = https://github.com/bradsingley/party-planner.git
 [submodule "robot"]
 	path = robot
 	url = https://github.com/bradsingley/robot-game.git
