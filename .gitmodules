@@ -64,3 +64,6 @@
 [submodule "zen-garden"]
 	path = zen-garden
 	url = https://github.com/bradsingley/zen-garden.git
+[submodule "Test-repo"]
+	path = Test-repo
+	url = https://github.com/bradsingley/Test-repo.git
