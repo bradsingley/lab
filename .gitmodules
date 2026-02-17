@@ -61,3 +61,6 @@
 [submodule "new-test"]
 	path = new-test
 	url = https://github.com/bradsingley/new-test.git
+[submodule "treefolio"]
+	path = treefolio
+	url = https://github.com/bradsingley/treefolio.git
