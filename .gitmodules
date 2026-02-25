@@ -64,6 +64,6 @@
 [submodule "treefolio"]
 	path = treefolio
 	url = https://github.com/bradsingley/treefolio.git
-[submodule "thumbnail-generator"]
-	path = thumbnail-generator
-	url = https://github.com/bradsingley/thumbnail-generator.git
+[submodule "image-generator"]
+	path = image-generator
+	url = https://github.com/bradsingley/image-generator.git
