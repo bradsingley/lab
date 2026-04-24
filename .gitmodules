@@ -67,3 +67,6 @@
 [submodule "omnichord"]
 	path = omnichord
 	url = https://github.com/bradsingley/omnichord.git
+[submodule "DJ-assist"]
+	path = DJ-assist
+	url = https://github.com/bradsingley/DJ-assist.git
