@@ -70,6 +70,6 @@
 [submodule "DJ-assist"]
 	path = DJ-assist
 	url = https://github.com/bradsingley/DJ-assist.git
-[submodule "personal-image-maker"]
-	path = personal-image-maker
-	url = https://github.com/bradsingley/personal-image-maker.git
+[submodule "personal-image-creator"]
+	path = personal-image-creator
+	url = https://github.com/bradsingley/personal-image-creator.git
