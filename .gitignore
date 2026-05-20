@@ -39,3 +39,7 @@ Thumbs.db
 # Folders #
 ######################
 thumbnails/
+node_modules/
+.next/
+dist/
+build/

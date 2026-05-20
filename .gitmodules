@@ -76,3 +76,9 @@
 [submodule "gitolingo"]
 	path = gitolingo
 	url = https://github.com/bradsingley/gitolingo.git
+[submodule "brew-landing-page"]
+	path = brew-landing-page
+	url = https://github.com/bradsingley/brew-landing-page.git
+[submodule "treefolio"]
+	path = treefolio
+	url = https://github.com/bradsingley/treefolio.git
