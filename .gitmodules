@@ -61,9 +61,6 @@
 [submodule "new-test"]
 	path = new-test
 	url = https://github.com/bradsingley/new-test.git
-[submodule "image-generator"]
-	path = image-generator
-	url = https://github.com/bradsingley/image-generator.git
 [submodule "omnichord"]
 	path = omnichord
 	url = https://github.com/bradsingley/omnichord.git
