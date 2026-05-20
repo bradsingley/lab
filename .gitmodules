@@ -73,3 +73,6 @@
 [submodule "personal-image-creator"]
 	path = personal-image-creator
 	url = https://github.com/bradsingley/personal-image-creator.git
+[submodule "gitolingo"]
+	path = gitolingo
+	url = https://github.com/bradsingley/gitolingo.git
