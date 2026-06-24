@@ -23,8 +23,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: true
+
+      - name: Check out public submodules (skip private treefolio)
+        run: |
+          # treefolio is a PRIVATE repo. With `submodules: true`, actions/checkout
+          # clones submodules using the repo-scoped GITHUB_TOKEN, which cannot read
+          # other private repos -> "repository not found" -> the whole checkout (and
+          # thus the entire Pages deploy) fails. Skip it so the public site still
+          # publishes. To include treefolio, add a PAT secret with read access and
+          # clone it explicitly here instead.
+          git config submodule.treefolio.update none
+          git submodule update --init
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
